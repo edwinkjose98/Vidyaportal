@@ -750,6 +750,7 @@
         const statusColor = a.status === "pending" ? "#F59E0B" : a.status === "accepted" ? "#10B981" : "#EF4444";
         tr.innerHTML = `
           <td><strong>${escapeHtml(a.name || "—")}</strong></td>
+          <td>${escapeHtml(a.guardian || "—")}</td>
           <td>${escapeHtml(a.phone || "—")}</td>
           <td>${escapeHtml(a.email || "—")}</td>
           <td>${escapeHtml(a.collegeName || "—")}</td>
@@ -1296,6 +1297,7 @@ async function submitApplication() {
     name,
     phone,
     email,
+    guardian: document.getElementById("applyGuardian") ? document.getElementById("applyGuardian").value.trim() : "",
     district: document.getElementById("applyDistrict").value.trim(),
     place: document.getElementById("applyPlace").value.trim(),
     tenth: document.getElementById("applyTenth").value.trim(),
@@ -1314,7 +1316,7 @@ async function submitApplication() {
     await addDoc(collection(db, "applications"), applicationData);
 
     // Clear form
-    ["applyName","applyPhone","applyEmail","applyDistrict","applyPlace",
+    ["applyName","applyPhone","applyEmail","applyGuardian","applyDistrict","applyPlace",
      "applyTenth","applyTwelfth","applyEntrance","applyMessage"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = "";
