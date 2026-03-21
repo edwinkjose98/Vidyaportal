@@ -40,7 +40,7 @@
     document.getElementById("modalOtpStep").style.display = "none";
     document.getElementById("phoneInput").value = "";
     document.getElementById("phoneError").style.display = "none";
-    setTimeout(() => document.getElementById("phoneInput").focus(), 100);
+    document.getElementById("phoneInput").focus();
   }
 
   function closePhoneModal() {
