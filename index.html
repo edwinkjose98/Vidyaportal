@@ -13,9 +13,40 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .mesh-bg {
+            background-color: #fffafb !important;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(330, 100%, 96%, 0.8) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 100%, 94%, 0.8) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(320, 100%, 96%, 0.7) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(340, 100%, 95%, 0.7) 0px, transparent 50%) !important;
+            background-size: 200% 200% !important;
+            background-attachment: fixed !important;
+            animation: breathingMesh 15s ease-in-out infinite alternate !important;
+        }
+
+        .homeBG {
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            padding: 5rem 1.5rem 3rem !important;
+        }
+
+        @keyframes breathingMesh {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 100% 100%;
+            }
+        }
+    </style>
 </head>
 
-<body>
+<body class="mesh-bg">
     <div id="login-div"
         style="display: flex; position:fixed; inset:0; z-index:9000; background:linear-gradient(145deg, rgba(255,242,245,0.95) 0%, rgba(255,228,236,0.95) 100%); align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(8px);">
 
@@ -33,7 +64,7 @@
                     </div>
                     <div class="logo-text" style="display:flex; flex-direction:column; align-items:center; width:100%;">
                         <h1
-                            style="font-family:'Plus Jakarta Sans',sans-serif; font-size:clamp(1.2rem, 6.5vw, 1.8rem); font-weight:800; letter-spacing:-0.03em; line-height:1.2; background:linear-gradient(135deg,#c7285a,#F472B6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:0; white-space:nowrap; text-align:center;">
+                            style="font-family:'Plus Jakarta Sans',sans-serif; font-size:clamp(1.2rem, 6.5vw, 1.8rem); font-weight:800; letter-spacing:-0.03em; line-height:1.2; background:linear-gradient(135deg,#c7285a,#F472B6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin:0; white-space:nowrap; text-align:center;">
                             KERALA VIDYA PORTAL</h1>
                         <div class="logo-tagline" style="margin:0; margin-top:0.3rem;">unified · honest · seamless</div>
                     </div>
@@ -216,22 +247,24 @@
 
         </div>
     </div>
-    <main id="mainPage" style="display: none;">
+    <main id="mainPage">
         <div id="mainContent">
             <div id="home-page">
                 <div class="nav-wrap" id="nav">
                     <div class="nav-inner">
-                        <a class="brand" href="#" style="padding:0; gap:.5rem; display:flex; align-items:center;">
-                            <img src="kerala-logo.png" style="height:60px; object-fit:contain;"
+                        <a class="brand" href="#" onclick="showHome(); return false;"
+                            style="padding:0; gap:.5rem; display:flex; align-items:center;">
+                            <img src="kerala-logo.png"
+                                style="height:60px; width:60px; min-width:60px; object-fit:contain; margin:0;"
                                 alt="Kerala Vidya Portal Logo">
                             <span class="logo-text"
-                                style="font-size:1.5rem; font-family:'Plus Jakarta Sans',sans-serif; background:linear-gradient(135deg,#EC4899,#E31671); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:800; letter-spacing:-0.03em;">Kerala
+                                style="font-size:1.5rem; font-family:'Plus Jakarta Sans',sans-serif; background:linear-gradient(135deg,#EC4899,#E31671); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:800; letter-spacing:-0.03em; white-space:nowrap;">Kerala
                                 Vidya Portal</span>
                         </a>
                         <nav class="nav-desktop">
                             <a href="#" onclick="showHome()" class="active">Home</a>
                             <a href="#" onclick="showAllCollegesView()">Colleges</a>
-                            <a href="#" onclick="showAllCoursesView()">Courses</a>
+                            <a href="#" onclick="showAllCoursesView(event)">Courses</a>
                             <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--gray);">
                                 <div class="nav-cta-row">
                                     <div class="nav-auth-buttons"
@@ -243,7 +276,6 @@
                                     </div>
                                     <div class="nav-logout-wrap"
                                         style="display: none; align-items: center; gap: 0.5rem;">
-                                        <span class="nav-user-name" style="font-size: 0.8rem; color: #6B7280;"></span>
                                         <a href="#" class="nav-admin-link" style="display: none; font-size: 0.8rem;"
                                             onclick="openAdminPanel(); return false;">Admin</a>
                                         <button type="button" class="btn-nav btn-logout"
@@ -257,9 +289,9 @@
                         </button>
                     </div>
                     <div class="mob-menu" id="mobMenu">
-                        <a onclick="showHome()" class="active">Home</a>
-                        <a href="#" onclick="showAllCoursesView()">Courses</a>
-                        <a href="#" onclick="showAllCollegesView()">Colleges</a>
+                        <a onclick="showHome(); toggleMenu();" class="active">Home</a>
+                        <a href="#" onclick="showAllCoursesView(event); toggleMenu();">Courses</a>
+                        <a href="#" onclick="showAllCollegesView(); toggleMenu();">Colleges</a>
                         <a href="#">Find by City</a>
                         <a href="#">About</a>
                         <a href="#">Blogs</a>
@@ -281,6 +313,12 @@
                         <button style="display: none;" class="mob-cta" onclick="goto('colleges')">Explore Colleges
                             →</button>
                     </div>
+                    <!-- Welcome Widget -->
+                    <div class="nav-logout-wrap desk-auth"
+                        style="display: none; position: absolute; top: calc(100% - 1px); right: 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.6rem 1.2rem; border-radius: 0 0 16px 16px; border: 1px solid rgba(233,30,140,0.15); border-top: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(233,30,140,0.08); font-weight: 600; font-size: 0.9rem; color: #111827; z-index: -1;">
+                        <span style="color:#e91e63; margin-right:4px;">✦</span> <span class="nav-user-name"
+                            style="color: #e91e63; font-weight:700;"></span>
+                    </div>
                 </div>
 
                 <!-- HERO -->
@@ -290,18 +328,21 @@
                 </video>
 
                 <div class="hero-overlay"></div> -->
-                    <div class="homeBG">
+                    <div class="homeBG"
+                        style="display:flex; flex-direction:column; align-items:center; text-align:center; max-width:800px; margin:0 auto;">
                         <div class="hero-badge">
                             <div class="dot"></div>Trusted by 1.2 Lakh+ Students
                         </div>
                         <span class="hero-tag">Choice is Power</span>
-                        <h1 class="hero-h1">Kerala Vidya Portal Makes<br>It Possible</h1>
-                        <p class="hero-sub">Helping India <span class="pk">Discover</span> and <span
-                                class="og">Apply</span> to the Right College with Verified, Transparent and Bias-free
+                        <h1 class="hero-h1" style="text-align:center; font-family:'Plus Jakarta Sans',sans-serif;">
+                            Kerala Vidya Portal Makes<br><span
+                                style="background: linear-gradient(135deg, var(--pink), #e91e63); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 4.2rem; display:inline-block; margin-top:5px;">It
+                                Possible.</span></h1>
+                        <p class="hero-sub" style="margin: 1rem auto; max-width: 600px;">Helping India <span
+                                class="pk">Discover</span> and <span class="og">Apply</span> to the Right College with
+                            Verified, Transparent and Bias-free
                             data.</p>
-                        <div class="hero-btns">
-                            <button class="btn-main" onclick="showAllCollegesView()">Explore Colleges →</button>
-                        </div>
+
                     </div>
                     <!-- Stats Row -->
                     <div class="stats-row">
@@ -319,6 +360,13 @@
                         </div>
                     </div>
                 </div>
+
+
+                <!-- FULL STRETCH IMAGE SECTION (Hidden in Colleges/Courses views) -->
+                <section class="full-stretch-img-sec" id="workflowSection">
+                    <img src="workflow.png" alt="Process Workflow: Old Way vs New Way" class="full-stretch-img"
+                        loading="lazy">
+                </section>
 
                 <!-- TICKER -->
                 <p class="ticker-label">Trusted by students of India's top institutions</p>
@@ -515,45 +563,40 @@
                     </div>
                 </div>
                 <!-- COLLEGES (loaded from Firebase: first 9 by priority on home, then View all + filters) -->
-                <section class="section" id="colleges" style="display: none;">
+                <section class="section" id="colleges" style="display: none; padding-top: 5rem;">
                     <div class="sec-eyebrow rev" id="collageTopDetailsText">✦ Top Colleges</div>
                     <h2 class="sec-h rev">Explore India's <span class="pink-word">Finest Institutions</span></h2>
                     <p class="sec-p rev rd1" id="collageDetailsText">Verified data, real student reviews, transparent
-                        admission info — all in one place.</p>
-                    <div class="filterBtn">
-                        <button onclick="toggleFilter()">Filter <i class="fa-solid fa-filter"></i></button>
+                        <!-- Premium Search Bar -->
+                    <div class="search-container">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="collegeSearchInput"
+                                placeholder="Search by college name, course or keyword..."
+                                oninput="applyCollegeSearch()">
+                        </div>
+                        <div class="search-box loc-box dropdown-trigger" onclick="toggleLocationDropdown(event)">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <div class="selected-location" id="selectedLocationText">Locations</div>
+                            <input type="hidden" id="locationSearchInput" value="">
+                            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                            <div class="custom-dropdown" id="locationDropdown">
+                                <div class="dropdown-item" onclick="selectLocation('', 'Locations')">All Locations</div>
+                                <div class="dropdown-item" onclick="selectLocation('Bangalore', 'Bangalore')">Bangalore
+                                </div>
+                                <div class="dropdown-item" onclick="selectLocation('Tamil Nadu', 'Tamil Nadu')">Tamil
+                                    Nadu</div>
+                                <div class="dropdown-item" onclick="selectLocation('Mysore', 'Mysore')">Mysore</div>
+                                <div class="dropdown-item" onclick="selectLocation('Mangaluru', 'Mangaluru')">Mangaluru
+                                </div>
+                                <div class="dropdown-item" onclick="selectLocation('Chikkaballapur', 'Chikkaballapur')">
+                                    Chikkaballapur</div>
+                                <div class="dropdown-item" onclick="selectLocation('Hassan', 'Hassan')">Hassan</div>
+                            </div>
+                        </div>
+                        <button class="btn-search" onclick="applyCollegeSearch()">Search</button>
                     </div>
 
-                    <!-- Overlay -->
-                    <div class="filter-overlay" id="filterOverlay" onclick="closeFilter()"></div>
-
-                    <!-- Filter Panel -->
-                    <div id="collegesFilterBar" class="colleges-filter-bar">
-
-                        <div class="filter-header">
-                            <h3>Filters</h3>
-                            <button onclick="closeFilter()">✕</button>
-                        </div>
-                        <div class="filter-group">
-                            <label for="filterCollegeName">College Name</label>
-                            <input type="text" id="filterCollegeName" list="collegeList" placeholder="Select college"
-                                oninput="applyFilters()" />
-                            <datalist id="collegeList"></datalist>
-                        </div>
-
-                        <div class="filter-group">
-                            <label for="filterLocation">Location</label>
-                            <input type="text" id="filterLocation" placeholder="City or State"
-                                oninput="applyFilters()" />
-                        </div>
-
-                        <div class="filter-group">
-                            <label for="filterCourse">Course</label>
-                            <input type="text" id="filterCourse" placeholder="Enter course name"
-                                oninput="applyFilters()" />
-                        </div>
-
-                    </div>
                     <div class="col-grid" id="collegesGrid">
                         <p class="colleges-empty">Loading colleges…</p>
                     </div>
@@ -592,7 +635,7 @@
                         </div>
 
                         <div class="filter-group">
-                            <label>Location</label>
+                            <label>Locations</label>
                             <input type="text" id="filterCourseLocation" placeholder="e.g. Delhi, Kerala"
                                 oninput="renderCourses()" />
                         </div>
@@ -620,7 +663,7 @@
                             </div>
                             <div class="step-body">
                                 <h3>Create Your Free Profile</h3>
-                                <p>Tell us your academics, interests, location preference, budget, and career goals.
+                                <p>Tell us your academics, interests, locations preference, budget, and career goals.
                                     Takes 3 minutes, completely free.</p>
                             </div>
                         </div>
@@ -659,109 +702,118 @@
                     </div>
                 </section>
                 <!-- TESTIMONIALS -->
-                <section class="section" style="padding-left:0;padding-right:0;max-width:100%">
-                    <div style="padding:0 1.25rem">
+                <section class="section" id="testimonialsSection" style="padding-left:0;padding-right:0;max-width:100%">
+                    <div
+                        style="padding:0 1.25rem; text-align:center; display:flex; flex-direction:column; align-items:center;">
                         <div class="sec-eyebrow rev">✦ Student Stories</div>
-                        <h2 class="sec-h rev">What Students Are <span class="pink-word">Saying</span></h2>
-                        <p class="sec-p rev rd1" style="margin-bottom:1.8rem">Real stories from students who found their
-                            college with Vidyaportal.</p>
+                        <h2 class="sec-h rev">Why They Choose <span class="pink-word">Kerala Vidya Portal</span></h2>
+                        <p class="sec-p rev rd1" style="margin-bottom:1.8rem; max-width: 600px;">Real stories from
+                            students who found their perfect college and secured their future with us.</p>
                     </div>
                     <div class="test-outer">
                         <div class="test-track">
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">Vidyaportal's data-driven approach helped me find BITS Pilani's Goa
-                                    campus — a perfect fit that no counselor had ever suggested.</div>
+                                <div class="tt">Unlike other consultancies that take your money and disappear, Kerala
+                                    Vidya Portal guided me step-by-step. They guarantee 100% job placement support and
+                                    helped me get into RVCE!</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#FFF0F8,#FBCFE8)">👦</div>
                                     <div>
-                                        <div class="tname">Arjun Mehta</div>
-                                        <div class="tcoll">B.Tech CSE · BITS Pilani</div>
+                                        <div class="tname">Abhinav Menon</div>
+                                        <div class="tcoll">B.Tech CSE · RV College of Engineering</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">The AI narrowed 200+ options to 5 perfect fits. Got into my top choice —
-                                    IIM Calcutta — thanks to Vidyaportal!</div>
+                                <div class="tt">I chose Kerala Vidya Portal because they don't take a single rupee in
+                                    donations. Zero fees! It's amazing to see technology built for students to remove
+                                    admission scams from society completely.</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#EFF6FF,#BFDBFE)">👩</div>
                                     <div>
-                                        <div class="tname">Priya Sharma</div>
-                                        <div class="tcoll">MBA · IIM Calcutta</div>
+                                        <div class="tname">Aswathy Nair</div>
+                                        <div class="tcoll">MBA · MS Ramaiah Institute of Technology</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">Scholarship discovery found me a ₹4 lakh merit grant I didn't even know
-                                    existed. This feature alone is worth it.</div>
+                                <div class="tt">Other agencies asked for huge hidden fees, but Kerala Vidya Portal kept
+                                    their promise of zero donations. They helped me secure my seat purely on merit at
+                                    PES University without paying 1 extra rupee.</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#FFFBEB,#FDE68A)">🧑</div>
                                     <div>
-                                        <div class="tname">Rohan Kumar</div>
-                                        <div class="tcoll">B.Des · NID Ahmedabad</div>
+                                        <div class="tname">Vishnu Nambiar</div>
+                                        <div class="tcoll">B.Des · PES University</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">As a first-gen student from a small town, transparent data and honest
-                                    reviews made me confident applying to AIIMS.</div>
+                                <div class="tt">The genuine approach sets them apart. They fight scams in education
+                                    admissions and guarantee 100% transparency. Thanks to their unbiased portal, I found
+                                    the perfect course at Christ.</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#ECFDF5,#A7F3D0)">👧</div>
                                     <div>
-                                        <div class="tname">Ananya Patel</div>
-                                        <div class="tcoll">MBBS · AIIMS New Delhi</div>
+                                        <div class="tname">Lakshmi Raj</div>
+                                        <div class="tcoll">B.Com · Christ University</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">The side-by-side comparison of 12 engineering colleges — placement
-                                    stats, infrastructure, faculty — is miles ahead of anything else.</div>
+                                <div class="tt">I was scammed by a fake agency before who vanished. Kerala Vidya Portal
+                                    is a lifesaver—no donations, totally free, and they use powerful tech to protect
+                                    students and secure real admissions.</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#FDF4FF,#E9D5FF)">👦</div>
                                     <div>
-                                        <div class="tname">Karan Verma</div>
-                                        <div class="tcoll">B.Tech EE · IIT Bombay</div>
+                                        <div class="tname">Sneha Varghese</div>
+                                        <div class="tcoll">B.Tech EE · BMS College of Engineering</div>
                                     </div>
                                 </div>
                             </div>
                             <!-- duplicates for infinite loop -->
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">Vidyaportal's data-driven approach helped me find BITS Pilani's Goa
-                                    campus — a perfect fit that no counselor had ever suggested.</div>
+                                <div class="tt">Unlike other consultancies that take your money and disappear, Kerala
+                                    Vidya Portal guided me step-by-step. They guarantee 100% job placement support and
+                                    helped me get into RVCE!</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#FFF0F8,#FBCFE8)">👦</div>
                                     <div>
-                                        <div class="tname">Arjun Mehta</div>
-                                        <div class="tcoll">B.Tech CSE · BITS Pilani</div>
+                                        <div class="tname">Abhinav Menon</div>
+                                        <div class="tcoll">B.Tech CSE · RV College of Engineering</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">The AI narrowed 200+ options to 5 perfect fits. Got into my top choice —
-                                    IIM Calcutta — thanks to Vidyaportal!</div>
+                                <div class="tt">I chose Kerala Vidya Portal because they don't take a single rupee in
+                                    donations. Zero fees! It's amazing to see technology built for students to remove
+                                    admission scams from society completely.</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#EFF6FF,#BFDBFE)">👩</div>
                                     <div>
-                                        <div class="tname">Priya Sharma</div>
-                                        <div class="tcoll">MBA · IIM Calcutta</div>
+                                        <div class="tname">Aswathy Nair</div>
+                                        <div class="tcoll">MBA · MS Ramaiah Institute of Technology</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tc">
                                 <div class="tq">"</div>
-                                <div class="tt">Scholarship discovery found me a ₹4 lakh merit grant I didn't even know
-                                    existed. This feature alone is worth it.</div>
+                                <div class="tt">Other agencies asked for huge hidden fees, but Kerala Vidya Portal kept
+                                    their promise of zero donations. They helped me secure my seat purely on merit at
+                                    PES University without paying 1 extra rupee.</div>
                                 <div class="ta">
                                     <div class="tav" style="background:linear-gradient(135deg,#FFFBEB,#FDE68A)">🧑</div>
                                     <div>
-                                        <div class="tname">Rohan Kumar</div>
-                                        <div class="tcoll">B.Des · NID Ahmedabad</div>
+                                        <div class="tname">Vishnu Nambiar</div>
+                                        <div class="tcoll">B.Des · PES University</div>
                                     </div>
                                 </div>
                             </div>
@@ -769,87 +821,42 @@
                     </div>
                 </section>
 
-                <!-- CTA -->
-                <div class="cta-section hidden">
-                    <div class="cta-inner">
-                        <div class="sec-eyebrow rev" style="margin:0 auto .9rem">✦ Start Your Journey</div>
-                        <h2 class="cta-h rev">Ready to Find Your<br><span class="pink-word">Dream College?</span></h2>
-                        <p class="cta-p rev rd1">Join 1.2 lakh+ students who discovered and applied through Vidyaportal
-                            — completely free, always.</p>
-                        <div class="cta-form rev rd2">
-                            <input class="cta-inp" type="email" placeholder="Enter your email address">
-                            <button class="cta-btn">Get Started Free →</button>
+                <!-- FOOTER SECTION -->
+                <footer class="site-footer" id="aboutSection">
+                    <div class="footer-inner">
+                        <div class="footer-col">
+                            <h4 class="footer-heading">Students</h4>
+                            <ul class="footer-links">
+                                <li><a href="#">Search Colleges</a></li>
+                                <li><a href="#">Compare Colleges</a></li>
+                            </ul>
                         </div>
-                        <p style="font-size:.75rem;color:#9CA3AF;margin-top:.9rem">No credit card · No hidden fees ·
-                            Cancel anytime</p>
+                        <div class="footer-col">
+                            <h4 class="footer-heading">Company</h4>
+                            <ul class="footer-links">
+                                <li><a href="#">About Vidyaportal</a></li>
+                                <li><a href="#">Our Mission</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4 class="footer-heading">Courses</h4>
+                            <ul class="footer-links">
+                                <li><a href="#">Engineering</a></li>
+                                <li><a href="#">Management</a></li>
+                                <li><a href="#">Medical</a></li>
+                                <li><a href="#">Design</a></li>
+                                <li><a href="#">Arts</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4 class="footer-heading">Support</h4>
+                            <ul class="footer-links">
+                                <li><a href="#">Contact Us</a></li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-
-                <!-- FOOTER -->
-                <footer>
-                    <div style="max-width:1200px;margin:0 auto">
-                        <div class="foot-brand">
-                            <div class="logo"
-                                style="display:inline-flex;gap:.5rem;align-items:center;margin-bottom:1rem">
-                                <img src="kerala-logo.png" style="height:70px; object-fit:contain;"
-                                    alt="Kerala Vidya Portal Logo">
-                                <span class="logo-text"
-                                    style="font-size:1.6rem; font-family:'Plus Jakarta Sans',sans-serif; background:linear-gradient(135deg,#EC4899,#E31671); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:800; letter-spacing:-0.03em;">Kerala
-                                    Vidya Portal</span>
-                            </div>
-                            <p>Empowering every Indian student to make informed, confident college decisions with
-                                transparent data and zero bias. Your future, your choice.</p>
-                            <div class="soc-row">
-                                <div class="soc">🐦</div>
-                                <div class="soc">📸</div>
-                                <div class="soc">💼</div>
-                                <div class="soc">▶️</div>
-                            </div>
-                        </div>
-                        <div class="foot-cols">
-                            <div class="foot-col">
-                                <h4>Students</h4>
-                                <ul class="foot-links">
-                                    <li><a href="#">Search Colleges</a></li>
-                                    <li><a href="#">Compare Colleges</a></li>
-                                    <li><a href="#">Find Scholarships</a></li>
-                                    <li><a href="#">Entrance Exams</a></li>
-                                    <li><a href="#">Career Guidance</a></li>
-                                </ul>
-                            </div>
-                            <div class="foot-col">
-                                <h4>Company</h4>
-                                <ul class="foot-links">
-                                    <li><a href="#">About Vidyaportal</a></li>
-                                    <li><a href="#">Our Mission</a></li>
-                                    <li><a href="#">Team</a></li>
-                                    <li><a href="#">Blog</a></li>
-                                    <li><a href="#">Careers</a></li>
-                                </ul>
-                            </div>
-                            <div class="foot-col">
-                                <h4>Courses</h4>
-                                <ul class="foot-links">
-                                    <li><a href="#">Engineering</a></li>
-                                    <li><a href="#">Management</a></li>
-                                    <li><a href="#">Medical</a></li>
-                                    <li><a href="#">Design</a></li>
-                                    <li><a href="#">Liberal Arts</a></li>
-                                </ul>
-                            </div>
-                            <div class="foot-col">
-                                <h4>Support</h4>
-                                <ul class="foot-links">
-                                    <li><a href="#">Help Center</a></li>
-                                    <li><a href="#">Contact Us</a></li>
-                                    <li><a href="#">Privacy Policy</a></li>
-                                    <li><a href="#">Terms of Service</a></li>
-                                    <li><a href="#">Report Issue</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="foot-bot">© 2025 Vidyaportal Education Pvt. Ltd. · Made with 💗 for India's Students
-                        </div>
+                    <div class="footer-bottom">
+                        <p>&copy; 2025 Kerala Vidya Portal. All rights reserved.</p>
                     </div>
                 </footer>
 
@@ -1019,7 +1026,7 @@
                             <thead>
                                 <tr>
                                     <th>Name</th>
-                                    <th>Location</th>
+                                    <th>Locations</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -1045,7 +1052,7 @@
                             <label>Name</label>
                             <input type="text" id="editName" />
 
-                            <label>Location</label>
+                            <label>Locations</label>
                             <input type="text" id="editLoc" />
 
                             <label>Image URL (college photo)</label>
@@ -1111,8 +1118,8 @@
             </div>
         </div>
     </main>
-    <script type="module" src="script.js"></script>
-    <script src="script2.js"></script>
+    <script type="module" src="script.js?v=4"></script>
+
     <!-- Phone OTP Modal -->
     <div id="phoneModal"
         style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(255,242,245,0.75); backdrop-filter:blur(8px); align-items:center; justify-content:center;">
