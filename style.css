@@ -3368,95 +3368,248 @@ video {
   }
 }
 
-/* ===== COURSE CATEGORIES ===== */
+/* ===== COURSE CATEGORIES (MODERN PINK MINIMALIST DESIGN) ===== */
 .crs-cat-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  margin-top: 1.2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
 }
 
 .crs-cat-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: #fff;
-  border: 1.5px solid #F3F4F6;
-  border-radius: 16px;
-  padding: 1rem 1.2rem;
-  cursor: pointer;
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
-  text-decoration: none;
+    background: linear-gradient(135deg, #FFF5FA 0%, #FCE7F3 100%);
+    border-radius: 2rem;
+    padding: 2.25rem;
+    cursor: pointer;
+    position: relative;
+    border: 1.8px solid rgba(233, 30, 140, 0.18);
+    box-shadow: 0 15px 35px rgba(233, 30, 140, 0.04);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.7rem;
+    overflow: hidden;
 }
 
 .crs-cat-card:hover {
-  box-shadow: 0 6px 24px rgba(233, 30, 140, 0.10);
-  border-color: rgba(233, 30, 140, 0.25);
-  transform: translateY(-2px);
+    transform: translateY(-12px);
+    background: linear-gradient(135deg, #FFFFFF 0%, #FDF2F8 100%);
+    box-shadow: 0 35px 70px rgba(233, 30, 140, 0.15);
+    border-color: rgba(233, 30, 140, 0.35);
 }
 
 .crs-cat-icon-box {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border-radius: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.3rem;
+    background: #fff;
+    border: 1px solid rgba(233, 30, 140, 0.1);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+    transition: all 0.4s ease;
+    z-index: 2;
 }
 
-.crs-cat-info {
-  flex: 1;
+.crs-cat-card:hover .crs-cat-icon-box {
+    transform: scale(1.1) rotate(-6deg);
+    box-shadow: 0 15px 30px rgba(233, 30, 140, 0.1);
+}
+
+.crs-cat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    z-index: 2;
 }
 
 .crs-cat-name {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--dark, #111);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--pink, #E91E8C); 
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.05em;
+    margin: 0;
+    line-height: 1.05;
 }
 
 .crs-cat-count {
-  font-size: 0.78rem;
-  color: var(--gray, #6B7280);
-  margin-top: 0.15rem;
+    font-size: 1rem;
+    color: #4B5563;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
 }
 
-.crs-cat-arrow {
-  font-size: 1.1rem;
-  color: var(--pink, #E91E8C);
-  font-weight: 700;
-  opacity: 0.6;
-  transition: opacity 0.2s, transform 0.2s;
+.crs-cat-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--pink, #E91E8C);
+    font-weight: 800;
+    font-size: 0.95rem;
+    margin-top: auto;
+    transition: transform 0.3s;
+    z-index: 2;
 }
 
-.crs-cat-card:hover .crs-cat-arrow {
-  opacity: 1;
-  transform: translateX(4px);
+.crs-cat-card:hover .crs-cat-footer {
+    transform: translateX(12px);
 }
 
-.crs-cat-all {
-  background: linear-gradient(135deg, #FFF0F8, #FCE4F3);
-  border-color: rgba(233, 30, 140, 0.2);
+.crs-cat-explore {
+    border-bottom: 2.5px solid rgba(233, 30, 140, 0.2);
+    padding-bottom: 2px;
+}
+
+/* ===== REDESIGNED COURSE FILTERS ===== */
+.crs-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding: 0 0.5rem;
+}
+
+.crs-filter-row .search-box.loc-box {
+    background: #fff;
+    border: 1.5px solid rgba(233, 30, 140, 0.12);
+    border-radius: 100px; /* Pill shaped for premium feel */
+    padding: 0.8rem 1.6rem;
+    height: auto;
+    width: auto;
+    min-width: 280px;
+    box-shadow: 0 10px 30px rgba(233, 30, 140, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.crs-filter-row .search-box.loc-box:hover {
+    border-color: rgba(233, 30, 140, 0.3);
+    box-shadow: 0 15px 40px rgba(233, 30, 140, 0.1);
+    transform: translateY(-2px);
+}
+
+.crs-filter-row .search-box.loc-box i:first-child {
+    color: var(--pink);
+    font-size: 1.1rem;
+}
+
+.crs-filter-row .selected-location {
+    font-weight: 700;
+    color: var(--dark);
+    font-size: 0.95rem;
+}
+
+.crs-filter-row .dropdown-arrow {
+    color: var(--pink);
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+.crs-filter-row .dropdown-arrow.active {
+    transform: rotate(180deg);
 }
 
 .crs-result-count {
-  font-size: 0.82rem;
-  color: var(--gray, #6B7280);
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--gray);
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.01em;
+}
+
+.crs-result-count span {
+    color: var(--pink);
+    margin-right: 4px;
+}
+
+.crs-cat-all {
+    background: linear-gradient(135deg, #fff 0%, var(--pink-light) 100%);
+}
+
+.crs-result-count {
+    font-size: 0.9rem;
+    color: var(--gray);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+@media (max-width: 900px) {
+    .crs-cat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.2rem;
+    }
 }
 
 @media (max-width: 600px) {
-  .crs-cat-icon-box {
-    width: 44px;
-    height: 44px;
-    font-size: 1.2rem;
-    border-radius: 11px;
-  }
+    .crs-cat-grid {
+        grid-template-columns: 1fr;
+    }
+    .crs-cat-card {
+        padding: 1.8rem;
+    }
+    .crs-cat-name {
+        font-size: 1.5rem;
+    }
+}
 
-  .crs-cat-name {
-    font-size: 0.92rem;
-  }
+/* ===== PREMIUM DROPDOWN MENU ===== */
+.search-box.loc-box {
+    position: relative; /* Anchor for absolute dropdown */
+    user-select: none;
+}
+
+.custom-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 0;
+    width: 380px; /* Wider like the reference image */
+    background: #ffffff;
+    border-radius: 2.22rem; /* Extra rounded as requested */
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.18);
+    padding: 1.25rem;
+    z-index: 1000;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    animation: dropdownPop 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-dropdown.active {
+    display: block;
+}
+
+@keyframes dropdownPop {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.dropdown-item {
+    padding: 1.15rem 1.6rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #4B5563; /* Premium slate grey */
+    border-radius: 1.4rem;
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-item:hover {
+    background: #FFF5F9; /* Very soft pink highlight */
+    color: var(--pink, #E91E8C);
+    padding-left: 2rem; /* Subtle slide effect */
+}
+
+.dropdown-item:active {
+    transform: scale(0.98);
+}
+
+/* Ensure course specific container also works well */
+#courseFilterContainer .custom-dropdown {
+    width: 100%; /* Match container width for course-wise */
 }

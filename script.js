@@ -539,36 +539,42 @@ window.applyCollegeSearch = applyCollegeSearch;
 
 function toggleLocationDropdown(e) {
   if (e) e.stopPropagation();
-  const trigger = document.querySelector('.loc-box');
-  trigger.classList.toggle('active');
+  const dropdown = document.getElementById('locationDropdown');
+  const arrow = document.querySelector('.search-container .dropdown-arrow');
+  if (dropdown) dropdown.classList.toggle('active');
+  if (arrow) arrow.classList.toggle('active');
 }
 window.toggleLocationDropdown = toggleLocationDropdown;
 
-function selectLocation(val, txt) {
+function selectLocation(val, txt, e) {
+  if (e) e.stopPropagation();
+
   const input = document.getElementById('locationSearchInput');
   const display = document.getElementById('selectedLocationText');
+  const dropdown = document.getElementById('locationDropdown');
+  const arrow = document.querySelector('.search-container .dropdown-arrow');
+
   if (input) input.value = val;
   if (display) display.textContent = txt;
+  if (dropdown) dropdown.classList.remove('active');
+  if (arrow) arrow.classList.remove('active');
 
-  // Trigger search
   applyCollegeSearch();
-
-  // Close dropdown
-  const trigger = document.querySelector('.loc-box');
-  if (trigger) trigger.classList.remove('active');
 }
 window.selectLocation = selectLocation;
 
+// New: universal close all dropdowns
 function closeAllDropdowns() {
-  const trigger = document.querySelector('.loc-box');
-  if (trigger) trigger.classList.remove('active');
+  const drops = document.querySelectorAll('.custom-dropdown');
+  const arrows = document.querySelectorAll('.dropdown-arrow');
+  drops.forEach(d => d.classList.remove('active'));
+  arrows.forEach(a => a.classList.remove('active'));
 }
 window.closeAllDropdowns = closeAllDropdowns;
 
-// Close dropdown when clicking outside
 document.addEventListener('click', (e) => {
-  const trigger = document.querySelector('.loc-box');
-  if (trigger && !trigger.contains(e.target)) {
+  const searchBox = e.target.closest('.loc-box');
+  if (!searchBox) {
     closeAllDropdowns();
   }
 });
@@ -1081,31 +1087,37 @@ const COURSE_CATEGORIES = [
   {
     name: "Nursing",
     icon: "🏥",
+    image: "assets/nursing.png",
     keywords: ["nursing", "b.sc nursing", "bsc nursing", "m.sc nursing", "gnm", "anm", "nurse", "p.b.b.sc", "post basic"]
   },
   {
     name: "Paramedical Sciences",
     icon: "🩺",
+    image: "assets/paramedical.png",
     keywords: ["paramedical", "medical lab", "laboratory", "radiology", "imaging", "operation theatre", "cardiac", "dialysis", "emergency", "optometry", "physiotherapy", "occupational therapy", "respiratory", "anaesthesia", "perfusion"]
   },
   {
     name: "Allied Health Sciences",
     icon: "🧬",
+    image: "assets/allied_health.png",
     keywords: ["allied health", "nutrition", "dietetics", "audiology", "speech", "public health", "health sciences", "medical record", "hospital management", "health management", "physician assistant", "rehabilitation", "prosthetics", "orthotics"]
   },
   {
     name: "Management",
     icon: "💼",
+    image: "assets/management.png",
     keywords: ["mba", "management", "pgp", "bba", "pgpx", "agribusiness", "hospital administration", "health administration", "business", "commerce", "b.com", "m.com", "finance", "marketing", "hr", "human resource"]
   },
   {
     name: "Masters",
     icon: "🎓",
+    image: "assets/masters.png",
     keywords: ["m.sc", "m.a.", "m.tech", "m.des", "m.com", "masters", "mba", "md", "ms", "m.e.", "m.ed", "m.phil", "pg diploma", "post graduate", "postgraduate", "pgp", "pgpx", "m.pharm", "m.p.t"]
   },
   {
     name: "All Courses",
     icon: "📋",
+    image: "", // Generic placeholder
     keywords: []
   }
 ];
@@ -1162,7 +1174,7 @@ function renderCourseCategories() {
 
   const eyebrow = document.getElementById("coursesTopText");
   const subText = document.getElementById("coursesSubText");
-  if (eyebrow) eyebrow.textContent = "✦ Browse Courses";
+  if (eyebrow) eyebrow.style.display = "none";
   if (subText) subText.textContent = "Choose a category to explore colleges and programs.";
 
   // Count matching courses per category from loaded data
@@ -1188,16 +1200,20 @@ function renderCourseCategories() {
     const col = CAT_COLORS[idx % CAT_COLORS.length];
     const count = countForCategory(cat);
     const isAll = cat.keywords.length === 0;
+
     return `
         <div class="crs-cat-card${isAll ? " crs-cat-all" : ""}" onclick="selectCourseCategory(${idx})">
           <div class="crs-cat-icon-box" style="background:${col.bg}; color:${col.color};">
             ${cat.icon}
           </div>
-          <div class="crs-cat-info">
-            <div class="crs-cat-name">${cat.name}</div>
-            <div class="crs-cat-count">${count} program${count !== 1 ? "s" : ""}</div>
+          <div class="crs-cat-content">
+            <h3 class="crs-cat-name">${cat.name}</h3>
+            <p class="crs-cat-count">${count} specialized programs</p>
+            <div class="crs-cat-footer">
+               <span class="crs-cat-explore">Explore Category</span>
+               <i class="fa-solid fa-arrow-right"></i>
+            </div>
           </div>
-          <div class="crs-cat-arrow">→</div>
         </div>
       `;
   }).join("");
@@ -1208,9 +1224,9 @@ function selectCourseCategory(idx) {
   const cat = COURSE_CATEGORIES[idx];
   activeCourseCategory = cat;
 
-  // Show filter bar
-  const filterBtn = document.querySelector("#courses-section .filterBtn");
-  if (filterBtn) filterBtn.style.display = "";
+  // Show simplified result header
+  const header = document.getElementById("crsResultHeader");
+  if (header) header.style.display = "block";
 
   // Update heading
   const eyebrow = document.getElementById("coursesTopText");
@@ -1225,8 +1241,8 @@ function selectCourseCategory(idx) {
     backBtn.id = "courseCategoryBackBtn";
     backBtn.onclick = () => {
       activeCourseCategory = null;
-      const filterBtn = document.querySelector("#courses-section .filterBtn");
-      if (filterBtn) filterBtn.style.display = "none";
+      const header = document.getElementById("crsResultHeader");
+      if (header) header.style.display = "none";
       backBtn.remove();
       renderCourseCategories();
     };
@@ -1247,6 +1263,8 @@ function showHome() {
   if (colleges) colleges.style.display = "none";
   const cs = document.getElementById("courses-section");
   if (cs) cs.style.display = "none";
+  const header = document.getElementById("crsResultHeader");
+  if (header) header.style.display = "none";
   activeCourseCategory = null;
   const backBtn = document.getElementById("courseCategoryBackBtn");
   if (backBtn) backBtn.remove();
@@ -1258,9 +1276,7 @@ function renderCourses() {
   if (!grid) return;
   grid.className = "crs-grid";
 
-  const nameQ = (document.getElementById("filterCourseName")?.value || "").trim().toLowerCase();
-  const collQ = (document.getElementById("filterCourseCollege")?.value || "").trim().toLowerCase();
-  const locQ = (document.getElementById("filterCourseLocation")?.value || "").trim().toLowerCase();
+  const locQ = ""; // No separate location filtering for categories view
 
   const flat = [];
   collegesData.forEach(college => {
@@ -1275,11 +1291,19 @@ function renderCourses() {
       const matchesCat = activeCourseCategory.keywords.some(kw => courseLower.includes(kw));
       if (!matchesCat) return false;
     }
-    if (nameQ && !(course.n || "").toLowerCase().includes(nameQ)) return false;
-    if (collQ && !(college.name || "").toLowerCase().includes(collQ)) return false;
     if (locQ && !(college.loc || "").toLowerCase().includes(locQ)) return false;
     return true;
   });
+
+  // Update redesigned results count UI
+  const resultCountEl = document.getElementById("crsResultCount");
+  if (resultCountEl) {
+    if (activeCourseCategory) {
+       resultCountEl.innerHTML = `<span>${filtered.length}</span> colleges found`;
+    } else {
+       resultCountEl.textContent = "";
+    }
+  }
 
   // Group by college — show each college once with matching courses listed
   const collegeMap = new Map();
@@ -1378,12 +1402,31 @@ function openCourseDetail(idx) {
 }
 window.openCourseDetail = openCourseDetail;
 
-function clearCourseFilters() {
-  const ids = ["filterCourseName", "filterCourseCollege", "filterCourseLocation"];
-  ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+// Redesigned course filters functions
+function toggleCourseLocationDropdown(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById("courseLocationDropdown");
+  const arrow = document.querySelector("#courseFilterContainer .dropdown-arrow");
+  if (dropdown) dropdown.classList.toggle("active");
+  if (arrow) arrow.classList.toggle("active");
+}
+window.toggleCourseLocationDropdown = toggleCourseLocationDropdown;
+
+function selectCourseLocation(loc, label, e) {
+  if (e) e.stopPropagation();
+  const locInp = document.getElementById("courseLocationSearchInput");
+  const locTxt = document.getElementById("courseSelectedLocationText");
+  const dropdown = document.getElementById("courseLocationDropdown");
+  const arrow = document.querySelector("#courseFilterContainer .dropdown-arrow");
+
+  if (locInp) locInp.value = loc;
+  if (locTxt) locTxt.textContent = label;
+  if (dropdown) dropdown.classList.remove("active");
+  if (arrow) arrow.classList.remove("active");
+
   renderCourses();
 }
-window.clearCourseFilters = clearCourseFilters;
+window.selectCourseLocation = selectCourseLocation;
 
 function closeCourseDetail() {
   document.getElementById("course-det-page").classList.remove("active");
@@ -1391,17 +1434,6 @@ function closeCourseDetail() {
 }
 window.closeCourseDetail = closeCourseDetail;
 
-function toggleCourseFilter() {
-  document.getElementById("coursesFilterBar").classList.toggle("active");
-  document.getElementById("courseFilterOverlay").style.display = "block";
-}
-window.toggleCourseFilter = toggleCourseFilter;
-
-function closeCourseFilter() {
-  document.getElementById("coursesFilterBar").classList.remove("active");
-  document.getElementById("courseFilterOverlay").style.display = "none";
-}
-window.closeCourseFilter = closeCourseFilter;
 
 // ===== APPLY MODAL =====
 let currentApplyData = { collegeName: "", courseName: "", collegeId: "" };
