@@ -3284,32 +3284,7 @@ video {
   transform: rotate(180deg);
 }
 
-.custom-dropdown {
-  position: absolute;
-  top: calc(100% + 15px);
-  left: 0;
-  width: 100%;
-  min-width: 200px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(233, 30, 99, 0.1);
-  border-radius: 18px;
-  padding: 0.6rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(15px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1000;
-  max-height: 350px;
-  overflow-y: auto;
-}
-
-.search-box.active .custom-dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
+/* .custom-dropdown base styles now in the unified block below (line ~3565) */
 
 .dropdown-item {
   padding: 0.8rem 1rem;
@@ -3348,16 +3323,17 @@ video {
 
   .custom-dropdown {
     position: static;
-    opacity: 1;
-    visibility: visible;
     transform: none;
     box-shadow: none;
     background: rgba(0, 0, 0, 0.03);
     border: none;
     margin-top: 0.5rem;
     display: none;
+    opacity: 1;
+    visibility: visible;
   }
 
+  .custom-dropdown.active,
   .search-box.active .custom-dropdown {
     display: block;
   }
@@ -3567,18 +3543,21 @@ video {
     position: absolute;
     top: calc(100% + 15px);
     left: 0;
-    width: 380px; /* Wider like the reference image */
+    width: 380px;
     background: #ffffff;
-    border-radius: 2.22rem; /* Extra rounded as requested */
+    border-radius: 2.22rem;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.18);
     padding: 1.25rem;
-    z-index: 1000;
+    z-index: 9999;
     border: 1px solid rgba(0, 0, 0, 0.03);
     overflow: hidden;
     animation: dropdownPop 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.custom-dropdown.active {
+/* Show dropdown when trigger or dropdown itself has .active */
+.custom-dropdown.active,
+.search-box.active .custom-dropdown,
+.search-box.loc-box.active .custom-dropdown {
     display: block;
 }
 
@@ -3622,4 +3601,370 @@ video {
 /* Ensure course specific container also works well */
 #courseFilterContainer .custom-dropdown {
     width: 100%; /* Match container width for course-wise */
+}
+
+/* ── COURSE LIST VIEW ── */
+.course-list-wrap {
+    animation: slideIn 0.4s ease both;
+}
+
+.course-list-section {
+    margin-bottom: 3rem;
+}
+
+.course-list-h {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--dark);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+.course-list-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.course-list-item {
+    background: #fff;
+    border: 1.8px solid rgba(233, 30, 140, 0.12);
+    border-radius: 100px;
+    padding: 0.7rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #4B5563;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.course-list-item:hover {
+    background: var(--pink);
+    color: #fff;
+    border-color: var(--pink);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(233, 30, 140, 0.18);
+}
+
+.course-list-item:active {
+    transform: scale(0.96);
+}
+
+
+/* --- COMPARISON STYLES --- */
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .comparison-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.compare-card {
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    transition: 0.3s ease;
+}
+
+.compare-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+}
+
+.compare-img {
+    width: 100%;
+    height: 180px;
+    border-radius: 16px;
+    object-fit: cover;
+    margin-bottom: 1.5rem;
+}
+
+.compare-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+}
+
+.compare-loc {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.compare-attr {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.compare-attr:last-child {
+    border-bottom: none;
+}
+
+.attr-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.5px;
+}
+
+.attr-val {
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.attr-val.courses-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.compare-pill {
+    padding: 0.3rem 0.75rem;
+    background: var(--pink-light);
+    color: var(--pink);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Full width compare */
+#compare-section {
+    max-width: 1600px;
+    width: 95%;
+}
+
+/* Fill Screen for Comparison */
+.comparison-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+#compare-section .compare-controls {
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+/* Force Full Screen for Comparison */
+#compare-section {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 5% !important;
+    padding-right: 5% !important;
+}
+
+.comparison-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#compare-section .compare-controls {
+    max-width: 100% !important;
+    width: 100% !important;
+    gap: 4rem !important;
+}
+
+/* Increase Comparison Box Size */
+.compare-card {
+    padding: 3rem !important;
+}
+.compare-title {
+    font-size: 2.2rem !important;
+    margin-bottom: 1rem !important;
+}
+.compare-attr {
+    margin-bottom: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+}
+
+/* ULTIMATE STRETCH FOR COMPARISON */
+#compare-section {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+}
+
+.comparison-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 3rem !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    justify-content: stretch !important;
+    align-items: stretch !important;
+}
+
+.compare-card {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    flex-basis: 0;
+    flex-grow: 1;
+}
+
+/* AI Analysis UI */
+.ai-insight-box {
+    background: linear-gradient(135deg, #FAF5FF, #FDF4FF);
+    border: 1px solid #E9D5FF;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 15px 40px rgba(124, 58, 237, 0.08);
+    position: relative;
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.ai-insight-box::before {
+    content: '?';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 8rem;
+    opacity: 0.05;
+    transform: rotate(15deg);
+}
+
+.ai-verdict-tag {
+    display: inline-block;
+    background: #7C3AED;
+    color: #fff;
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+}
+
+.ai-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.ai-fact-card {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #F3E8FF;
+}
+
+.ai-fact-title {
+    color: #7C3AED;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* PINK THEME OVERRIDES FOR AI BOX */
+.ai-insight-box {
+    background: linear-gradient(135deg, var(--pink-light), #FFF5FA) !important;
+    border-color: var(--pink-mid) !important;
+    box-shadow: 0 15px 40px rgba(233, 30, 140, 0.08) !important;
+}
+.ai-verdict-tag {
+    background: var(--pink) !important;
+}
+.ai-fact-card {
+    border-color: var(--pink-mid) !important;
+}
+.ai-fact-title {
+    color: var(--pink) !important;
+}
+
+/* ------------------------------------------
+   GLOBAL PREMIUM ANIMATIONS
+   ------------------------------------------ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(233, 30, 140, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(233, 30, 140, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(233, 30, 140, 0); }
+}
+
+/* Scroll Reveal Base */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hover Lift & Scale */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+}
+
+/* Floating Effect */
+.floating {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Nav Link Underline Animation */
+.nav-desktop a, .mob-menu a {
+  position: relative;
+}
+
+.nav-desktop a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--pink);
+  transition: width 0.3s ease;
+}
+
+.nav-desktop a:hover::after, .nav-desktop a.active::after {
+  width: 100%;
 }
