@@ -3582,6 +3582,16 @@ video {
     display: block;
 }
 
+/* Arrow rotation when active */
+.search-box.loc-box.active .dropdown-arrow,
+.dropdown-trigger.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+}
+
 @keyframes dropdownPop {
     from { opacity: 0; transform: translateY(10px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }

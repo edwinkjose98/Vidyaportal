@@ -466,12 +466,14 @@ window.addEventListener("DOMContentLoaded", () => {
 // Default colleges used only for seeding Firebase (Admin panel → Seed default colleges)
 // image: college photo URL (you can update links in Admin → Colleges → Edit)
 const DEFAULT_COLLEGES = [
-  { priority: 2, name: "IIT Delhi", loc: "New Delhi, Delhi", icon: "🏛️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/IIT_Delhi_entrance_gate.jpg/1280px-IIT_Delhi_entrance_gate.jpg", bg: "linear-gradient(135deg,#EEF2FF,#C7D2FE)", about: "The Indian Institute of Technology Delhi is one of India's most prestigious engineering and research institutions, founded in 1961. Ranked consistently among the top 5 universities in India by QS and NIRF, IIT Delhi is a global hub for scientific research, innovation, and entrepreneurship. With 500+ faculty members and 8,000+ students across 13 departments, it boasts one of Asia's strongest alumni networks.", campus: "Spread over 325 acres in New Delhi, IIT Delhi offers world-class infrastructure including 14 hostels, state-of-the-art research labs, a 24/7 library with 4 lakh+ volumes, a sports complex with a swimming pool, and a vibrant cultural center hosting 80+ student clubs — from robotics and AI to music and theatre.", place: "The 2024 season saw the highest domestic CTC of ₹1.7 crore per annum. Top recruiters: Google, Microsoft, Goldman Sachs, McKinsey, Apple, Meta. Over 95% of eligible students receive offers, with average domestic CTC of ₹28 LPA.", courses: [{ n: "B.Tech Computer Science", d: "4 Yrs · ₹8.5L/yr" }, { n: "B.Tech Electrical Engg.", d: "4 Yrs · ₹8.5L/yr" }, { n: "M.Tech AI & ML", d: "2 Yrs · ₹9L/yr" }, { n: "MBA (DMS)", d: "2 Yrs · ₹10L/yr" }, { n: "Ph.D Research Programs", d: "3–5 Yrs · Funded" }, { n: "B.Des Industrial Design", d: "4 Yrs · ₹8.5L/yr" }], info: [{ l: "Established", v: "1961" }, { l: "NIRF Ranking", v: "#2 Engineering" }, { l: "Annual Fees", v: "₹8.5 Lakhs" }, { l: "Admission", v: "JEE Advanced" }, { l: "Avg. CTC", v: "₹28 LPA" }, { l: "Students", v: "8,200+" }] },
-  { priority: 1, name: "IIM Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "💼", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/IIM_Ahmedabad_New_Campus.jpg/1280px-IIM_Ahmedabad_New_Campus.jpg", bg: "linear-gradient(135deg,#FDF4FF,#E9D5FF)", about: "IIM Ahmedabad is Asia's most prestigious business school, globally ranked among the top 50 MBA programs. Founded in 1961 with collaboration from Harvard Business School, IIM-A has shaped India's corporate leadership for six decades. Its unique case study methodology and rigorous culture have produced Fortune 500 CEOs and leading policy makers.", campus: "IIM-A's campus, designed by architect Louis Kahn, is an architectural masterpiece spanning 102 acres. It features iconic brick buildings, modern research centers, a 400-seat amphitheater, executive residences, and one of India's finest business libraries with 3 lakh+ resources.", place: "The class of 2024 achieved an average CTC of ₹34.1 LPA with the highest international offer crossing ₹1.4 crore per annum. Top recruiters: McKinsey, BCG, Bain, Goldman Sachs, J.P. Morgan. 100% placement achieved consistently every year.", courses: [{ n: "Post Graduate Programme (MBA)", d: "2 Yrs · ₹32L total" }, { n: "PGPX – Executive MBA", d: "1 Yr · ₹36L total" }, { n: "PhD in Management", d: "4–6 Yrs · Stipend" }, { n: "Food & Agribusiness Mgmt.", d: "1 Yr · ₹20L total" }, { n: "ePost Graduate Programme", d: "2 Yrs · Online" }, { n: "Mgmt. Development Prog.", d: "Short · Varies" }], info: [{ l: "Established", v: "1961" }, { l: "FT Global Ranking", v: "Top 50 World" }, { l: "Program Fees", v: "₹32 Lakhs" }, { l: "CAT Cutoff", v: "99.7+ %ile" }, { l: "Avg. CTC", v: "₹34.1 LPA" }, { l: "Alumni", v: "42,000+" }] },
-  { priority: 3, name: "BITS Pilani", loc: "Pilani, Rajasthan", icon: "🔬", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BITS_Pilani.jpg/1280px-BITS_Pilani.jpg", bg: "linear-gradient(135deg,#EFF6FF,#BFDBFE)", about: "BITS Pilani is India's top-ranked private engineering university, founded in 1964. BITS pioneered India's practice school model, giving students real-world industry experience from Year 3. With campuses in Pilani, Goa, Hyderabad, and Dubai, it serves 15,000+ students globally and has one of India's highest alumni-to-unicorn-founder ratios.", campus: "The 300-acre Pilani campus features cutting-edge labs, an astronomical observatory, a wind energy facility, and one of India's largest student sports complexes. Famous for OASIS (cultural), APOGEE (technical), and BOSM (sports) — among India's largest college festivals.", place: "BITS achieves 95%+ placement rates. The 2024 season averaged ₹22 LPA CTC with highest offers exceeding ₹1.5 crore. Unique Practice School internships at Siemens, TCS, and BARC from third year give students a major career head-start.", courses: [{ n: "B.E. Computer Science", d: "4 Yrs · ₹5.8L/yr" }, { n: "B.E. Electronics & Elec.", d: "4 Yrs · ₹5.8L/yr" }, { n: "B.Pharm + MBA (Dual)", d: "5 Yrs · ₹6L/yr" }, { n: "M.Sc. Mathematics", d: "5 Yrs Integrated" }, { n: "M.Tech Software Systems", d: "2 Yrs · ₹6.5L/yr" }, { n: "PhD Research Programs", d: "3–5 Yrs" }], info: [{ l: "Established", v: "1964" }, { l: "NIRF Ranking", v: "#23 Overall" }, { l: "Annual Fees", v: "₹5.8 Lakhs" }, { l: "Admission", v: "BITSAT Exam" }, { l: "Avg. CTC", v: "₹22 LPA" }, { l: "Campuses", v: "4 (India + Dubai)" }] },
-  { priority: 4, name: "AIIMS New Delhi", loc: "New Delhi, Delhi", icon: "⚗️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/AIIMS_New_Delhi_Overview.jpg/1280px-AIIMS_New_Delhi_Overview.jpg", bg: "linear-gradient(135deg,#ECFDF5,#A7F3D0)", about: "AIIMS New Delhi is India's most revered medical institution and Asia's leading teaching hospital. Established in 1956 by an Act of Parliament, AIIMS is consistently ranked #1 in India's NIRF Medical Rankings. It is where India's most complex surgeries are performed, breakthrough medical research originates, and the finest doctors are trained.", campus: "The campus covers 80+ acres in Ansari Nagar, New Delhi, housing one of Asia's largest hospitals with 2,500+ beds, 42 clinical departments, and over 100 research labs. Includes modern hostels, a sports complex, and a dedicated trauma center — the first of its kind in India.", place: "AIIMS graduates are sought by top hospitals worldwide. MD/MS specialists command ₹15–30 LPA starting salaries in private hospitals. Senior positions range ₹50 lakh–₹2 crore annually. Many lead pioneering research institutes or establish nationally recognized practices.", courses: [{ n: "MBBS", d: "5.5 Yrs · Govt. Funded" }, { n: "B.Sc Nursing", d: "4 Yrs · ₹1.2L/yr" }, { n: "MD/MS Specializations", d: "3 Yrs · PG" }, { n: "DM/M.Ch Super-Specialty", d: "3 Yrs · Fellowship" }, { n: "Ph.D Biomedical Sciences", d: "3–5 Yrs · Stipend" }, { n: "B.Sc Medical Technology", d: "4 Yrs · ₹1L/yr" }], info: [{ l: "Established", v: "1956" }, { l: "NIRF Ranking", v: "#1 Medical" }, { l: "MBBS Fees", v: "Govt. Funded" }, { l: "Admission", v: "NEET-UG Top 50" }, { l: "Hospital Beds", v: "2,500+" }, { l: "Annual Patients", v: "35 Lakh+" }] },
-  { priority: 5, name: "Ashoka University", loc: "Sonipat, Haryana", icon: "🌐", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Ashoka_University_Campus.jpg/1280px-Ashoka_University_Campus.jpg", bg: "linear-gradient(135deg,#FFFBEB,#FDE68A)", about: "Ashoka University, founded in 2014, is India's fastest-growing liberal arts institution. Modeled on Ivy League education and South Asian intellectual tradition, Ashoka offers a unique multidisciplinary experience. With faculty from Oxford, Princeton, MIT, and Columbia, it brings world-class scholarship to India and offers need-blind admissions.", campus: "Ashoka's 25-acre fully residential campus in Sonipat features neo-modernist architecture, open-air amphitheaters, research centers, a maker's lab, recording studio, and a library with 1 lakh+ volumes. All students live on campus, creating a vibrant intellectual community.", place: "Graduates recruited by McKinsey, BCG, Goldman Sachs, Teach For India, and international grad schools (Oxford, Harvard). Average starting salary is ₹14 LPA, with many pursuing prestigious international programs.", courses: [{ n: "B.Sc Computer Science", d: "4 Yrs · ₹7.5L/yr" }, { n: "B.A. Economics", d: "4 Yrs · ₹7.5L/yr" }, { n: "B.A. PPE", d: "4 Yrs" }, { n: "Young India Fellowship", d: "1 Yr · PG" }, { n: "M.Sc Environmental Studies", d: "2 Yrs" }, { n: "Ph.D Programs", d: "4–5 Yrs · Stipend" }], info: [{ l: "Established", v: "2014" }, { l: "QS Asia Rank", v: "Top 200" }, { l: "Annual Fees", v: "₹7.5 Lakhs" }, { l: "Admission", v: "App + Interview" }, { l: "Int'l Faculty", v: "40%+" }, { l: "Need-Based Aid", v: "100% of need" }] },
-  { priority: 6, name: "NID Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "🎨", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/A_building_within_NID_campus%2C_Ahmedabad.jpg/1280px-A_building_within_NID_campus%2C_Ahmedabad.jpg", bg: "linear-gradient(135deg,#FFF0F8,#FBCFE8)", about: "NID Ahmedabad is India's premier design institution and one of the world's top 10 design schools. Established in 1961 following recommendations by Charles and Ray Eames, NID has shaped Indian design for six decades. Graduates lead design at Apple, Google, IDEO, Tata, and major global design studios.", campus: "NID's 15-acre campus in Ahmedabad is a living design experiment. Specialized studios for textile, product, graphic, digital, film, and animation — alongside cutting-edge fabrication labs, 3D printing, and a design museum with 50,000+ artifacts.", place: "Placement rate consistently exceeds 90%. Top recruiters: Tata Design Studio, Mahindra Advanced Design, Amazon Lab126, Philips Design, IDEO. Freelance designers typically earn ₹20–50 LPA within five years of graduation.", courses: [{ n: "B.Des Product Design", d: "4 Yrs · ₹2.5L/yr" }, { n: "B.Des Communication Design", d: "4 Yrs · ₹2.5L/yr" }, { n: "B.Des Textile Design", d: "4 Yrs · ₹2.5L/yr" }, { n: "M.Des Interaction Design", d: "2.5 Yrs · ₹3L/yr" }, { n: "M.Des Transportation Design", d: "2.5 Yrs · ₹3L/yr" }, { n: "Ph.D Design Research", d: "3–5 Yrs" }], info: [{ l: "Established", v: "1961" }, { l: "Global Rank", v: "Top 10 Design" }, { l: "Annual Fees", v: "₹2.5 Lakhs" }, { l: "Admission", v: "NID DAT + Studio" }, { l: "Acceptance Rate", v: "~3%" }, { l: "Industry Partners", v: "200+" }] }
+  { priority: 2, name: "IIT Delhi", loc: "New Delhi, Delhi", icon: "🏛️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/IIT_Delhi_entrance_gate.jpg/1280px-IIT_Delhi_entrance_gate.jpg", bg: "linear-gradient(135deg,#EEF2FF,#C7D2FE)", about: "IIT Delhi...", campus: "...", place: "...", courses: [{ n: "B.Tech Computer Science", d: "4 Yrs · ₹8.5L/yr" }], info: [{ l: "Established", v: "1961" }] },
+  { priority: 1, name: "IIM Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "💼", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/IIM_Ahmedabad_New_Campus.jpg/1280px-IIM_Ahmedabad_New_Campus.jpg", bg: "linear-gradient(135deg,#FDF4FF,#E9D5FF)", about: "IIM-A...", campus: "...", place: "...", courses: [{ n: "MBA", d: "2 Yrs" }], info: [{ l: "Established", v: "1961" }] },
+  { priority: 3, name: "BITS Pilani", loc: "Pilani, Rajasthan", icon: "🔬", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BITS_Pilani.jpg/1280px-BITS_Pilani.jpg", bg: "linear-gradient(135deg,#EFF6FF,#BFDBFE)", about: "BITS...", campus: "...", place: "...", courses: [{ n: "B.E. CS", d: "4 Yrs" }], info: [{ l: "Established", v: "1964" }] },
+  { priority: 4, name: "AIIMS New Delhi", loc: "New Delhi, Delhi", icon: "⚗️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/AIIMS_New_Delhi_Overview.jpg/1280px-AIIMS_New_Delhi_Overview.jpg", bg: "linear-gradient(135deg,#ECFDF5,#A7F3D0)", about: "AIIMS...", campus: "...", place: "...", courses: [{ n: "MBBS", d: "5.5 Yrs" }], info: [{ l: "Established", v: "1956" }] },
+  { priority: 5, name: "Ashoka University", loc: "Sonipat, Haryana", icon: "🌐", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Ashoka_University_Campus.jpg/1280px-Ashoka_University_Campus.jpg", bg: "linear-gradient(135deg,#FFFBEB,#FDE68A)", about: "Ashoka...", campus: "...", place: "...", courses: [{ n: "B.A. Economics", d: "4 Yrs" }], info: [{ l: "Established", v: "2014" }] },
+  { priority: 6, name: "NID Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "🎨", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/A_building_within_NID_campus%2C_Ahmedabad.jpg/1280px-A_building_within_NID_campus%2C_Ahmedabad.jpg", bg: "linear-gradient(135deg,#FFF0F8,#FBCFE8)", about: "NID...", campus: "...", place: "...", courses: [{ n: "B.Des", d: "4 Yrs" }], info: [{ l: "Established", v: "1961" }] },
+  { priority: 7, name: "Acharya Bangalore B-School", loc: "Bangalore, Karnataka", icon: "🏫", image: "https://abbs.edu.in/wp-content/uploads/2023/11/abbs-campus.jpg", bg: "linear-gradient(135deg,#FFF0F8,#FBCFE8)", about: "One of the top business schools in Bangalore.", campus: "Modern campus.", place: "Top recruiters: IBM, Amazon.", courses: [{ n: "MBA", d: "2 Yrs" }, { n: "B.Sc Nursing", d: "4 Yrs" }], info: [{ l: "Established", v: "2008" }, { l: "Location", v: "Bangalore" }] },
+  { priority: 8, name: "JSS Science & Tech Univ", loc: "Mysore, Karnataka", icon: "🎓", image: "https://jssstuniv.in/wp-content/uploads/2021/11/IMG_20211119_161556-scaled.jpg", bg: "linear-gradient(135deg,#F0F9FF,#BAE6FD)", about: "SJCE Mysore, prestigious engineering college.", campus: "100-acre campus.", place: "Strong placements.", courses: [{ n: "B.E. Computer Science", d: "4 Yrs" }, { n: "B.E. Mechanical", d: "4 Yrs" }], info: [{ l: "Established", v: "1963" }, { l: "Location", v: "Mysore" }] }
 ];
 
 let collegesData = [];
@@ -535,16 +537,23 @@ async function loadColleges() {
 function applyCollegeSearch() {
   renderCollegesSection();
 }
-window.applyCollegeSearch = applyCollegeSearch;
-
 function toggleLocationDropdown(e) {
   if (e) e.stopPropagation();
-  const dropdown = document.getElementById('locationDropdown');
-  const arrow = document.querySelector('.search-container .dropdown-arrow');
+  const trigger = e.currentTarget;
+  const dropdown = trigger.querySelector('.custom-dropdown');
+  const arrow = trigger.querySelector('.dropdown-arrow');
+  
+  // Close others first if needed (optional but better UX)
+  // closeAllDropdowns(); 
+
   if (dropdown) dropdown.classList.toggle('active');
   if (arrow) arrow.classList.toggle('active');
+  
+  // Toggle active class on the trigger itself for CSS targeting (arrow rotation)
+  if (trigger) trigger.classList.toggle('active');
 }
 window.toggleLocationDropdown = toggleLocationDropdown;
+window.applyCollegeSearch = applyCollegeSearch;
 
 function selectLocation(val, txt, e) {
   if (e) e.stopPropagation();
@@ -647,41 +656,78 @@ function renderCollegesSection() {
 }
 
 // ===== SPA ROUTING =====
-function openCollege(idx) {
-  const c = currentDisplayList[idx];
+function openCollege(idx, specificList) {
+  const listToUse = specificList || currentDisplayList;
+  const c = listToUse[idx];
   if (!c) return;
-  document.getElementById('d-nav-name').textContent = c.name;
+  
+  // Update detail view contents (same logic as before)
+  const dNavName = document.getElementById('d-nav-name');
+  if (dNavName) dNavName.textContent = c.name;
+  
   const dBg = document.getElementById('d-bg');
   const dImg = document.getElementById('d-college-image');
-  dBg.style.background = c.bg || '#f0f0f0';
+  if (dBg) dBg.style.background = c.bg || '#f0f0f0';
+  
   if (c.image && dImg) {
     dImg.src = c.image; dImg.alt = c.name || '';
-    dImg.style.display = ''; dBg.style.display = 'none';
+    dImg.style.display = ''; 
+    if (dBg) dBg.style.display = 'none';
   } else {
     if (dImg) dImg.style.display = 'none';
-    dBg.style.display = ''; dBg.textContent = c.icon || '🏫'; dBg.style.fontSize = '6rem';
+    if (dBg) {
+      dBg.style.display = ''; 
+      dBg.textContent = c.icon || '🏫'; 
+      dBg.style.fontSize = '6rem';
+    }
   }
-  document.getElementById('d-name').textContent = c.name;
-  document.getElementById('d-loc').textContent = '📍 ' + (c.loc || '');
-  document.getElementById('d-about').textContent = c.about || '';
-  document.getElementById('d-campus').textContent = c.campus || '';
-  document.getElementById('d-place').textContent = c.place || '';
+  
+  const dName = document.getElementById('d-name');
+  if (dName) dName.textContent = c.name;
+  
+  const dLoc = document.getElementById('d-loc');
+  if (dLoc) dLoc.textContent = '📍 ' + (c.loc || '');
+  
+  const dAbout = document.getElementById('d-about');
+  if (dAbout) dAbout.textContent = c.about || '';
+  
+  const dCampus = document.getElementById('d-campus');
+  if (dCampus) dCampus.textContent = c.campus || '';
+  
+  const dPlace = document.getElementById('d-place');
+  if (dPlace) dPlace.textContent = c.place || '';
+  
+  const dCourses = document.getElementById('d-courses');
   const courses = Array.isArray(c.courses) ? c.courses : [];
-  document.getElementById('d-courses').innerHTML = courses.map(cr =>
-    `<div class="crs-item"><strong>${escapeHtml(cr.n)}</strong><span>${escapeHtml(cr.d)}</span></div>`
-  ).join('');
+  if (dCourses) {
+    dCourses.innerHTML = courses.map(cr =>
+      `<div class="crs-item"><strong>${escapeHtml(cr.n)}</strong><span>${escapeHtml(cr.d)}</span></div>`
+    ).join('');
+  }
+  
+  const dInfo = document.getElementById('d-info');
   const info = Array.isArray(c.info) ? c.info : [];
-  document.getElementById('d-info').innerHTML = info.map(i =>
-    `<div class="dic"><div class="dic-l">${escapeHtml(i.l)}</div><div class="dic-v">${escapeHtml(i.v)}</div></div>`
-  ).join('');
-  // DON'T hide home-page — just activate overlay
+  if (dInfo) {
+    dInfo.innerHTML = info.map(i =>
+      `<div class="dic"><div class="dic-l">${escapeHtml(i.l)}</div><div class="dic-v">${escapeHtml(i.v)}</div></div>`
+    ).join('');
+  }
+  
   document.getElementById('det-page').classList.add('active');
-  // Hide the search/filter bar while viewing a college detail
   const sc = document.querySelector('.search-container');
   if (sc) sc.style.display = 'none';
   window.scrollTo(0, 0);
 }
 window.openCollege = openCollege;
+
+// New: Robust lookup by name for cards in any context
+function openCollegeByName(name) {
+  const idx = collegesData.findIndex(c => c.name === name);
+  if (idx !== -1) {
+    openCollege(idx, collegesData);
+  }
+}
+window.openCollegeByName = openCollegeByName;
 
 function closeDetail() {
   document.getElementById('det-page').classList.remove('active');
@@ -817,6 +863,11 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
+}
+
+function escapeQuote(str) {
+  if (str == null) return "";
+  return str.replace(/'/g, "\\'");
 }
 
 function switchAdminTab(tab) {
@@ -1352,7 +1403,7 @@ function renderCourses() {
     }).join("");
 
     return `
-        <div class="crs-card">
+        <div class="crs-card" onclick="openCollegeByName('${escapeQuote(college.name)}')">
           ${imgHtml}
           <div class="crs-card-body">
             <div class="crs-card-name" style="font-size:1.05rem;">${escapeHtml(college.name)}</div>
@@ -1480,51 +1531,48 @@ document.getElementById("applyModal").addEventListener("click", function (e) {
   if (e.target === this) closeApplyModal();
 });
 
-function submitApplication() {
+async function submitApplication() {
   const name = document.getElementById("applyName").value.trim();
   const phone = document.getElementById("applyPhone").value.trim();
   const email = document.getElementById("applyEmail").value.trim();
   const errEl = document.getElementById("applyError");
 
-  if (!name || !phone || !email) {
-    errEl.textContent = "Please fill in Name, Phone and Email.";
+  if (!name || !phone) {
+    errEl.textContent = "Please fill in Your Name and Phone Number.";
     errEl.style.display = "";
     return;
   }
+
+  const getV = (id) => (document.getElementById(id) && document.getElementById(id).value.trim()) || "";
+
+  const applicationData = {
+    name,
+    phone,
+    email,
+    district: getV("applyDistrict"),
+    tenth: getV("applyTenth"),
+    twelfth: getV("applyTwelfth"),
+    collegeId: currentApplyData.collegeId || "",
+    collegeName: currentApplyData.collegeName || "",
+    courseName: currentApplyData.courseName || "",
+    status: "pending",
+    appliedAt: new Date().toISOString(),
+    userId: auth.currentUser?.uid || "guest"
+  };
 
   const btn = document.getElementById("applySubmitBtn");
   btn.textContent = "Submitting…";
   btn.disabled = true;
   errEl.style.display = "none";
 
-  const applicationData = {
-    name,
-    phone,
-    email,
-    guardian: document.getElementById("applyGuardian") ? document.getElementById("applyGuardian").value.trim() : "",
-    district: document.getElementById("applyDistrict").value.trim(),
-    place: document.getElementById("applyPlace").value.trim(),
-    tenth: document.getElementById("applyTenth").value.trim(),
-    twelfth: document.getElementById("applyTwelfth").value.trim(),
-    entrance: document.getElementById("applyEntrance").value.trim(),
-    message: document.getElementById("applyMessage").value.trim(),
-    collegeName: currentApplyData.collegeName,
-    courseName: currentApplyData.courseName,
-    collegeId: currentApplyData.collegeId,
-    status: "pending",
-    appliedAt: new Date().toISOString(),
-    userId: auth.currentUser?.uid || "guest"
-  };
-
   try {
-    addDoc(collection(db, "applications"), applicationData); // No await needed for UI feedback if we assume success
+    await addDoc(collection(db, "applications"), applicationData);
 
     // Clear form
-    ["applyName", "applyPhone", "applyEmail", "applyGuardian", "applyDistrict", "applyPlace",
-      "applyTenth", "applyTwelfth", "applyEntrance", "applyMessage"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = "";
-      });
+    ["applyName", "applyPhone", "applyEmail", "applyDistrict", "applyTenth", "applyTwelfth"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
 
     closeApplyModal();
     const successModal = document.getElementById("applySuccessModal");
