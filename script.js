@@ -48,8 +48,8 @@ window.openPhoneModal = openPhoneModal;
 window.closePhoneModal = closePhoneModal;
 window.openLogin = openLogin;
 window.openSignUp = openSignUp;
-window.openHome = openHome;
-window.showHome = openHome;
+window.openHome = showHome;
+window.showHome = showHome;
 window.showCompareView = showCompareView;
 window.updateComparison = updateComparison;
 window.generateAIComparison = generateAIComparison;
@@ -635,7 +635,7 @@ function showAllCollegesView() {
   if (viewAllBtn) viewAllBtn.style.display = "none";
 
   const hideIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection",
-    "collageDetailsText", "collageTopDetailsText", "courses-section", "aboutSection", "testimonialsSection", "compare-section"];
+    "collageDetailsText", "collageTopDetailsText", "courses-section", "aboutSection", "testimonialsSection", "compare-section", "crsResultHeader"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
   const collSec = document.getElementById("colleges");
@@ -659,7 +659,7 @@ window.showAllCollegesView = showAllCollegesView;
 function showCompareView() {
   closeAdminPanel();
   const hideIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", 
-    "colleges", "courses-section", "aboutSection", "testimonialsSection"];
+    "colleges", "courses-section", "aboutSection", "testimonialsSection", "crsResultHeader"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
   const compSec = document.getElementById("compare-section");
@@ -1734,17 +1734,18 @@ window.filterBySpecificCourse = filterBySpecificCourse;
 window.selectCourseCategory = selectCourseCategory;
 
 function showHome() {
-  const ids = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
-  ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ""; });
-  const colleges = document.getElementById("colleges");
-  if (colleges) colleges.style.display = "none";
-  const cs = document.getElementById("courses-section");
-  if (cs) cs.style.display = "none";
-  const header = document.getElementById("crsResultHeader");
-  if (header) header.style.display = "none";
+  const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
+  showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ""; });
+  
+  const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
+  hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
+  
   activeCourseCategory = null;
   const backBtn = document.getElementById("courseCategoryBackBtn");
   if (backBtn) backBtn.remove();
+  
+  if (typeof syncNav === 'function') syncNav("Home");
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.showHome = showHome;
 
