@@ -486,35 +486,34 @@ function getSortedColleges() {
 }
 
 function getFilteredColleges() {
-  const list = [...collegesData];
-  const nameQ = (document.getElementById("collegeSearchInput")?.value || "").trim().toLowerCase();
-  const locQ = (document.getElementById("locationSearchInput")?.value || "").trim().toLowerCase();
+  const nameQ = (document.getElementById('collegeSearchInput')?.value || "").toLowerCase().trim();
+  const locQ = (document.getElementById('locationSearchInput')?.value || "").toLowerCase().trim();
 
-  if (!nameQ && !locQ) return list;
-
-  return list.filter((c) => {
-    let matchesName = true;
+  return collegesData.filter((c) => {
     let matchesLoc = true;
+    let matchesName = true;
 
-    if (nameQ) {
-      const nameMatch = (c.name || "").toLowerCase().includes(nameQ);
-      const aboutMatch = (c.about || "").toLowerCase().includes(nameQ);
-      const coursesMatch = (c.courses || []).some(cr => (cr.n || "").toLowerCase().includes(nameQ));
-      matchesName = nameMatch || aboutMatch || coursesMatch;
-    }
-
+    // 1. Location Matching
     if (locQ) {
       const lowerLoc = (c.loc || "").toLowerCase();
       let synonyms = [locQ];
       if (locQ === "bangalore") synonyms.push("bengaluru");
       if (locQ === "bengaluru") synonyms.push("bangalore");
-      if (locQ === "mysore") synonyms.push("mysuru");
-      if (locQ === "mysuru") synonyms.push("mysore");
-
       matchesLoc = synonyms.some(s => lowerLoc.includes(s));
     }
 
-    return matchesName && matchesLoc;
+    // 2. Simple Matching (Name, About, Courses, Fees)
+    if (nameQ) {
+      const nameMatch = (c.name || "").toLowerCase().includes(nameQ);
+      const aboutMatch = (c.about || "").toLowerCase().includes(nameQ);
+      const coursesMatch = (c.courses || []).some(cr => (cr.n || "").toLowerCase().includes(nameQ));
+      const infoStr = JSON.stringify(c.info || "").toLowerCase();
+      const infoMatch = infoStr.includes(nameQ);
+
+      matchesName = nameMatch || aboutMatch || coursesMatch || infoMatch;
+    }
+
+    return matchesLoc && matchesName;
   });
 }
 
@@ -674,7 +673,7 @@ function updateComparison() {
   }
 
   // Clear previous detailed cards (as per user request: only AI comparison needed)
-  result.innerHTML = "";
+  // result.innerHTML = "";
 
   // Show AI button
   const aiBtn = document.getElementById("aiCompareBtn");
@@ -797,6 +796,11 @@ function generateAIComparison() {
                           <td style="padding:1.2rem; font-weight:800; color:var(--pink); background:var(--pink-light);">Placements</td>
                           <td style="padding:1.2rem; text-align:center; font-weight:700; color:#059669;">${c1.place || '90%+ Placement Track Record'}</td>
                           <td style="padding:1.2rem; text-align:center; font-weight:700; color:#059669;">${c2.place || '90%+ Placement Track Record'}</td>
+                      </tr>
+                      <tr>
+                          <td style="padding:1.2rem; font-weight:800; color:var(--pink); background:var(--pink-light);">Course Fees</td>
+                          <td style="padding:1.2rem; text-align:center; font-weight:700; color:var(--dark);">${getInf(c1, 'Fee') || getInf(c1, 'Fees') || 'Contact Institution'}</td>
+                          <td style="padding:1.2rem; text-align:center; font-weight:700; color:var(--dark);">${getInf(c2, 'Fee') || getInf(c2, 'Fees') || 'Contact Institution'}</td>
                       </tr>
                       <tr>
                           <td style="padding:1.2rem; font-weight:800; color:var(--pink); background:var(--pink-light);">About Environment</td>
@@ -1156,7 +1160,10 @@ async function loadAdminColleges() {
       tr.innerHTML = `
           <td>${escapeHtml(c.name || "—")}</td>
           <td>${escapeHtml(c.loc || "—")}</td>
-          <td><button type="button" class="btn-nav btn-login" onclick="openCollegeEdit('${c.id}')">Edit</button></td>
+          <td style="display:flex; gap:0.5rem;">
+            <button type="button" class="btn-nav btn-login" onclick="openCollegeEdit('${c.id}')" style="padding: .2rem .5rem; font-size: .75rem;">Edit</button>
+            <button type="button" class="btn-nav btn-logout" onclick="deleteCollege('${c.id}')" style="padding: .2rem .5rem; font-size: .75rem;">Delete</button>
+          </td>
         `;
       tbody.appendChild(tr);
     });
@@ -1165,6 +1172,19 @@ async function loadAdminColleges() {
     if (msgEl) msgEl.textContent = "Error loading colleges.";
   }
 }
+
+window.deleteCollege = async function (collegeId) {
+  if (!confirm("Are you sure you want to delete this college? This action cannot be undone.")) return;
+  try {
+    await deleteDoc(doc(db, "colleges", collegeId));
+    await loadAdminColleges();
+    await loadColleges();
+    alert("College deleted successfully.");
+  } catch (err) {
+    console.error("Error deleting college:", err);
+    alert("Error deleting college. See console for details.");
+  }
+};
 
 async function loadAdminApplications() {
   const tbody = document.getElementById("adminApplicationsBody");

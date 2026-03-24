@@ -48,79 +48,72 @@
 
 <body class="mesh-bg">
     <div id="login-div"
-        style="display: flex; position:fixed; inset:0; z-index:9000; background:linear-gradient(145deg, rgba(255,242,245,0.95) 0%, rgba(255,228,236,0.95) 100%); align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(8px);">
-
-        <div class="login-card"
-            style="margin:auto; box-shadow:0 25px 45px -12px rgba(180, 40, 80, 0.25), 0 8px 18px rgba(0,0,0,0.05); border:1px solid rgba(255,255,255,0.6); font-family:'Inter', sans-serif;">
-            <div class="card-inner">
-
-                <!-- LOGO SECTION: dark pink themed emblem + portal name -->
-                <div class="logo-container"
-                    style="display:flex; flex-direction:column; align-items:center; gap:0.6rem; margin-top:1.5rem; margin-bottom:1.5rem; width:100%;">
-                    <div style="height:75px; width:100%; display:flex; justify-content:center;">
-                        <img src="./kerala-logo.png"
-                            style="display:block; height:100%; width:auto; max-width:100%; object-fit:contain; margin:0;"
-                            alt="Kerala Vidya Portal Logo">
-                    </div>
-                    <div class="logo-text" style="display:flex; flex-direction:column; align-items:center; width:100%;">
-                        <h1
-                            style="font-family:'Plus Jakarta Sans',sans-serif; font-size:clamp(1.2rem, 6.5vw, 1.8rem); font-weight:800; letter-spacing:-0.03em; line-height:1.2; background:linear-gradient(135deg,#c7285a,#F472B6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin:0; white-space:nowrap; text-align:center;">
-                            KERALA VIDYA PORTAL</h1>
-                        <div class="logo-tagline" style="margin:0; margin-top:0.3rem;">unified · honest · seamless</div>
-                    </div>
+        style="display: flex; position:fixed; inset:0; z-index:9000; background:linear-gradient(135deg, rgba(255,242,245,0.98) 0%, rgba(255,228,236,0.98) 100%); backdrop-filter:blur(10px); color:#2c2025; font-family:'Plus Jakarta Sans', sans-serif; align-items:center; justify-content:center; overflow-y:auto; padding:1rem;">
+        
+        <div style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:440px; margin:auto;">
+            
+            <!-- Compact Header Section -->
+            <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:1.2rem; width:100%;">
+                <img src="./kerala-logo.png"
+                    style="height:65px; width:auto; filter: drop-shadow(0 4px 12px rgba(199,40,90,0.2)); margin-bottom:0.6rem;"
+                    alt="Kerala Vidya Portal Logo">
+                
+                <h1 style="font-size:1.6rem; font-weight:800; letter-spacing:-0.03em; color:#c7285a; margin:0 0 0.5rem 0;">
+                    KERALA VIDYA PORTAL
+                </h1>
+                
+                <div style="background:rgba(199,40,90,0.06); border:1px solid rgba(199, 40, 90, 0.15); color:#c7285a; font-size:0.75rem; font-weight:700; padding:0.4rem 1rem; border-radius:50px; display:inline-block;">
+                    India's First Zero Charge Admission Website
                 </div>
+            </div>
 
-                <!-- admissions motto (honest & united) -->
-                <div class="motto">
-                    <i class="fas fa-feather-alt" style="font-size: 0.7rem; margin-right: 6px;"></i> Admissions made
-                    simple, honest, and united
-                </div>
+            <!-- Highly Compact Login Form -->
+            <div style="width:100%;">
+                <h3 style="font-size:1.4rem; font-weight:800; color:#1a1523; margin-bottom:0.2rem; text-align:center;">Welcome Back 👋</h3>
+                <p style="color:#8e7381; font-size:0.95rem; font-weight:500; margin-bottom:1.2rem; text-align:center;">Sign in to continue</p>
 
-                <!-- LOGIN FORM with dark pink accents -->
                 <form id="loginForm" onsubmit="doLogin(event)">
-                    <div class="input-group">
-                        <label for="loginEmail"><i class="far fa-envelope" style="margin-right: 6px;"></i> Email
-                            Address</label>
+                    <div class="input-group" style="margin-bottom: 0.9rem;">
+                        <label for="loginEmail" style="display:block; font-size:0.85rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;"><i class="far fa-envelope"></i> Email Address</label>
                         <input type="email" id="loginEmail" class="input-field" placeholder="email@gmail.com"
-                            autocomplete="email" required>
+                            autocomplete="email" required style="width:100%; padding:0.8rem 1rem; border:1.2px solid #f3d2df; border-radius:10px; background:#fff; font-size:0.95rem; outline:none; color:#2c2025; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02); transition:border-color 0.2s;">
                     </div>
-                    <div class="input-group">
-                        <label for="loginPassword"><i class="fas fa-lock" style="margin-right: 6px;"></i>
-                            Password</label>
+                    
+                    <div class="input-group" style="margin-bottom: 0.9rem;">
+                        <label for="loginPassword" style="display:block; font-size:0.85rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;"><i class="fas fa-lock"></i> Password</label>
                         <input type="password" id="loginPassword" class="input-field" placeholder="••••••••"
-                            autocomplete="current-password" required>
+                            autocomplete="current-password" required style="width:100%; padding:0.8rem 1rem; border:1.2px solid #f3d2df; border-radius:10px; background:#fff; font-size:0.95rem; outline:none; color:#2c2025; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02); transition:border-color 0.2s;">
                     </div>
 
-                    <div class="remember-row">
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox" checked> <span>Remember me</span>
+                    <div class="remember-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; font-size:0.85rem;">
+                        <label class="checkbox-wrapper" style="display:flex; align-items:center; gap:0.5rem; color:#8e4462; font-weight:600; cursor:pointer;">
+                            <input type="checkbox" checked style="accent-color:#d93b6e; width:1.1rem; height:1.1rem; cursor:pointer;"> <span>Remember me</span>
                         </label>
-                        <a href="#" class="forget-link">Forget password?</a>
+                        <a href="javascript:void(0)" style="color:#c63b6e; text-decoration:none; font-weight:700; border-bottom:1.5px solid #ffb3c6;">Forget password?</a>
                     </div>
 
-                    <button type="submit" class="signin-btn" id="loginSubmitBtn">
-                        <i class="fas fa-arrow-right-to-bracket"></i> Sign In
+                    <button type="submit" class="signin-btn" id="loginSubmitBtn" style="width:100%; background:linear-gradient(135deg, #c7285a, #b0174c); border:none; padding:0.9rem; font-size:1rem; font-weight:800; color:white; border-radius:10px; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:0.5rem; box-shadow:0 6px 15px rgba(192, 35, 80, 0.25); transition:transform 0.2s, box-shadow 0.2s;">
+                        <i class="fas fa-arrow-right-to-bracket"></i> Sign In Free
                     </button>
                 </form>
 
-                <!-- OR separator -->
-                <div class="or-divider">
+                <div class="or-divider" style="display:flex; align-items:center; gap:0.8rem; color:#c57f9a; font-size:0.85rem; font-weight:600; margin:1.2rem 0;">
+                    <span style="flex:1; height:1px; background:#f0c8d6;"></span>
                     <span>or continue with</span>
+                    <span style="flex:1; height:1px; background:#f0c8d6;"></span>
                 </div>
 
-                <!-- ALTERNATIVE AUTHENTICATION: phone & google -->
-                <div class="alternative-actions">
-                    <button type="button" id="phoneLoginBtn" onclick="openPhoneModal()" class="social-btn">
-                        <i class="fas fa-phone-alt"></i> Continue with Phone
+                <div class="alternative-actions" style="display:flex; flex-direction:column; gap:0.6rem;">
+                    <button type="button" id="phoneLoginBtn" onclick="openPhoneModal()" style="width:100%; background:#fff; border:1.2px solid #e7bacb; padding:0.8rem; border-radius:10px; font-size:0.95rem; font-weight:700; color:#b13f64; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:0.6rem; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:background 0.2s;">
+                        <i class="fas fa-phone-alt" style="font-size:1.1rem; color:#c75b81;"></i> Continue with Phone
                     </button>
-                    <button type="button" id="googleLogin" onclick="doGoogleLogin()" class="social-btn">
-                        <i class="fab fa-google"></i> Continue with Google
+                    <button type="button" id="googleLogin" onclick="doGoogleLogin()" style="width:100%; background:#fff; border:1.2px solid #e7bacb; padding:0.8rem; border-radius:10px; font-size:0.95rem; font-weight:700; color:#b13f64; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:0.6rem; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:background 0.2s;">
+                        <i class="fab fa-google" style="font-size:1.1rem; color:#c75b81;"></i> Continue with Google
                     </button>
                 </div>
 
-                <!-- sign up call to action -->
-                <div class="signup-footer">
-                    Don't have an account? <a href="#" id="signupLink" onclick="openSignUp()">Sign up for free</a>
+                <div class="signup-footer" style="text-align:center; margin-top:1.5rem; font-size:0.9rem; color:#6b4d5a; font-weight:500;">
+                    Don't have an account? <a href="javascript:void(0)" id="signupLink" onclick="openSignUp()" style="color:#d93b6e; font-weight:800; text-decoration:none;">Sign up for free!</a>
                 </div>
             </div>
         </div>
@@ -262,9 +255,9 @@
                                 Vidya Portal</span>
                         </a>
                         <nav class="nav-desktop">
-                            <a href="#" onclick="showHome()" class="active">Home</a>
-                            <a href="#" onclick="showAllCollegesView()">Colleges & Courses</a>
-                            <a href="#" onclick="showCompareView()">AI Comparison</a>
+                            <a href="javascript:void(0)" onclick="showHome()" class="active">Home</a>
+                            <a href="javascript:void(0)" onclick="showAllCollegesView()">Colleges & Courses</a>
+                            <a href="javascript:void(0)" onclick="showCompareView()">AI Comparison</a>
                             <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--gray);">
                                 <div class="nav-cta-row">
                                     <div class="nav-auth-buttons"
@@ -290,12 +283,12 @@
                     </div>
                     <div class="mob-menu" id="mobMenu">
                         <a onclick="showHome(); toggleMenu();" class="active">Home</a>
-                        <a href="#" onclick="showAllCollegesView(); toggleMenu();">Colleges & Courses</a>
-                        <a href="#" onclick="showCompareView(); toggleMenu();">AI Comparison</a>
-                        <a href="#">Find by City</a>
-                        <a href="#">About</a>
-                        <a href="#">Blogs</a>
-                        <a href="#">Contact us</a>
+                        <a href="javascript:void(0)" onclick="showAllCollegesView(); toggleMenu();">Colleges & Courses</a>
+                        <a href="javascript:void(0)" onclick="showCompareView(); toggleMenu();">AI Comparison</a>
+                        <a href="javascript:void(0)">Find by City</a>
+                        <a href="javascript:void(0)">About</a>
+                        <a href="javascript:void(0)">Blogs</a>
+                        <a href="javascript:void(0)">Contact us</a>
                         <div class="nav-auth-buttons mob-auth"
                             style="display: flex; flex-direction: row; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0;">
                             <button type="button" class="btn-nav btn-login" onclick="openLogin(); toggleMenu();">Log
