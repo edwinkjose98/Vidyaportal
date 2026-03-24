@@ -43,6 +43,38 @@
                 background-position: 100% 100%;
             }
         }
+
+        /* --- Mobile Overrides (Max Width 768px) --- */
+        @media (max-width: 768px) {
+            /* 1. Remove header text, only show logo */
+            .nav-inner .logo-text {
+                display: none !important;
+            }
+            
+            /* 1 & 2. Adjust logo size and keep hamburger menu on right side */
+            .nav-inner {
+                justify-content: space-between !important;
+                width: 100% !important;
+            }
+            .nav-inner .brand img {
+                height: 48px !important;
+                width: 48px !important;
+                min-width: 48px !important;
+            }
+
+            /* 3. Once clicked open this options: home, college, ai, logout (Hide Find by City, About, Blogs, Contact us) */
+            .mob-menu > a:nth-of-type(4),
+            .mob-menu > a:nth-of-type(5),
+            .mob-menu > a:nth-of-type(6),
+            .mob-menu > a:nth-of-type(7) {
+                display: none !important;
+            }
+
+            /* 4. Remove Admin from Mobile */
+            .mob-menu .nav-admin-link {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
