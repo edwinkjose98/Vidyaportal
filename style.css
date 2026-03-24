@@ -4513,46 +4513,35 @@ body:has(#signup-div[style*="display: flex"]) {
 }
 
 
-/* Native Mobile Scrollable Navigation requested by User */
-@media (max-width: 767px) {
+/* User-requested Mobile Navigation Layout */
+@media (max-width: 768px) {
     .nav-inner {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.8rem;
-        padding-bottom: 0.2rem;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 0.5rem 1rem !important;
     }
-    .nav-desktop {
+    .nav-inner .brand {
         display: flex !important;
-        width: 100%;
-        overflow-x: auto;
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        padding-bottom: 4px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        border-radius: 12px;
-        border: none;
-        box-shadow: none;
-        background: transparent;
     }
-    .nav-desktop::-webkit-scrollbar {
-        display: none;
+    .nav-inner .brand img {
+        height: 50px !important;
+        width: 50px !important;
+        min-width: 50px !important;
     }
-    .nav-desktop a {
-        white-space: nowrap;
-        font-size: 0.85rem;
-        padding: 6px 14px;
-    }
-    .hamburger {
+    /* Hide the scrollable native nav */
+    .nav-desktop, .nav-cta-row {
         display: none !important;
     }
-    .nav-cta-row {
+    /* Reveal the hamburger menu trigger */
+    .hamburger {
         display: flex !important;
     }
 }
 
 /* Hide Desktop Welcome Note on Mobile */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
     .nav-logout-wrap.desk-auth {
         display: none !important;
     }
