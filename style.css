@@ -1322,8 +1322,7 @@ video {
 }
 
 /* .nav-desktop{display:none;align-items:center;gap:2rem;} */
-.nav-desktop {
-  display: flex;
+.nav-desktop { display: none;
   gap: 0.8rem;
   align-items: center;
   background: rgba(255, 255, 255, 0.4);
@@ -4511,4 +4510,43 @@ body:has(#signup-div[style*="display: flex"]) {
 
 #login-div, #signup-div {
     overscroll-behavior: contain;
+}
+
+
+/* Native Mobile Scrollable Navigation requested by User */
+@media (max-width: 767px) {
+    .nav-inner {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+        padding-bottom: 0.2rem;
+    }
+    .nav-desktop {
+        display: flex !important;
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        border-radius: 12px;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+    .nav-desktop::-webkit-scrollbar {
+        display: none;
+    }
+    .nav-desktop a {
+        white-space: nowrap;
+        font-size: 0.85rem;
+        padding: 6px 14px;
+    }
+    .hamburger {
+        display: none !important;
+    }
+    .nav-cta-row {
+        display: flex !important;
+    }
 }
