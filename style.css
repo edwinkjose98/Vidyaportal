@@ -4550,3 +4550,36 @@ body:has(#signup-div[style*="display: flex"]) {
         display: flex !important;
     }
 }
+
+/* Hide Desktop Welcome Note on Mobile */
+@media (max-width: 767px) {
+    .nav-logout-wrap.desk-auth {
+        display: none !important;
+    }
+}
+
+/* Toast Popup Styles */
+.toast-popup {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    padding: 12px 24px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(233, 30, 140, 0.2);
+    border: 1px solid rgba(233, 30, 140, 0.1);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1a1523;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+    opacity: 0;
+}
+.toast-popup.show {
+    top: 40px;
+    opacity: 1;
+}

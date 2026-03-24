@@ -1,3 +1,16 @@
+window.showToast = function(msg) {
+    let t = document.getElementById("toast");
+    if (!t) {
+        t = document.createElement("div");
+        t.id = "toast";
+        t.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;z-index:10000;display:none;";
+        document.body.appendChild(t);
+    }
+    t.innerHTML = '<span style="color:#e91e63">✦</span> ' + msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   getAuth,
@@ -143,8 +156,13 @@ function updateAuthUI(loggedIn) {
   }
   const name = userData && (userData.displayName || userData.email) ? (userData.displayName || userData.email) : "";
   const email = userData && userData.email ? userData.email : "";
-  userNameEls.forEach((el) => { if (el) { el.textContent = name ? `Welcome, ${name}` : ""; el.style.display = name ? "" : "none"; } });
+  userNameEls.forEach((el) => { if (el) { el.textContent = name ? "Welcome, " + name : ""; el.style.display = name ? "" : "none"; } });
   adminLinks.forEach((el) => { if (el) el.style.display = isAdminEmail(email) ? "" : "none"; });
+
+  // Mobile Toast logic inside updateAuthUI
+  if (loggedIn && name && window.innerWidth <= 767) {
+      if(window.showToast) window.showToast("Welcome, " + name);
+  }
 }
 
 function logout() {
@@ -430,9 +448,26 @@ window.addEventListener("DOMContentLoaded", () => {
   const sSubmit = document.getElementById("signupSubmit");
   if (sSubmit) {
     sSubmit.onclick = async () => {
-      const user = auth.currentUser;
-      if (!user) { alert("Please sign in with Google first."); openLogin(); return; }
+      let user = auth.currentUser;
       const getVal = (id) => (document.getElementById(id) && document.getElementById(id).value) || "";
+      const emailVal = getVal("signupEmail");
+      const passwordVal = getVal("signupPassword");
+      
+      if (!user) {
+        if (!emailVal || !passwordVal) {
+          alert("Please enter both email and password, or sign in with Google first.");
+          return;
+        }
+        try {
+          const { createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+          const result = await createUserWithEmailAndPassword(auth, emailVal, passwordVal);
+          user = result.user;
+        } catch (err) {
+          console.error("Auth creation error:", err);
+          alert("Sign up failed: " + (err.message || "Could not create account."));
+          return;
+        }
+      }
       const userData = {
         displayName: getVal("signupName") || user.displayName || "",
         email: getVal("signupEmail") || user.email || "",
@@ -2047,3 +2082,5 @@ window.addEventListener('DOMContentLoaded', () => {
 window.refreshAnimations = () => {
   initScrollReveal();
 };
+
+
