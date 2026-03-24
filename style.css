@@ -4502,3 +4502,13 @@ video {
   font-weight: 500;
 }
 
+
+/* Prevent background scrolling when auth modals are open */
+body:has(#login-div[style*="display: flex"]),
+body:has(#signup-div[style*="display: flex"]) {
+    overflow: hidden !important;
+}
+
+#login-div, #signup-div {
+    overscroll-behavior: contain;
+}
