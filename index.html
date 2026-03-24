@@ -75,6 +75,16 @@
                 display: none !important;
             }
         }
+
+        /* --- Desktop Overrides (Min Width 769px) --- */
+        @media (min-width: 769px) {
+            .mob-only-banner {
+                display: none !important;
+            }
+            #heroSection {
+                padding-top: 5.5rem !important;
+            }
+        }
     </style>
 </head>
 
@@ -254,6 +264,10 @@
         <div id="mainContent">
             <div id="home-page">
                 <div class="nav-wrap" id="nav">
+                    <!-- Added Zero Donation/Refund Guarantee fitting horizontally on one screen -->
+                    <div class="mob-only-banner" style="background: linear-gradient(90deg, #c7285a, #e91e8c); color: #fff; text-align: center; padding: 0.4rem 0.6rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.01em; line-height: 1.4; display: flex; justify-content: center; align-items: center; white-space: normal; width: 100%; box-sizing: border-box;">
+                        The only platform taking ₹0 Donations. We guarantee a 100% Fee Refund if you don't get a job, backed by Govt Approved Documentation.
+                    </div>
                     <div class="nav-inner">
                         <a class="brand" href="#" onclick="showHome(); return false;"
                             style="padding:0; gap:.5rem; display:flex; align-items:center;">
@@ -325,7 +339,7 @@
                 </div>
 
                 <!-- HERO -->
-                <section class="hero reveal active" id="heroSection" style="padding-top:5.5rem">
+                <section class="hero reveal active" id="heroSection" style="padding-top:7.0rem">
                     <!-- <video autoplay muted loop playsinline class="hero-video">
                     <source src="https://res.cloudinary.com/dxjdraawa/video/upload/v1753268236/videoplayback_kdxk91.mp4" type="video/mp4">
                 </video>

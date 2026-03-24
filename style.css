@@ -1292,7 +1292,7 @@ video {
   height: 36px;
   border-radius: 9px;
   border: 1.5px solid #E5E7EB;
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -1322,7 +1322,7 @@ video {
 }
 
 /* .nav-desktop{display:none;align-items:center;gap:2rem;} */
-.nav-desktop { display: none;
+.nav-desktop { display: flex;
   gap: 0.8rem;
   align-items: center;
   background: rgba(255, 255, 255, 0.4);
@@ -1359,7 +1359,7 @@ video {
 }
 
 .nav-cta-row {
-  display: none;
+  display: flex;
   align-items: center;
   gap: .8rem;
 }
@@ -4520,23 +4520,49 @@ body:has(#signup-div[style*="display: flex"]) {
         justify-content: space-between !important;
         align-items: center !important;
         width: 100% !important;
-        padding: 0.5rem 1rem !important;
+        padding: 0.5rem 1rem 0.3rem !important;
+        flex-wrap: wrap !important;
     }
     .nav-inner .brand {
         display: flex !important;
     }
     .nav-inner .brand img {
-        height: 50px !important;
-        width: 50px !important;
-        min-width: 50px !important;
+        height: 45px !important;
+        width: 45px !important;
+        min-width: 45px !important;
     }
-    /* Hide the scrollable native nav */
-    .nav-desktop, .nav-cta-row {
+    
+    /* REVEAL styling for tabs so they perfectly fit without scroll */
+    .nav-desktop {
+        display: flex !important;
+        width: 100% !important;
+        order: 3 !important;
+        margin-top: 0.5rem !important;
+        padding: 0 !important;
+        justify-content: space-between !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .nav-desktop a {
+        font-size: 0.72rem !important;
+        padding: 6px 8px !important;
+        white-space: nowrap !important;
+        flex: 1 !important;
+        text-align: center !important;
+    }
+    
+    /* Hide the wrapper for the authentication CTA buttons which sits inside nav-desktop */
+    .nav-desktop > div {
         display: none !important;
     }
+    
     /* Reveal the hamburger menu trigger */
     .hamburger {
         display: flex !important;
+        order: 2 !important;
+        height: 32px !important;
+        width: 32px !important;
     }
 }
 
