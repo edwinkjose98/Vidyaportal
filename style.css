@@ -3645,43 +3645,78 @@ video {
 
 @media (max-width: 768px) {
   .search-container {
-    flex-direction: column;
-    border-radius: 20px;
-    padding: 1rem;
-    gap: 1rem;
+    flex-direction: row !important;
+    border-radius: 100px !important;
+    padding: 0.3rem 0.5rem !important;
+    gap: 0 !important;
+    margin: 1rem auto !important;
+    align-items: center !important;
   }
 
   .search-box {
-    padding: 0;
-    width: 100%;
+    padding: 0 0.6rem !important;
+    width: auto !important;
+    flex: 1.5 !important;
+    min-width: 0 !important;
+  }
+
+  .search-box input {
+    font-size: 0.78rem !important;
+    padding: 0.65rem 0 !important;
+  }
+
+  .search-box i {
+    font-size: 0.85rem !important;
   }
 
   .search-box.loc-box {
-    border-left: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-    padding-top: 1rem;
+    flex: 1 !important;
+    border-left: 1px solid rgba(0, 0, 0, 0.06) !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+    padding: 0 0.6rem !important;
+    min-width: 0 !important;
   }
 
+  .selected-location {
+    font-size: 0.78rem !important;
+    max-width: 80px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .dropdown-arrow {
+    font-size: 0.7rem !important;
+  }
+
+  /* On mobile keep the dropdown absolutely positioned so it overlays */
   .custom-dropdown {
-    position: static;
-    transform: none;
-    box-shadow: none;
-    background: rgba(0, 0, 0, 0.03);
-    border: none;
-    margin-top: 0.5rem;
-    display: none;
-    opacity: 1;
-    visibility: visible;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    display: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 9999 !important;
+    background: #fff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+    border: 1px solid rgba(233,30,140,0.1) !important;
   }
 
   .custom-dropdown.active,
   .search-box.active .custom-dropdown {
-    display: block;
+    display: block !important;
   }
 
   .btn-search {
-    padding: 1rem;
-    width: 100%;
+    padding: 0.6rem 1rem !important;
+    width: auto !important;
+    font-size: 0.78rem !important;
+    flex-shrink: 0 !important;
   }
 }
 
@@ -4565,21 +4600,21 @@ body:has(#signup-div[style*="display: flex"]) {
         width: 32px !important;
     }
 
-    /* Push page sections below the taller 2-row mobile header */
+    /* Push page sections below the taller 3-row mobile header (banner + logo + tabs) */
     #colleges {
-        padding-top: 9rem !important;
+        padding-top: 13.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #compare-section {
-        padding-top: 9rem !important;
+        padding-top: 13.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #heroSection {
-        padding-top: 9rem !important;
+        padding-top: 13.5rem !important;
         padding-bottom: calc(3rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #courses-section {
-        padding-top: 9rem !important;
+        padding-top: 13.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
 

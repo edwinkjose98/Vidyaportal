@@ -351,7 +351,7 @@ function openHome() {
   const comp = document.getElementById("compare-section");
   if (comp) comp.style.display = "none";
 
-  if (typeof syncNav === "function") syncNav("Home");
+  if (typeof syncNav === "function") syncNav("home");
 }
 
 // doLogin handles email/password sign-in form submission
@@ -363,14 +363,24 @@ function doLogin(event) {
     alert("Please enter your email and password.");
     return;
   }
+  
+  const loginSubmitBtn = document.getElementById("loginSubmitBtn");
+  if (loginSubmitBtn) {
+    loginSubmitBtn.disabled = true;
+    loginSubmitBtn.textContent = "Verifying...";
+  }
+
   import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js").then(({ signInWithEmailAndPassword }) => {
     signInWithEmailAndPassword(auth, email, password)
       .then(async (result) => {
         const user = result.user;
         const userSnap = await getDoc(doc(db, "users", user.uid));
         if (!userSnap.exists()) {
-          alert("No account found. Please sign up first.");
+          alert("Account Auth exists but Profile is missing. Redirecting to complete registration...");
           openSignUp();
+          // Pre-fill email
+          const se = document.getElementById("signupEmail");
+          if (se) se.value = email;
         } else {
           saveUserToStorage(user);
           updateAuthUI(true);
@@ -379,7 +389,21 @@ function doLogin(event) {
       })
       .catch((err) => {
         console.error("Email login error:", err);
-        alert("Login failed: " + (err.message || "Please check your credentials."));
+        // Handle common auth errors
+        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+            alert("No account found for this email. Redirecting to Sign Up...");
+            openSignUp();
+            const se = document.getElementById("signupEmail");
+            if (se) se.value = email;
+        } else {
+            alert("Login failed: " + (err.message || "Please check your credentials."));
+        }
+      })
+      .finally(() => {
+        if (loginSubmitBtn) {
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.textContent = "Sign In Free";
+        }
       });
   });
 }
@@ -448,16 +472,46 @@ window.addEventListener("DOMContentLoaded", () => {
   const sSubmit = document.getElementById("signupSubmit");
   if (sSubmit) {
     sSubmit.onclick = async () => {
-      let user = auth.currentUser;
       const getVal = (id) => (document.getElementById(id) && document.getElementById(id).value) || "";
-      const emailVal = getVal("signupEmail");
-      const passwordVal = getVal("signupPassword");
+      const emailVal = getVal("signupEmail").trim();
+      const passwordVal = getVal("signupPassword").trim();
+      const nameVal = getVal("signupName").trim();
+      const phoneVal = getVal("signupPhone").trim().replace(/\s/g, "");
       
-      if (!user) {
-        if (!emailVal || !passwordVal) {
-          alert("Please enter both email and password, or sign in with Google first.");
+      // Strict Validation
+      if (!nameVal || !emailVal || !passwordVal || !phoneVal) {
+          alert("Please fill in all required fields.");
           return;
-        }
+      }
+      
+      // Better Phone Validation (Exactly 10 digits, no fake patterns)
+      if (phoneVal.length !== 10 || isNaN(phoneVal)) {
+          alert("Please enter a valid 10-digit mobile number.");
+          return;
+      }
+      if (phoneVal.startsWith("0")) {
+          alert("Mobile numbers cannot start with 0. Please enter a valid Indian mobile number.");
+          return;
+      }
+      // Check for repetitive sequences (e.g. 000..., 111..., 999...)
+      if (/^(\d)\1{9}$/.test(phoneVal)) {
+          alert("Repetitive digit patterns are not allowed. Please enter a genuine phone number.");
+          return;
+      }
+      // Check for obvious sequential patterns
+      if ("0123456789".includes(phoneVal) || "9876543210".includes(phoneVal)) {
+          alert("Sequential digit patterns are not allowed. Please enter a genuine phone number.");
+          return;
+      }
+
+      const btn = document.getElementById("signupSubmit");
+      if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Creating Account...";
+      }
+
+      let user = auth.currentUser;
+      if (!user) {
         try {
           const { createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
           const result = await createUserWithEmailAndPassword(auth, emailVal, passwordVal);
@@ -465,17 +519,16 @@ window.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
           console.error("Auth creation error:", err);
           alert("Sign up failed: " + (err.message || "Could not create account."));
+          if (btn) { btn.disabled = false; btn.textContent = "Create Account →"; }
           return;
         }
       }
+
       const userData = {
-        displayName: getVal("signupName") || user.displayName || "",
-        email: getVal("signupEmail") || user.email || "",
-        phone: getVal("signupPhone"),
-        parentName: getVal("signupParentName"),
-        parentPhone: getVal("signupParentPhone"),
+        displayName: nameVal || user.displayName || "",
+        email: emailVal || user.email || "",
+        phone: phoneVal,
         district: getVal("signupDistrict"),
-        place: getVal("signupPlace"),
         userType: getVal("signupUserType"),
         createdAt: new Date().toISOString()
       };
@@ -487,6 +540,8 @@ window.addEventListener("DOMContentLoaded", () => {
       } catch (err) {
         console.error("Sign up error:", err);
         alert("Could not save profile. Try again.");
+      } finally {
+          if (btn) { btn.disabled = false; btn.textContent = "Create Account →"; }
       }
     };
   }
@@ -647,14 +702,62 @@ function showAllCollegesView() {
     setTimeout(() => {
         collSec.style.opacity = "1";
         collSec.style.transform = "translateY(0)";
+        
+        // Focus the search input for better UX
+        const searchInput = document.getElementById('collegeSearchInput');
+        if (searchInput && window.innerWidth > 768) searchInput.focus();
     }, 10);
   }
 
-  syncNav("Colleges & Courses");
+  syncNav("colleges");
   renderCollegesSection();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 window.showAllCollegesView = showAllCollegesView;
+
+// Navigate to Colleges view pre-filtered by course category
+function showCollegesByCategory(category) {
+  const searchInput = document.getElementById('collegeSearchInput');
+  
+  if (!category) {
+     // If no category, just go to search and focus
+     showAllCollegesView();
+     setTimeout(() => {
+        if (searchInput) {
+            searchInput.value = "";
+            searchInput.placeholder = "🔍 Search for your preferred course...";
+            searchInput.focus();
+        }
+     }, 300);
+     return;
+  }
+
+  const keywordMap = {
+    engineering: ['b.tech', 'btech', 'b.e', 'engineering', 'cse', 'mechanical', 'electrical', 'civil', 'ece'],
+    management:  ['mba', 'bba', 'management', 'business', 'commerce', 'finance', 'marketing', 'b.com', 'bcom'],
+    medical:     ['mbbs', 'nursing', 'pharmacy', 'bpharma', 'b.pharm', 'medical', 'bsc nursing', 'ayurveda', 'dental'],
+    design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'visual'],
+    arts:        ['ba', 'b.a', 'arts', 'humanities', 'social', 'literature', 'psychology', 'sociology']
+  };
+
+  const keywords = keywordMap[category] || [category];
+  if (searchInput) {
+    searchInput.value = keywords[0];
+  }
+
+  showAllCollegesView();
+
+  // After rendering, apply the search filter
+  setTimeout(() => {
+    if (searchInput) {
+      searchInput.value = keywords[0];
+    }
+    if (typeof applyCollegeSearch === 'function') applyCollegeSearch();
+    if (searchInput && window.innerWidth > 768) searchInput.focus();
+  }, 100);
+}
+window.showCollegesByCategory = showCollegesByCategory;
+
 
 function showCompareView() {
   closeAdminPanel();
@@ -674,7 +777,7 @@ function showCompareView() {
     }, 10);
   }
 
-  syncNav("AI Comparison");
+  syncNav("compare");
   populateCompareDropdowns();
   if (window.refreshAnimations) window.refreshAnimations();
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -883,20 +986,16 @@ function generateAIComparison() {
   }, 1800);
 }
 
-function syncNav(activeText) {
-  const desktopLinks = document.querySelectorAll(".nav-desktop a");
-  const mobileLinks = document.querySelectorAll(".mob-menu a");
-  const update = (links) => {
-    links.forEach(link => {
-      if (link.textContent.trim().toLowerCase() === activeText.toLowerCase()) {
-        link.classList.add("active");
-      } else {
-        link.classList.remove("active");
-      }
-    });
-  };
-  update(desktopLinks);
-  update(mobileLinks);
+function syncNav(activeKey) {
+  // Query both desktop inline tabs AND mobile hamburger menu links
+  const allNavLinks = document.querySelectorAll(".nav-desktop a[data-nav], .mob-menu a[data-nav]");
+  allNavLinks.forEach(link => {
+    if (link.dataset.nav === activeKey) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
 }
 window.syncNav = syncNav;
 
@@ -1744,7 +1843,7 @@ function showHome() {
   const backBtn = document.getElementById("courseCategoryBackBtn");
   if (backBtn) backBtn.remove();
   
-  if (typeof syncNav === 'function') syncNav("Home");
+  if (typeof syncNav === 'function') syncNav("home");
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.showHome = showHome;
