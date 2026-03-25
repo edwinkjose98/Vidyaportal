@@ -652,7 +652,7 @@ function showAllCollegesView() {
 
   syncNav("Colleges & Courses");
   renderCollegesSection();
-  goto("colleges");
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 window.showAllCollegesView = showAllCollegesView;
 
@@ -677,7 +677,7 @@ function showCompareView() {
   syncNav("AI Comparison");
   populateCompareDropdowns();
   if (window.refreshAnimations) window.refreshAnimations();
-  goto("compare-section");
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 function populateCompareDropdowns() {
