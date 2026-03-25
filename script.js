@@ -309,7 +309,9 @@ onAuthStateChanged(auth, async (user) => {
 function openLogin() {
   const main = document.getElementById("mainPage");
   const login = document.getElementById("login-div");
+  const signup = document.getElementById("signup-div");
   if (main) main.style.display = "none";
+  if (signup) signup.style.display = "none";
   if (login) login.style.display = "flex";
 }
 
@@ -342,10 +344,11 @@ async function sendRegistrationOTP() {
         document.getElementById("signupPhone").disabled = true;
         sendBtn.textContent = "Resend";
         sendBtn.disabled = false;
-        alert("A 6-digit OTP has been sent to your mobile.");
+        showToast("OTP sent successfully! 📱");
+        setTimeout(() => document.getElementById("regOtpInput").focus(), 100);
     } catch (err) {
         console.error("SMS Registration Error:", err);
-        alert("Failed to send SMS. Wait 1 min and try again.");
+        showToast("SMS failed. Wait 1 min. ⚠️");
         sendBtn.disabled = false;
         sendBtn.textContent = "Get OTP";
     }
@@ -370,7 +373,7 @@ async function verifyRegistrationOTP() {
         document.getElementById("signup-step-otp").style.display = "none";
         document.getElementById("signup-step-details").style.display = "grid";
         
-        alert("Success! Phone verified. Please finalize your profile details.");
+        showToast("Phone verified! ✅ Complete your profile.");
     } catch (err) {
         console.error("OTP Verification Error:", err);
         alert("Incorrect Code. Please check the SMS and try again.");
@@ -539,6 +542,16 @@ window.addEventListener("DOMContentLoaded", () => {
   if (sendOtpBtn) sendOtpBtn.onclick = sendOtp;
   const verifyOtpBtn = document.getElementById("verifyOtpBtn");
   if (verifyOtpBtn) verifyOtpBtn.onclick = verifyOtp;
+
+  // Sign up OTP auto-submit
+  const regOtpIn = document.getElementById("regOtpInput");
+  if (regOtpIn) {
+      regOtpIn.addEventListener("input", () => {
+          if (regOtpIn.value.length === 6) {
+              verifyRegistrationOTP();
+          }
+      });
+  }
 
   document.querySelectorAll(".otp-box").forEach((box, i, boxes) => {
     box.addEventListener("input", () => {

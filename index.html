@@ -207,7 +207,7 @@
                 <div id="regOtpInputWrap" style="display:none; margin-bottom: 1.5rem;">
                     <label style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Enter 6-Digit Code</label>
                     <div style="display:flex; gap:0.5rem; align-items:center;">
-                        <input type="text" id="regOtpInput" placeholder="123456" maxlength="6" style="flex:1; padding:0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:1rem; outline:none; letter-spacing:4px; text-align:center;">
+                        <input type="text" id="regOtpInput" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" placeholder="123456" maxlength="6" style="flex:1; padding:0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:1rem; outline:none; letter-spacing:4px; text-align:center;">
                         <button type="button" id="regVerifyBtn" onclick="verifyRegistrationOTP()" style="background:#059669; color:white; border:none; padding:0 1.2rem; border-radius:10px; font-weight:800; font-size:0.85rem; cursor:pointer; white-space:nowrap; height:45px;">Verify</button>
                     </div>
                 </div>
