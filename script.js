@@ -1121,6 +1121,14 @@ function toggleMenu() {
 }
 window.toggleMenu = toggleMenu;
 
+function closeMobileMenu() {
+    const h = document.getElementById('ham');
+    const m = document.getElementById('mobMenu');
+    if (h && h.classList.contains('open')) h.classList.remove('open');
+    if (m && m.classList.contains('open')) m.classList.remove('open');
+}
+window.closeMobileMenu = closeMobileMenu;
+
 // ===== NAV SCROLL =====
 window.addEventListener('scroll', () => {
   document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
