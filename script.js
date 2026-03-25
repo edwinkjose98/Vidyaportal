@@ -71,6 +71,7 @@ const firebaseConfig = {
   appId: "1:579358883691:web:e880fcf1eb3c6fe4af162e",
   measurementId: "G-D1YQ2QLMNR"
 };
+console.log("Firebase initialized with API Key:", firebaseConfig.apiKey);
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
