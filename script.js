@@ -53,6 +53,8 @@ window.showHome = showHome;
 window.showCompareView = showCompareView;
 window.updateComparison = updateComparison;
 window.generateAIComparison = generateAIComparison;
+window.sendRegistrationOTP = sendRegistrationOTP;
+window.verifyRegistrationOTP = verifyRegistrationOTP;
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.error("Global Error Caught:", msg, "at", url, ":", lineNo);
@@ -311,13 +313,89 @@ function openLogin() {
   if (login) login.style.display = "flex";
 }
 
+let isRegPhoneVerified = false;
+let regConfirmationResult = null;
+
+async function sendRegistrationOTP() {
+    const phone = document.getElementById("signupPhone").value.trim();
+    if(phone.length !== 10 || isNaN(phone)) {
+        alert("Enter a 10-digit mobile number.");
+        return;
+    }
+    
+    const sendBtn = document.getElementById("regSendOtp");
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Wait...";
+
+    try {
+        if (!window.recaptchaRegVerifier) {
+            window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
+                'size': 'invisible'
+            });
+        }
+        
+        // Format to +91 (assuming India for Kerala Vidya Portal)
+        const formattedPhone = "+91" + phone;
+        regConfirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaRegVerifier);
+        
+        document.getElementById("regOtpInputWrap").style.display = "block";
+        document.getElementById("signupPhone").disabled = true;
+        sendBtn.textContent = "Resend";
+        sendBtn.disabled = false;
+        alert("A 6-digit OTP has been sent to your mobile.");
+    } catch (err) {
+        console.error("SMS Registration Error:", err);
+        alert("Failed to send SMS. Wait 1 min and try again.");
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Get OTP";
+    }
+}
+
+async function verifyRegistrationOTP() {
+    const code = document.getElementById("regOtpInput").value.trim();
+    if(code.length !== 6) {
+        alert("Enter the 6-digit OTP.");
+        return;
+    }
+
+    const verifyBtn = document.getElementById("regVerifyBtn");
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = "...";
+
+    try {
+        await regConfirmationResult.confirm(code);
+        isRegPhoneVerified = true;
+        
+        // Hide Step 1, Show Step 2
+        document.getElementById("signup-step-otp").style.display = "none";
+        document.getElementById("signup-step-details").style.display = "grid";
+        
+        alert("Success! Phone verified. Please finalize your profile details.");
+    } catch (err) {
+        console.error("OTP Verification Error:", err);
+        alert("Incorrect Code. Please check the SMS and try again.");
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = "Verify";
+    }
+}
+
 function openSignUp() {
   const login = document.getElementById("login-div");
   const signup = document.getElementById("signup-div");
   const main = document.getElementById("mainPage");
+  
+  // Show signup div
   if (login) login.style.display = "none";
-  if (signup) signup.style.display = "";
+  if (signup) signup.style.display = "flex";
   if (main) main.style.display = "none";
+  
+  // RESET UI TO STEP 1 (OTP)
+  isRegPhoneVerified = false;
+  const stepOtp = document.getElementById("signup-step-otp");
+  const stepDetails = document.getElementById("signup-step-details");
+  if(stepOtp) stepOtp.style.display = "block";
+  if(stepDetails) stepDetails.style.display = "none";
+  
   const user = auth.currentUser;
   if (user) {
     const nameEl = document.getElementById("signupName");
@@ -416,8 +494,18 @@ async function doGoogleLogin() {
     const user = result.user;
     const userSnap = await getDoc(doc(db, "users", user.uid));
     if (!userSnap.exists()) {
-      alert("No account found. Please sign up first.");
-      openSignUp();
+      // User must verify phone first
+      if(!isRegPhoneVerified) {
+          alert("Phone verification required first. Please verify your mobile number.");
+          openSignUp();
+          return;
+      }
+      // If phone is already verified, we can let them finalize
+      const nameEl = document.getElementById("signupName");
+      const emailEl = document.getElementById("signupEmail");
+      if (nameEl) nameEl.value = user.displayName || "";
+      if (emailEl) emailEl.value = user.email || "";
+      alert("Google info pulled. Review and click 'Finalize' to complete.");
     } else {
       saveUserToStorage(user);
       updateAuthUI(true);
@@ -472,6 +560,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const sSubmit = document.getElementById("signupSubmit");
   if (sSubmit) {
     sSubmit.onclick = async () => {
+      if (!isRegPhoneVerified) {
+          alert("Please verify your phone number with OTP first.");
+          return;
+      }
+
       const getVal = (id) => (document.getElementById(id) && document.getElementById(id).value) || "";
       const emailVal = getVal("signupEmail").trim();
       const passwordVal = getVal("signupPassword").trim();
