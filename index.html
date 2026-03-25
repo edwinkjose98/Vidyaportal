@@ -64,8 +64,11 @@
 
             /* 3. Reorder Mob Menu & Show All */
             .mob-menu {
-                display: flex;
+                display: none; /* Hide by default on mobile */
                 flex-direction: column;
+            }
+            .mob-menu.open {
+                display: flex; /* Show only when classes match */
             }
 
             /* 4. Remove Admin from Mobile */
@@ -76,7 +79,7 @@
 
         /* --- Desktop Overrides (Min Width 769px) --- */
         @media (min-width: 769px) {
-            .mob-only-banner {
+            .mob-only-banner, .header-quote-mobile {
                 display: none !important;
             }
             #heroSection {
@@ -243,6 +246,12 @@
                             <img src="kerala-logo.png"
                                 style="height:60px; width:60px; min-width:60px; object-fit:contain; margin:0;"
                                 alt="Kerala Vidya Portal Logo">
+                            
+                            <!-- Middle Quote for Mobile -->
+                            <div class="header-quote-mobile" style="flex:1; text-align:center; padding: 0 10px;">
+                                <p style="font-size: 0.72rem; font-weight: 850; color: #b13f64; line-height: 1.1; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">Study without stress — <br> your future is secure.</p>
+                            </div>
+
                             <span class="logo-text"
                                 style="font-size:1.5rem; font-family:'Plus Jakarta Sans',sans-serif; background:linear-gradient(135deg,#EC4899,#E31671); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:800; letter-spacing:-0.03em; white-space:nowrap;">Kerala
                                 Vidya Portal</span>
@@ -275,7 +284,11 @@
                         </button>
                     </div>
                     <div class="mob-menu" id="mobMenu">
-                        <div class="nav-logout-wrap mob-auth" style="display: none; padding: 1rem 1.5rem 0.5rem; border-bottom: 1px solid rgba(233,30,140,0.1);">
+                        <!-- Explicit Close Button for Mobile -->
+                        <div style="display:flex; justify-content:flex-end; padding: 1rem 1.5rem 0.5rem;">
+                            <button onclick="toggleMenu()" style="background:rgba(233,30,140,0.05); border:1px solid rgba(233,30,140,0.1); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1.2rem; cursor:pointer;">✕</button>
+                        </div>
+                        <div class="nav-logout-wrap mob-auth" style="display: none; padding: 0.5rem 1.5rem 0.5rem; border-bottom: 1px solid rgba(233,30,140,0.1);">
                             <span class="nav-user-name" style="font-size: 1.1rem; font-weight: 800; color: var(--pink); display: block;"></span>
                         </div>
                         <a data-nav="home" onclick="showHome(); toggleMenu();" class="active">Home</a>
