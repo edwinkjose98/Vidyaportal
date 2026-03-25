@@ -4564,6 +4564,20 @@ body:has(#signup-div[style*="display: flex"]) {
         height: 32px !important;
         width: 32px !important;
     }
+
+    /* Push page sections below the taller 2-row mobile header */
+    #colleges {
+        padding-top: 9rem !important;
+    }
+    #compare-section {
+        padding-top: 9rem !important;
+    }
+    #heroSection {
+        padding-top: 9rem !important;
+    }
+    #courses-section {
+        padding-top: 9rem !important;
+    }
 }
 
 /* Hide Desktop Welcome Note on Mobile */
