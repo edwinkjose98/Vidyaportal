@@ -336,6 +336,11 @@ async function sendRegistrationOTP() {
             });
         }
         
+        // Auto-reset if needed
+        if (typeof window.recaptchaRegVerifier.reset === "function") {
+            window.recaptchaRegVerifier.reset();
+        }
+        
         // Format to +91 (assuming India for Kerala Vidya Portal)
         const formattedPhone = "+91" + phone;
         regConfirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaRegVerifier);
@@ -348,7 +353,12 @@ async function sendRegistrationOTP() {
         setTimeout(() => document.getElementById("regOtpInput").focus(), 100);
     } catch (err) {
         console.error("SMS Registration Error:", err);
-        showToast("SMS failed. Wait 1 min. ⚠️");
+        let msg = "SMS failed. Try again soon.";
+        if (err.code === "auth/quota-exceeded") msg = "Daily limit of 10 SMS reached! ⚠️";
+        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 10 mins. 🔒";
+        if (err.code === "auth/invalid-phone-number") msg = "Invalid phone number format.";
+        
+        showToast(msg);
         sendBtn.disabled = false;
         sendBtn.textContent = "Get OTP";
     }
@@ -647,7 +657,7 @@ window.addEventListener("DOMContentLoaded", () => {
         console.error("Sign up error:", err);
         alert("Could not save profile. Try again.");
       } finally {
-          if (btn) { btn.disabled = false; btn.textContent = "Create Account →"; }
+          if (btn) { btn.disabled = false; btn.textContent = "Finalize Registration →"; }
       }
     };
   }
