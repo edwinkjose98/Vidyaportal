@@ -810,8 +810,8 @@ function updateComparison() {
     return;
   }
 
-  // Clear previous detailed cards (as per user request: only AI comparison needed)
-  // result.innerHTML = "";
+  // Clear previous detailed cards and the placeholder when both are selected
+  result.innerHTML = "";
 
   // Show AI button
   const aiBtn = document.getElementById("aiCompareBtn");
@@ -899,13 +899,39 @@ function generateAIComparison() {
 
     insightDiv.innerHTML = `
       <div class="ai-insight-box">
-          <div style="display:flex; justify-content:center;">
-             <div class="ai-verdict-tag" style="background:var(--pink);">✦ AI Data Synthesis Comparison</div>
+          <div style="display:flex; justify-content:center; margin-bottom:1.5rem;">
+             <div class="ai-verdict-tag" style="background:#FF6B2C !important;">✦ AI Strategic Analysis</div>
           </div>
-          <h3 style="text-align:center; font-family:'Plus Jakarta Sans',sans-serif; color:var(--pink); font-weight:800; font-size:2rem; margin-bottom:1rem;">Verified Side-by-Side Analysis</h3>
-          <p style="text-align:center; color:#E31671; font-weight:600; font-size:1.1rem; max-width:1000px; margin:0 auto 3rem;">This analysis combines verified institutional data with our global AI repository to provide a mandatory technical breakdown.</p>
+          <h3 style="text-align:center; font-family:'Plus Jakarta Sans',sans-serif; color:var(--pink); font-weight:800; font-size:2rem; margin-bottom:1rem;">Executive AI Summary</h3>
+          <p style="text-align:center; color:#E31671; font-weight:600; font-size:1.1rem; max-width:1000px; margin:0 auto 3rem;">A high-level strategic breakdown combining verified institutional data with our global AI repository.</p>
           
-          <div class="ai-comparison-table-wrap" style="margin-bottom:4rem; background:#fff; border-radius:18px; border:1px solid var(--pink-mid); overflow:hidden;">
+          <div class="ai-grid desktop-only-ai">
+              <div class="ai-fact-card" style="border-color:var(--pink-mid);">
+                  <div class="ai-fact-title" style="color:var(--pink);">${n1} Strategic Analysis</div>
+                  <div style="font-size:0.85rem; color:#6B7280; font-weight:800; text-transform:uppercase; margin-bottom:0.8rem;">Core Edge: ${data1.strength}</div>
+                  <p style="font-size:0.95rem; line-height:1.7; color:#1F2937;">${data1.aiInsight}</p>
+                  <div style="margin-top:1.5rem; font-weight:800; color:var(--pink);">${data1.verdict}</div>
+              </div>
+
+              <div class="ai-fact-card" style="border-color:var(--pink-mid);">
+                  <div class="ai-fact-title" style="color:var(--pink);">${n2} Strategic Analysis</div>
+                  <div style="font-size:0.85rem; color:#6B7280; font-weight:800; text-transform:uppercase; margin-bottom:0.8rem;">Core Edge: ${data2.strength}</div>
+                  <p style="font-size:0.95rem; line-height:1.7; color:#1F2937;">${data2.aiInsight}</p>
+                  <div style="margin-top:1.5rem; font-weight:800; color:var(--pink);">${data2.verdict}</div>
+              </div>
+          </div>
+
+          <div style="margin-top:2rem; margin-bottom:3rem; padding:2rem; background:rgba(233, 30, 140, 0.04); border-radius:24px; border-left:6px solid var(--pink);">
+             <div style="font-weight:800; font-size:0.8rem; color:var(--pink); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.6rem;">✦ The Final AI Recommendation</div>
+             <p style="font-size:1.1rem; color:#1F2937; font-weight:700; line-height:1.6;">Based on all metrics including Affiliation, Placements, and Campus resources: Choose <strong>${n1}</strong> for immediate professional ROI. Choose <strong>${n2}</strong> for long-term academic and technical depth.</p>
+          </div>
+
+          <div class="desktop-only-ai" style="display:flex; justify-content:center; margin-bottom:1.5rem;">
+             <div class="ai-verdict-tag" style="background:var(--pink);">✦ Detailed Data Comparison</div>
+          </div>
+          <h3 class="desktop-only-ai" style="text-align:center; font-family:'Plus Jakarta Sans',sans-serif; color:var(--pink); font-weight:800; font-size:1.8rem; margin-bottom:2rem;">Verified Side-by-Side Metrics</h3>
+
+          <div class="ai-comparison-table-wrap desktop-only-ai" style="background:#fff; border-radius:18px; border:1px solid var(--pink-mid); overflow:hidden;">
               <table style="width:100%; border-collapse:collapse; font-size:0.95rem;">
                   <thead>
                       <tr style="background:var(--pink-light); border-bottom:2px solid var(--pink-mid);">
@@ -935,11 +961,7 @@ function generateAIComparison() {
                           <td style="padding:1.2rem; text-align:center; font-weight:700; color:#059669;">${c1.place || '90%+ Placement Track Record'}</td>
                           <td style="padding:1.2rem; text-align:center; font-weight:700; color:#059669;">${c2.place || '90%+ Placement Track Record'}</td>
                       </tr>
-                      <tr>
-                          <td style="padding:1.2rem; font-weight:800; color:var(--pink); background:var(--pink-light);">Course Fees</td>
-                          <td style="padding:1.2rem; text-align:center; font-weight:700; color:var(--dark);">${getInf(c1, 'Fee') || getInf(c1, 'Fees') || 'Contact Institution'}</td>
-                          <td style="padding:1.2rem; text-align:center; font-weight:700; color:var(--dark);">${getInf(c2, 'Fee') || getInf(c2, 'Fees') || 'Contact Institution'}</td>
-                      </tr>
+
                       <tr>
                           <td style="padding:1.2rem; font-weight:800; color:var(--pink); background:var(--pink-light);">About Environment</td>
                           <td style="padding:1.2rem; font-size:0.85rem; line-height:1.6;">${c1.about || 'Leading institution in the region.'}</td>
@@ -947,31 +969,6 @@ function generateAIComparison() {
                       </tr>
                   </tbody>
               </table>
-          </div>
-
-          <div style="display:flex; justify-content:center; margin-bottom:1.5rem;">
-             <div class="ai-verdict-tag" style="background:#FF6B2C !important;">✦ AI Strategic Analysis</div>
-          </div>
-          
-          <div class="ai-grid">
-              <div class="ai-fact-card" style="border-color:var(--pink-mid);">
-                  <div class="ai-fact-title" style="color:var(--pink);">${n1} Strategic Analysis</div>
-                  <div style="font-size:0.85rem; color:#6B7280; font-weight:800; text-transform:uppercase; margin-bottom:0.8rem;">Core Edge: ${data1.strength}</div>
-                  <p style="font-size:0.95rem; line-height:1.7; color:#1F2937;">${data1.aiInsight}</p>
-                  <div style="margin-top:1.5rem; font-weight:800; color:var(--pink);">${data1.verdict}</div>
-              </div>
-
-              <div class="ai-fact-card" style="border-color:var(--pink-mid);">
-                  <div class="ai-fact-title" style="color:var(--pink);">${n2} Strategic Analysis</div>
-                  <div style="font-size:0.85rem; color:#6B7280; font-weight:800; text-transform:uppercase; margin-bottom:0.8rem;">Core Edge: ${data2.strength}</div>
-                  <p style="font-size:0.95rem; line-height:1.7; color:#1F2937;">${data2.aiInsight}</p>
-                  <div style="margin-top:1.5rem; font-weight:800; color:var(--pink);">${data2.verdict}</div>
-              </div>
-          </div>
-
-          <div style="margin-top:3rem; padding:2rem; background:rgba(233, 30, 140, 0.04); border-radius:24px; border-left:6px solid var(--pink);">
-             <div style="font-weight:800; font-size:0.8rem; color:var(--pink); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.6rem;">✦ The Final AI Recommendation</div>
-             <p style="font-size:1.1rem; color:#1F2937; font-weight:700; line-height:1.6;">Based on all metrics including Affiliation, Placements, and Campus resources: Choose <strong>${n1}</strong> for immediate professional ROI. Choose <strong>${n2}</strong> for long-term academic and technical depth.</p>
           </div>
       </div>
     `;
@@ -2172,6 +2169,36 @@ function initScrollReveal() {
     observer.observe(el);
   });
 }
+
+// --- Domain-Specific Gateway Functions ---
+window.showCollegesByCategory = function(category) {
+  const searchInput = document.getElementById('collegeSearchInput');
+  const viewSection = document.getElementById('colleges');
+  
+  if (searchInput) {
+    searchInput.value = category;
+    showAllCollegesView(); 
+    if (typeof applyCollegeSearch === 'function') applyCollegeSearch();
+    
+    // Smooth scroll to results
+    if (viewSection) {
+        viewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+};
+
+window.showCollegesByLocation = function(location) {
+  const locInput = document.getElementById('locationSearchInput');
+  const locText = document.getElementById('selectedLocationText');
+  
+  if (locInput) {
+    locInput.value = location;
+    if (locText) locText.textContent = location;
+    
+    showAllCollegesView();
+    if (typeof applyCollegeSearch === 'function') applyCollegeSearch();
+  }
+};
 
 // Initialize on load
 window.addEventListener('DOMContentLoaded', () => {
