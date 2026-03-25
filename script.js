@@ -63,13 +63,13 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 
 // Get these from Firebase Console → Project Settings (gear) → Your apps → SDK setup
 const firebaseConfig = {
-  apiKey: "AIzaSyCtI-Qo2maQfYVSX1qSmcRYcbf-6A9Gn9Q",
-  authDomain: "vidyaportal-18869.firebaseapp.com",
-  projectId: "vidyaportal-18869",
-  storageBucket: "vidyaportal-18869.firebasestorage.app",
-  messagingSenderId: "1082675705819",
-  appId: "1:1082675705819:web:2f080bc453e14db0cd19fe",
-  measurementId: "G-73HESS2ZNG"
+  apiKey: "AIzaSyDAEV1KBh3KwCPX2fr330CcNO6Dj_h-E5c",
+  authDomain: "kerala-vidya-portal.firebaseapp.com",
+  projectId: "kerala-vidya-portal",
+  storageBucket: "kerala-vidya-portal.firebasestorage.app",
+  messagingSenderId: "579358883691",
+  appId: "1:579358883691:web:e880fcf1eb3c6fe4af162e",
+  measurementId: "G-D1YQ2QLMNR"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -281,7 +281,7 @@ function setupRecaptcha() {
   const container = document.getElementById('recaptcha-container');
   if (container) {
     window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      size: 'invisible', callback: () => { }
+      size: 'normal', callback: () => { }
     });
   }
 }
@@ -332,7 +332,7 @@ async function sendRegistrationOTP() {
     try {
         if (!window.recaptchaRegVerifier) {
             window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
-                'size': 'invisible'
+                'size': 'normal'
             });
         }
         
