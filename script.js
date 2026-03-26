@@ -19,7 +19,11 @@ import {
   signOut,
   onAuthStateChanged,
   RecaptchaVerifier,
-  signInWithPhoneNumber
+  signInWithPhoneNumber,
+  EmailAuthProvider,
+  linkWithCredential,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import {
   getFirestore,
@@ -30,7 +34,9 @@ import {
   getDocs,
   addDoc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 // ===== EXPORTS (Top Level for Reliability) =====
@@ -367,6 +373,21 @@ async function sendRegistrationOTP() {
     sendBtn.disabled = true;
     sendBtn.textContent = "Wait...";
 
+    // 1. FAST EXISTENCE CHECK
+    try {
+        const q = query(collection(db, "users"), where("phone", "==", phone));
+        const qSnap = await getDocs(q);
+        if (!qSnap.empty) {
+            alert("Account Already Exists! 📱 Redirecting to Sign In...");
+            openLogin();
+            const logId = document.getElementById("loginEmail");
+            if (logId) logId.value = phone;
+            return;
+        }
+    } catch (e) {
+        console.warn("Silent failure on existence check:", e);
+    }
+
     try {
         if (!window.recaptchaRegVerifier) {
             window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
@@ -496,59 +517,69 @@ function openHome() {
   if (typeof syncNav === "function") syncNav("home");
 }
 
-// doLogin handles email/password sign-in form submission
-function doLogin(event) {
+// doLogin handles phone/email + password sign-in
+async function doLogin(event) {
   if (event) event.preventDefault();
-  const email = (document.getElementById("loginEmail")?.value || "").trim();
+  let loginId = (document.getElementById("loginEmail")?.value || "").trim();
   const password = (document.getElementById("loginPassword")?.value || "").trim();
-  if (!email || !password) {
-    alert("Please enter your email and password.");
+  
+  if (!loginId || !password) {
+    alert("Please enter your login ID and password.");
     return;
   }
-  
+
   const loginSubmitBtn = document.getElementById("loginSubmitBtn");
   if (loginSubmitBtn) {
     loginSubmitBtn.disabled = true;
     loginSubmitBtn.textContent = "Verifying...";
   }
 
-  import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js").then(({ signInWithEmailAndPassword }) => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then(async (result) => {
-        const user = result.user;
-        const userSnap = await getDoc(doc(db, "users", user.uid));
-        const isUserAdmin = isAdminEmail(user.email);
+  // Handle phone-number mapping (e.g., 9876543210 -> email)
+  let email = loginId;
+  const phoneRegex = /^\d{10}$/;
+  if (phoneRegex.test(loginId)) {
+      try {
+        const q = query(collection(db, "users"), where("phone", "==", loginId));
+        const qSnap = await getDocs(q);
+        if (!qSnap.empty) {
+          email = qSnap.docs[0].data().email || `${loginId}@keralavidyaportal.com`;
+        } else {
+          email = `${loginId}@keralavidyaportal.com`;
+        }
+      } catch (err) {
+        console.warn("Phone lookup failure:", err);
+        email = `${loginId}@keralavidyaportal.com`;
+      }
+  }
 
-        if (!userSnap.exists() && !isUserAdmin) {
-          alert("Account Auth exists but Profile is missing. Redirecting to complete registration...");
-          openSignUp();
-          const se = document.getElementById("signupEmail");
-          if (se) se.value = email;
-        } else {
-          saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
-          updateAuthUI(true);
-          openHome();
-        }
-      })
-      .catch((err) => {
-        console.error("Email login error:", err);
-        // Handle common auth errors
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-            alert("No account found for this email. Redirecting to Sign Up...");
-            openSignUp();
-            const se = document.getElementById("signupEmail");
-            if (se) se.value = email;
-        } else {
-            alert("Login failed: " + (err.message || "Please check your credentials."));
-        }
-      })
-      .finally(() => {
-        if (loginSubmitBtn) {
-            loginSubmitBtn.disabled = false;
-            loginSubmitBtn.textContent = "Sign In Free";
-        }
-      });
-  });
+  try {
+    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    const user = result.user;
+    const userSnap = await getDoc(doc(db, "users", user.uid));
+    const isUserAdmin = isAdminEmail(user.email);
+
+    if (!userSnap.exists() && !isUserAdmin) {
+      alert("Login successful, but profile record missing. completing registration...");
+      openSignUp();
+    } else {
+      saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
+      updateAuthUI(true);
+      openHome();
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        alert("Invalid mobile/email or password. Please try again.");
+    } else {
+        alert("Sign in failed: " + (err.message || "Please check your network."));
+    }
+  } finally {
+    if (loginSubmitBtn) {
+      loginSubmitBtn.disabled = false;
+      loginSubmitBtn.textContent = "Sign In Free";
+    }
+  }
 }
 
 // doGoogleLogin — must be at module scope so window.doGoogleLogin works before DOMContentLoaded
@@ -643,14 +674,15 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       const getVal = (id) => (document.getElementById(id) && document.getElementById(id).value) || "";
-      const emailVal = getVal("signupEmail").trim();
+      const emailInput = getVal("signupEmail").trim();
       const passwordVal = getVal("signupPassword").trim();
       const nameVal = getVal("signupName").trim();
-      const phoneVal = getVal("signupPhone").trim().replace(/\s/g, "");
+      const phoneVal = getVal("signupPhone").trim().replace(/\D/g, "");
+      const emailVal = emailInput || (phoneVal ? `${phoneVal}@keralavidyaportal.com` : "");
       
       // Strict Validation
       if (!nameVal || !emailVal || !passwordVal || !phoneVal) {
-          alert("Please fill in all required fields.");
+          alert("Please fill in all required fields (Name, Phone, and Password).");
           return;
       }
       
@@ -681,37 +713,59 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       let user = auth.currentUser;
-      if (!user) {
-        try {
-          const { createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
-          const result = await createUserWithEmailAndPassword(auth, emailVal, passwordVal);
+      const virtualEmail = `${phoneVal}@keralavidyaportal.com`;
+      const authEmail = emailInput || (user && user.email) || virtualEmail;
+
+      try {
+        if (!user) {
+          // Case A: Fresh Signup (Email/Password)
+          const result = await createUserWithEmailAndPassword(auth, authEmail, passwordVal);
           user = result.user;
-        } catch (err) {
-          console.error("Auth creation error:", err);
-          alert("Sign up failed: " + (err.message || "Could not create account."));
-          if (btn) { btn.disabled = false; btn.textContent = "Create Account →"; }
-          return;
+        } else {
+          // Case B: Google User finalize (Link Password Credential)
+          const credential = EmailAuthProvider.credential(authEmail, passwordVal);
+          try {
+            await linkWithCredential(user, credential);
+          } catch (le) {
+            if (le.code !== 'auth/credential-already-in-use') {
+               throw le;
+            }
+          }
         }
+      } catch (err) {
+        console.error("Finalization error:", err);
+        if (err.code === 'auth/email-already-in-use') {
+            alert("This Mobile Number or Email is already registered! 👋 Please Sign In to continue.");
+            openLogin();
+            const logId = document.getElementById("loginEmail");
+            if (logId) logId.value = phoneVal;
+            return;
+        }
+        alert("Registration failed: " + (err.message || "Please try again later."));
+        if (btn) { btn.disabled = false; btn.textContent = "Finalize Registration →"; }
+        return;
       }
 
       const userData = {
+        uid: user.uid,
         displayName: nameVal || user.displayName || "",
-        email: emailVal || user.email || "",
+        email: authEmail,
         phone: phoneVal,
         district: getVal("signupDistrict"),
         userType: getVal("signupUserType"),
         createdAt: new Date().toISOString()
       };
+
       try {
         await setDoc(doc(db, "users", user.uid), userData);
-        saveUserToStorage(user);
+        saveUserToStorage(user, userData);
         updateAuthUI(true);
         openHome();
       } catch (err) {
-        console.error("Sign up error:", err);
-        alert("Could not save profile. Try again.");
+        console.error("Firestore save error:", err);
+        alert("Account created but profile error. Try logging in again.");
       } finally {
-          if (btn) { btn.disabled = false; btn.textContent = "Finalize Registration →"; }
+        if (btn) { btn.disabled = false; btn.textContent = "Finalize Registration →"; }
       }
     };
   }
