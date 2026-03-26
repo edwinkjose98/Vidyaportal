@@ -500,13 +500,16 @@ function openHome() {
   if (adminPanel) adminPanel.style.display = "none";
   if (mainPage) mainPage.style.display = "";
 
-  // Restore Home elements
-  const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection", "colleges"];
+  // Restore Home elements (HIDE colleges so it only shows in dedicated views)
+  const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
   showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "block"; });
+
+  const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
+  hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
   const collegesSec = document.getElementById("colleges");
   if (collegesSec) {
-      collegesSec.style.display = "block";
+      collegesSec.style.display = "none";
       // Clear filters when going home
       const searchInput = document.getElementById('collegeSearchInput');
       const locInput = document.getElementById('locationSearchInput');
