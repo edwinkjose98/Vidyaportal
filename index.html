@@ -311,7 +311,8 @@
                                     </div>
                                     <div class="nav-logout-wrap"
                                         style="display: none; align-items: center; gap: 0.5rem;">
-                                        <a href="#" class="nav-admin-link" style="display: none; font-size: 0.8rem;"
+                                        <a href="#" class="btn-nav nav-admin-link" 
+                                            style="display: none; background: #6366f1; color: white!important; border: none;"
                                             onclick="openAdminPanel(); return false;">Admin</a>
                                         <button type="button" class="btn-nav btn-logout"
                                             onclick="logout()">Logout</button>
@@ -342,14 +343,15 @@
                         </div>
                         
                         <div class="nav-logout-wrap mob-auth" style="display: none; padding: 0.5rem 1.5rem 1.5rem;">
-                            <a href="#" class="nav-admin-link" style="display: none; font-size: 0.9rem; margin-bottom: 1rem; display: block; color: var(--gray);"
+                            <a href="#" class="btn-nav nav-admin-link" 
+                                style="display: none; background: #6366f1; color: white!important; border: none; margin-bottom: 1rem;"
                                 onclick="openAdminPanel(); closeMobileMenu(); return false;">Admin Panel</a>
                             <button type="button" class="btn-nav btn-logout" style="width:100%" onclick="logout(); closeMobileMenu();">Logout</button>
                         </div>
                     </div>
                     <!-- Welcome Widget -->
                     <div class="nav-logout-wrap desk-auth"
-                        style="display: none; position: absolute; top: calc(100% - 1px); right: 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.6rem 1.2rem; border-radius: 0 0 16px 16px; border: 1px solid rgba(233,30,140,0.15); border-top: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(233,30,140,0.08); font-weight: 600; font-size: 0.9rem; color: #111827; z-index: -1;">
+                        style="display: none; position: absolute; top: calc(100% - 1px); right: 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.6rem 1.2rem; border-radius: 0 0 16px 16px; border: 1px solid rgba(233,30,140,0.15); border-top: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(233,30,140,0.08); font-weight: 600; font-size: 0.9rem; color: #111827; z-index: 99;">
                         <span style="color:#e91e63; margin-right:4px;">✦</span> <span class="nav-user-name"
                             style="color: #e91e63; font-weight:700;"></span>
                     </div>

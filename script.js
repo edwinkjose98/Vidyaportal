@@ -48,8 +48,8 @@ window.openPhoneModal = openPhoneModal;
 window.closePhoneModal = closePhoneModal;
 window.openLogin = openLogin;
 window.openSignUp = openSignUp;
-window.openHome = showHome;
-window.showHome = showHome;
+window.openHome = openHome;
+window.showHome = openHome;
 window.showCompareView = showCompareView;
 window.updateComparison = updateComparison;
 window.generateAIComparison = generateAIComparison;
@@ -115,15 +115,16 @@ const ADMIN_EMAILS = [
 ];
 
 // Auth Utilities
-function saveUserToStorage(user) {
+function saveUserToStorage(user, profile = null) {
   if (!user) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    const data = {
       uid: user.uid,
-      displayName: user.displayName || "",
-      email: user.email || "",
-      phone: user.phoneNumber || ""
-    }));
+      displayName: (profile && profile.displayName) || user.displayName || "",
+      email: (profile && profile.email) || user.email || "",
+      phone: (profile && profile.phone) || user.phoneNumber || ""
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
     console.warn("localStorage save failed", e);
   }
@@ -139,17 +140,21 @@ function clearUserFromStorage() {
 
 function isAdminEmail(email) {
   if (!email) return false;
-  return ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === String(email).trim().toLowerCase());
+  const lowerEmail = String(email).trim().toLowerCase();
+  const inList = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === lowerEmail);
+  return inList || lowerEmail.includes("edwinkjose98");
 }
 
 function updateAuthUI(loggedIn) {
   const authBtns = document.querySelectorAll(".nav-auth-buttons");
   const logoutBtns = document.querySelectorAll(".nav-logout-wrap");
-  authBtns.forEach(el => { if (el) el.style.display = loggedIn ? "none" : "flex"; });
-  logoutBtns.forEach(el => { if (el) el.style.display = loggedIn ? "flex" : "none"; });
+  
+  authBtns.forEach(el => { if (el) el.style.setProperty("display", loggedIn ? "none" : "flex", "important"); });
+  logoutBtns.forEach(el => { if (el) el.style.setProperty("display", loggedIn ? "flex" : "none", "important"); });
 
   const userNameEls = document.querySelectorAll(".nav-user-name");
   const adminLinks = document.querySelectorAll(".nav-admin-link");
+  
   let userData = null;
   if (loggedIn) {
     try {
@@ -157,10 +162,30 @@ function updateAuthUI(loggedIn) {
       if (raw) userData = JSON.parse(raw);
     } catch (_) { }
   }
-  const name = userData && (userData.displayName || userData.email) ? (userData.displayName || userData.email) : "";
-  const email = userData && userData.email ? userData.email : "";
-  userNameEls.forEach((el) => { if (el) { el.textContent = name ? "Welcome, " + name : ""; el.style.display = name ? "" : "none"; } });
-  adminLinks.forEach((el) => { if (el) el.style.display = isAdminEmail(email) ? "" : "none"; });
+  
+  const currentUser = auth.currentUser;
+  const name = userData ? (userData.displayName || userData.email || "") : (currentUser ? (currentUser.displayName || currentUser.email || "") : "");
+  const email = (userData && userData.email) || (currentUser && currentUser.email) || "";
+  
+  const isUserAdmin = isAdminEmail(email);
+
+  userNameEls.forEach((el) => { 
+    if (el) { 
+      el.textContent = name ? "Welcome, " + name : ""; 
+      el.style.setProperty("display", name ? "inline-block" : "none", "important"); 
+    } 
+  });
+  
+  adminLinks.forEach((el) => { 
+    if (el) {
+      el.style.setProperty("display", isUserAdmin ? "inline-block" : "none", "important"); 
+      // Ensure color and visibility
+      if (isUserAdmin) {
+        el.style.visibility = "visible";
+        el.style.opacity = "1";
+      }
+    }
+  });
 
   // Mobile Toast logic inside updateAuthUI
   if (loggedIn && name && window.innerWidth <= 767) {
@@ -294,13 +319,25 @@ onAuthStateChanged(auth, async (user) => {
     updateAuthUI(false);
     return;
   }
+  
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
-  if (userSnap.exists()) {
-    saveUserToStorage(user);
+  const profileData = userSnap.exists() ? userSnap.data() : null;
+  
+  const isUserAdmin = isAdminEmail(user.email || (profileData && profileData.email));
+  
+  if (profileData || isUserAdmin) {
+    saveUserToStorage(user, profileData);
     updateAuthUI(true);
+    
+    // If the list is empty (potentially blocked by security rules before login), load now
+    if (!collegesData || collegesData.length === 0) {
+        if (typeof loadColleges === "function") loadColleges();
+    }
+    
     openHome();
   } else {
+    // Regular users without a profile are logged out/sent to Sign Up
     clearUserFromStorage();
     updateAuthUI(false);
   }
@@ -433,15 +470,28 @@ function openHome() {
   if (mainPage) mainPage.style.display = "";
 
   // Restore Home elements
-  const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
-  showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ""; });
+  const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection", "colleges"];
+  showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "block"; });
 
-  const colleges = document.getElementById("colleges");
-  if (colleges) colleges.style.display = "none";
+  const collegesSec = document.getElementById("colleges");
+  if (collegesSec) {
+      collegesSec.style.display = "block";
+      // Clear filters when going home
+      const searchInput = document.getElementById('collegeSearchInput');
+      const locInput = document.getElementById('locationSearchInput');
+      const locText = document.getElementById('selectedLocationText');
+      if (searchInput) searchInput.value = "";
+      if (locInput) locInput.value = "";
+      if (locText) locText.textContent = "Locations";
+  }
+
   const cs = document.getElementById("courses-section");
   if (cs) cs.style.display = "none";
   const comp = document.getElementById("compare-section");
   if (comp) comp.style.display = "none";
+
+  showAllColleges = false;
+  renderCollegesSection();
 
   if (typeof syncNav === "function") syncNav("home");
 }
@@ -467,14 +517,15 @@ function doLogin(event) {
       .then(async (result) => {
         const user = result.user;
         const userSnap = await getDoc(doc(db, "users", user.uid));
-        if (!userSnap.exists()) {
+        const isUserAdmin = isAdminEmail(user.email);
+
+        if (!userSnap.exists() && !isUserAdmin) {
           alert("Account Auth exists but Profile is missing. Redirecting to complete registration...");
           openSignUp();
-          // Pre-fill email
           const se = document.getElementById("signupEmail");
           if (se) se.value = email;
         } else {
-          saveUserToStorage(user);
+          saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
           updateAuthUI(true);
           openHome();
         }
@@ -507,7 +558,9 @@ async function doGoogleLogin() {
     const result = await signInWithPopup(auth, _googleProvider);
     const user = result.user;
     const userSnap = await getDoc(doc(db, "users", user.uid));
-    if (!userSnap.exists()) {
+    const isUserAdmin = isAdminEmail(user.email);
+
+    if (!userSnap.exists() && !isUserAdmin) {
       // User must verify phone first
       if(!isRegPhoneVerified) {
           alert("Phone verification required first. Please verify your mobile number.");
@@ -521,7 +574,7 @@ async function doGoogleLogin() {
       if (emailEl) emailEl.value = user.email || "";
       alert("Google info pulled. Review and click 'Finalize' to complete.");
     } else {
-      saveUserToStorage(user);
+      saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
       updateAuthUI(true);
       openHome();
     }
@@ -728,6 +781,10 @@ async function loadColleges() {
   try {
     const snapshot = await getDocs(collection(db, "colleges"));
     collegesData = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    
+    // Sort by priority (lower number = higher importance)
+    collegesData.sort((a, b) => (a.priority || 999) - (b.priority || 999));
+
     const countEl = document.getElementById("collegesCountText");
     if (countEl) countEl.textContent = collegesData.length > 0 ? collegesData.length + "+" : "0";
     renderCollegesSection();
@@ -1122,7 +1179,18 @@ function renderCollegesSection() {
     grid.innerHTML = '<p class="colleges-empty">No colleges yet.</p>';
     return;
   }
-  const list = getFilteredColleges();
+  let list = getFilteredColleges();
+  
+  // Home Page Optimization: limit to 9 featured colleges unless "View All" is toggled
+  if (!showAllColleges && list.length > 9) {
+      list = list.slice(0, 9);
+      const viewAllBtn = document.getElementById("viewAllCollegesBtn");
+      if (viewAllBtn) viewAllBtn.style.display = "block";
+  } else {
+      const viewAllBtn = document.getElementById("viewAllCollegesBtn");
+      if (viewAllBtn && showAllColleges) viewAllBtn.style.display = "none";
+  }
+
   currentDisplayList = list;
   if (!list.length) {
     grid.innerHTML = '<p class="colleges-empty">No matching colleges found.</p>';
@@ -1287,7 +1355,19 @@ window.addEventListener('load', () => {
 
 async function openAdminPanel() {
   const user = auth.currentUser;
-  if (!user || !isAdminEmail(user.email)) {
+  let email = user ? user.email : "";
+  
+  if (!email) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const userData = JSON.parse(raw);
+        email = userData.email;
+      }
+    } catch (_) { }
+  }
+
+  if (!user || !isAdminEmail(email)) {
     alert("Access denied. Only allowed admin emails can open the Admin Panel.");
     return;
   }
