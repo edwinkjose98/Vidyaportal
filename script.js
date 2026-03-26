@@ -801,12 +801,16 @@ const SHEET_SYNC_URL = "https://script.google.com/macros/s/AKfycbxtB34-9XVwWik1P
 async function syncToExternalSheet(userData) {
   if (!SHEET_SYNC_URL || SHEET_SYNC_URL.includes("YOUR_GOOGLE")) return;
   try {
-    // Silent push to external sheet middleware
+    // Send data as URL-encoded parameters (Reliable for Google Sheet doPost)
+    const formData = new URLSearchParams();
+    for (const key in userData) {
+        formData.append(key, userData[key]);
+    }
+
     await fetch(SHEET_SYNC_URL, {
       method: "POST",
-      mode: "no-cors", // Use no-cors for simple App Script trigger
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData)
+      mode: "no-cors", 
+      body: formData
     });
     console.log("Sheet sync attempt sent.");
   } catch (err) {
