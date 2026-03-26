@@ -7,8 +7,8 @@
     <title>Kerala Vidya Portal – #1 Admission portal with job Guarantee</title>
     
     <!-- Branding & Favicon -->
-    <link rel="icon" type="image/png" href="kerala-logo.png">
-    <link rel="apple-touch-icon" href="kerala-logo.png">
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.jpg">
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="Kerala Vidya Portal is India's most trusted admission platform offering ₹0 donations, fee-back guarantees, and legal documentation for your career success.">
@@ -17,7 +17,7 @@
     <!-- Social Media Sharing (Open Graph) -->
     <meta property="og:title" content="Kerala Vidya Portal – #1 Admission portal with job Guarantee">
     <meta property="og:description" content="Secure your future with India's only fee-back guarantee portal. Discover and apply to top colleges with verified data.">
-    <meta property="og:image" content="kerala-logo.png">
+    <meta property="og:image" content="logo.jpg">
     <meta property="og:type" content="website">
     <meta name="google-site-verification" content="Y_YfzJb7erPSxoozK98qQWPgiDGUk2ZXgfSN3X7Oz_o" />
 
@@ -91,6 +91,30 @@
             .mob-menu .nav-admin-link {
                 display: none !important;
             }
+
+            /* --- AUTH UI MOBILE POLISH --- */
+            .desk-auth {
+                display: none !important;
+            }
+            #login-div > div, #signup-div > div {
+                padding: 1.5rem !important;
+                border-radius: 20px !important;
+                width: calc(100% - 20px) !important;
+                max-width: 400px !important;
+            }
+            .auth-phone-row {
+                flex-direction: row; /* Default */
+            }
+            @media (max-width: 420px) {
+                .auth-phone-row {
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                }
+                .auth-phone-row button {
+                    width: 100% !important;
+                    height: 48px !important;
+                }
+            }
         }
 
         /* --- Desktop Overrides (Min Width 769px) --- */
@@ -113,8 +137,8 @@
             
             <!-- Compact Header Section -->
             <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:1.2rem; width:100%;">
-                <img src="./kerala-logo.png"
-                    style="height:65px; width:auto; filter: drop-shadow(0 4px 12px rgba(199,40,90,0.2)); margin-bottom:0.6rem;"
+                <img src="logo.jpg"
+                    style="height:85px; width:auto; margin-bottom:0.8rem; border-radius:12px;"
                     alt="Kerala Vidya Portal Logo">
                 
                 <h1 style="font-size:1.6rem; font-weight:800; letter-spacing:-0.03em; color:#c7285a; margin:0 0 0.5rem 0;">
@@ -134,39 +158,29 @@
                 <form id="loginForm" onsubmit="doLogin(event)">
                     <div class="input-group" style="margin-bottom: 1.2rem;">
                         <label for="loginEmail" style="display:block; font-size:0.85rem; font-weight:700; color:#822f4e; margin-bottom:0.6rem;">Mobile Number / Email</label>
-                        <div style="position:relative;">
-                            <div style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:32px; height:32px; background:linear-gradient(135deg, #fdf2f7, #fde4ef); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#c7285a; font-size:0.85rem; border:1px solid #f3d2df; box-shadow:0 2px 6px rgba(199,40,90,0.05); z-index:1;">
-                                <i class="fas fa-phone-alt"></i>
-                            </div>
-                            <input type="text" id="loginEmail" class="input-field" placeholder="e.g. 9876543210"
-                                autocomplete="username" required style="width:100%; padding:0.85rem 1rem 0.85rem 3.2rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
-                        </div>
+                        <input type="text" id="loginEmail" class="input-field" placeholder="e.g. 9876543210"
+                            autocomplete="username" required style="width:100%; padding:0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
                     </div>
                     
                     <div class="input-group" style="margin-bottom: 1.2rem;">
                         <label for="loginPassword" style="display:block; font-size:0.85rem; font-weight:700; color:#822f4e; margin-bottom:0.6rem;">Password</label>
-                        <div style="position:relative;">
-                            <div style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:32px; height:32px; background:linear-gradient(135deg, #fdf2f7, #fde4ef); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#c7285a; font-size:0.85rem; border:1px solid #f3d2df; box-shadow:0 2px 6px rgba(199,40,90,0.05); z-index:1;">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <input type="password" id="loginPassword" class="input-field" placeholder="••••••••"
-                                autocomplete="current-password" required style="width:100%; padding:0.85rem 1rem 0.85rem 3.2rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
-                        </div>
+                        <input type="password" id="loginPassword" class="input-field" placeholder="••••••••"
+                            autocomplete="current-password" required style="width:100%; padding:0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
                     </div>
 
                     <div class="remember-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; font-size:0.85rem;">
-                        <label class="checkbox-wrapper" style="display:flex; align-items:center; gap:0.5rem; color:#8e4462; font-weight:600; cursor:pointer;">
-                            <input type="checkbox" checked style="accent-color:#d93b6e; width:1.1rem; height:1.1rem; cursor:pointer;"> <span>Remember me</span>
+                        <label class="checkbox-wrapper" style="display:flex; align-items:center; gap:0.5rem; color:#6b4d5a; cursor:pointer;">
+                            <input type="checkbox" checked style="width:16px; height:16px; accent-color:#c7285a; cursor:pointer;"> <span>Remember me</span>
                         </label>
-                        <a href="javascript:void(0)" style="color:#c63b6e; text-decoration:none; font-weight:700; border-bottom:1.5px solid #ffb3c6;">Forget password?</a>
+                        <a href="javascript:void(0)" style="color:#c7285a; text-decoration:none; font-weight:700;">Forget password?</a>
                     </div>
 
-                    <button type="submit" class="signin-btn" id="loginSubmitBtn" style="width:100%; background:linear-gradient(135deg, #c7285a, #b0174c); border:none; padding:0.9rem; font-size:1rem; font-weight:800; color:white; border-radius:10px; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:0.5rem; box-shadow:0 6px 15px rgba(192, 35, 80, 0.25); transition:transform 0.2s, box-shadow 0.2s;">
-                        <i class="fas fa-arrow-right-to-bracket"></i> Sign In Free
+                    <button type="submit" class="signin-btn" id="loginSubmitBtn" style="width:100%; background:linear-gradient(135deg, #c7285a, #b0174c); border:none; padding:1rem; font-size:1.1rem; font-weight:800; color:white; border-radius:12px; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow:0 8px 20px rgba(192, 35, 80, 0.2); transition:transform 0.2s, box-shadow 0.2s;">
+                        Sign In Free
                     </button>
                 </form>
 
-                <div class="or-divider" style="display:flex; align-items:center; gap:0.8rem; color:#c57f9a; font-size:0.85rem; font-weight:600; margin:1.2rem 0;">
+                <div class="or-divider" style="display:flex; align-items:center; gap:0.8rem; color:#c57f9a; font-size:0.75rem; font-weight:600; margin:1.2rem 0;">
                     <span style="flex:1; height:1px; background:#f0c8d6;"></span>
                     <span>or continue with</span>
                     <span style="flex:1; height:1px; background:#f0c8d6;"></span>
@@ -174,7 +188,7 @@
 
                 <div class="alternative-actions" style="display:flex; flex-direction:column; gap:0.6rem;">
                     <button type="button" id="phoneLoginBtn" onclick="openPhoneModal()" style="width:100%; background:#fff; border:1.2px solid #e7bacb; padding:0.8rem; border-radius:10px; font-size:0.95rem; font-weight:700; color:#b13f64; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:0.6rem; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:background 0.2s;">
-                        <i class="fas fa-phone-alt" style="font-size:1.1rem; color:#c75b81;"></i> Continue with Phone
+                        Continue with Phone
                     </button>
                     <button type="button" id="googleLogin" onclick="doGoogleLogin()" style="width:100%; background:#fff; border:1.2px solid #e7bacb; padding:0.8rem; border-radius:10px; font-size:0.95rem; font-weight:700; color:#b13f64; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:0.6rem; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:background 0.2s;">
                         <i class="fab fa-google" style="font-size:1.1rem; color:#c75b81;"></i> Continue with Google
@@ -194,7 +208,7 @@
         <div style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:480px; margin:auto; background:#fff; padding:2.5rem; border-radius:24px; box-shadow:0 30px 60px rgba(199,40,90,0.12); border:1px solid rgba(199,40,90,0.1);">
             
             <div style="text-align:center; margin-bottom:1.5rem;">
-                <img src="kerala-logo.png" style="height:55px; width:auto; margin-bottom:0.8rem;" alt="Logo">
+                <img src="logo.jpg" style="height:75px; width:auto; margin-bottom:0.8rem; border-radius:10px;" alt="Logo">
                 <h2 style="font-size:1.6rem; font-weight:800; color:#c7285a; margin-bottom:0.3rem;">Create Your Account</h2>
                 <p style="color:#8e7381; font-size:0.9rem; font-weight:500;">Join India's most trusted admission portal</p>
             </div>
@@ -208,14 +222,11 @@
             <div id="signup-step-otp" style="width:100%;">
                 <div style="margin-bottom: 1.5rem;">
                     <label for="signupPhone" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.6rem;">Mobile Number (Verify First)</label>
-                    <div style="display:flex; gap:0.6rem; position:relative;">
-                        <div style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:32px; height:32px; background:linear-gradient(135deg, #fdf2f7, #fde4ef); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#c7285a; font-size:0.85rem; border:1px solid #f3d2df; z-index:1;">
-                            <i class="fas fa-phone-alt"></i>
-                        </div>
+                    <div class="auth-phone-row" style="display:flex; gap:0.6rem;">
                         <input type="tel" id="signupPhone" placeholder="10 Digits" maxlength="10" 
-                            style="flex:1; padding:0.85rem 1rem 0.85rem 3.2rem; border:1.2px solid #f3d2df; border-radius:12px; font-size:1rem; outline:none; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
+                            style="flex:1; padding:0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; font-size:1rem; outline:none; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
                         <button type="button" id="regSendOtp" onclick="sendRegistrationOTP()" 
-                            style="background:linear-gradient(135deg, #c7285a, #b0174c); color:white; border:none; padding:0 1.2rem; border-radius:12px; font-weight:800; font-size:0.85rem; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(199,40,90,0.2);">Get OTP</button>
+                            style="background:linear-gradient(135deg, #c7285a, #b0174c); color:white; border:none; padding:0 1.2rem; border-radius:12px; font-weight:800; font-size:0.85rem; cursor:pointer; white-space:nowrap; box-shadow:0 10px 20px rgba(199,40,90,0.12);">Get OTP</button>
                     </div>
                 </div>
 
@@ -300,8 +311,8 @@
                     <div class="nav-inner">
                         <a class="brand" href="#" onclick="showHome(); return false;"
                             style="padding:0; gap:.5rem; display:flex; align-items:center;">
-                            <img src="kerala-logo.png"
-                                style="height:60px; width:60px; min-width:60px; object-fit:contain; margin:0;"
+                            <img src="logo.jpg"
+                                style="height:70px; width:70px; min-width:70px; border-radius:10px; object-fit:contain; margin:0;"
                                 alt="Kerala Vidya Portal Logo">
                             
                             <!-- Middle Quote for Mobile (Single Line) -->
@@ -367,8 +378,8 @@
                         </div>
                     </div>
                     <!-- Welcome Widget -->
-                    <div class="nav-logout-wrap desk-auth"
-                        style="display: none; position: absolute; top: calc(100% - 1px); right: 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.6rem 1.2rem; border-radius: 0 0 16px 16px; border: 1px solid rgba(233,30,140,0.15); border-top: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(233,30,140,0.08); font-weight: 600; font-size: 0.9rem; color: #111827; z-index: 99;">
+                    <div class="desk-auth"
+                        style="display: none !important; position: absolute; top: calc(100% - 1px); right: 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.6rem 1.2rem; border-radius: 0 0 16px 16px; border: 1px solid rgba(233,30,140,0.15); border-top: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(233,30,140,0.08); font-weight: 600; font-size: 0.9rem; color: #111827; z-index: 99;">
                         <span style="color:#e91e63; margin-right:4px;">✦</span> <span class="nav-user-name"
                             style="color: #e91e63; font-weight:700;"></span>
                     </div>

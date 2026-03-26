@@ -4610,19 +4610,19 @@ body:has(#signup-div[style*="display: flex"]) {
 
     /* Push page sections below the taller 3-row mobile header (banner + logo + tabs) */
     #colleges {
-        padding-top: 13.5rem !important;
+        padding-top: 8.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #compare-section {
-        padding-top: 13.5rem !important;
+        padding-top: 8.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #heroSection {
-        padding-top: 13.5rem !important;
+        padding-top: 8.5rem !important;
         padding-bottom: calc(3rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #courses-section {
-        padding-top: 13.5rem !important;
+        padding-top: 8.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
 

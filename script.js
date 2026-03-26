@@ -193,6 +193,16 @@ function updateAuthUI(loggedIn) {
     }
   });
 
+  // Handle Desk-Auth widget specifically (Only Desktop)
+  const deskAuthEls = document.querySelectorAll(".desk-auth");
+  deskAuthEls.forEach(el => {
+    if (loggedIn && name && window.innerWidth > 768) {
+       el.style.setProperty("display", "block", "important");
+    } else {
+       el.style.setProperty("display", "none", "important");
+    }
+  });
+
   // Mobile Toast logic inside updateAuthUI
   if (loggedIn && name && window.innerWidth <= 767) {
       if(window.showToast) window.showToast("Welcome, " + name);
@@ -391,7 +401,7 @@ async function sendRegistrationOTP() {
     try {
         if (!window.recaptchaRegVerifier) {
             window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
-                'size': 'normal'
+                'size': 'invisible'
             });
         }
         
