@@ -772,6 +772,10 @@ window.addEventListener("DOMContentLoaded", () => {
       try {
         await setDoc(doc(db, "users", user.uid), userData);
         saveUserToStorage(user, userData);
+        
+        // --- GOOGLE SHEET SYNC (Silent Background Push) ---
+        syncToExternalSheet(userData);
+        
         updateAuthUI(true);
         openHome();
       } catch (err) {
@@ -790,6 +794,25 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (typeof loadColleges === "function") loadColleges();
 });
+
+// Update this with your Google Apps Script URL later
+const SHEET_SYNC_URL = "https://script.google.com/macros/s/AKfycbxtB34-9XVwWik1PNWeyvCKkd2Mn4q1Nm8D0uhXz6odQLWx_42auZkiuu7FE-mUjebe/exec";
+
+async function syncToExternalSheet(userData) {
+  if (!SHEET_SYNC_URL || SHEET_SYNC_URL.includes("YOUR_GOOGLE")) return;
+  try {
+    // Silent push to external sheet middleware
+    await fetch(SHEET_SYNC_URL, {
+      method: "POST",
+      mode: "no-cors", // Use no-cors for simple App Script trigger
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData)
+    });
+    console.log("Sheet sync attempt sent.");
+  } catch (err) {
+    console.warn("Sheet sync failed silently:", err);
+  }
+}
 
 // Default colleges used only for seeding Firebase (Admin panel → Seed default colleges)
 // image: college photo URL (you can update links in Admin → Colleges → Edit)
@@ -1447,6 +1470,31 @@ async function openAdminPanel() {
 }
 window.openAdminPanel = openAdminPanel;
 
+
+async function syncAllUsersToSheet() {
+  const btn = event?.target || document.querySelector('button[onclick="syncAllUsersToSheet()"]');
+  const prevText = btn.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = "Syncing..."; }
+  
+  try {
+    const snapshot = await getDocs(collection(db, "users"));
+    const users = [];
+    snapshot.forEach((d) => users.push({ id: d.id, ...d.data(), uid: d.id }));
+    
+    // Sync each user
+    for (const u of users) {
+        await syncToExternalSheet(u);
+    }
+    
+    alert(`Successfully sent ${users.length} users to your Google Sheet! Check the sheet now.`);
+  } catch (err) {
+    console.error("Bulk sync error:", err);
+    alert("Sync failed. Check console for details.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = prevText; }
+  }
+}
+window.syncAllUsersToSheet = syncAllUsersToSheet;
 
 function closeAdminPanel() {
   const mainContent = document.getElementById("mainContent");
