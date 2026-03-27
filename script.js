@@ -61,6 +61,10 @@ window.updateComparison = updateComparison;
 window.generateAIComparison = generateAIComparison;
 window.sendRegistrationOTP = sendRegistrationOTP;
 window.verifyRegistrationOTP = verifyRegistrationOTP;
+window.deleteAllColleges = deleteAllColleges;
+window.toggleCollegeVisibility = toggleCollegeVisibility;
+window.hideAllColleges = hideAllColleges;
+window.unhideAllColleges = unhideAllColleges;
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.error("Global Error Caught:", msg, "at", url, ":", lineNo);
@@ -821,14 +825,12 @@ async function syncToExternalSheet(userData) {
 // Default colleges used only for seeding Firebase (Admin panel → Seed default colleges)
 // image: college photo URL (you can update links in Admin → Colleges → Edit)
 const DEFAULT_COLLEGES = [
-  { priority: 2, name: "IIT Delhi", loc: "New Delhi, Delhi", icon: "🏛️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/IIT_Delhi_entrance_gate.jpg/1280px-IIT_Delhi_entrance_gate.jpg", bg: "linear-gradient(135deg,#EEF2FF,#C7D2FE)", about: "IIT Delhi...", campus: "...", place: "...", courses: [{ n: "B.Tech Computer Science", d: "4 Yrs · ₹8.5L/yr" }], info: [{ l: "Established", v: "1961" }] },
-  { priority: 1, name: "IIM Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "💼", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/IIM_Ahmedabad_New_Campus.jpg/1280px-IIM_Ahmedabad_New_Campus.jpg", bg: "linear-gradient(135deg,#FDF4FF,#E9D5FF)", about: "IIM-A...", campus: "...", place: "...", courses: [{ n: "MBA", d: "2 Yrs" }], info: [{ l: "Established", v: "1961" }] },
-  { priority: 3, name: "BITS Pilani", loc: "Pilani, Rajasthan", icon: "🔬", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BITS_Pilani.jpg/1280px-BITS_Pilani.jpg", bg: "linear-gradient(135deg,#EFF6FF,#BFDBFE)", about: "BITS...", campus: "...", place: "...", courses: [{ n: "B.E. CS", d: "4 Yrs" }], info: [{ l: "Established", v: "1964" }] },
-  { priority: 4, name: "AIIMS New Delhi", loc: "New Delhi, Delhi", icon: "⚗️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/AIIMS_New_Delhi_Overview.jpg/1280px-AIIMS_New_Delhi_Overview.jpg", bg: "linear-gradient(135deg,#ECFDF5,#A7F3D0)", about: "AIIMS...", campus: "...", place: "...", courses: [{ n: "MBBS", d: "5.5 Yrs" }], info: [{ l: "Established", v: "1956" }] },
-  { priority: 5, name: "Ashoka University", loc: "Sonipat, Haryana", icon: "🌐", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Ashoka_University_Campus.jpg/1280px-Ashoka_University_Campus.jpg", bg: "linear-gradient(135deg,#FFFBEB,#FDE68A)", about: "Ashoka...", campus: "...", place: "...", courses: [{ n: "B.A. Economics", d: "4 Yrs" }], info: [{ l: "Established", v: "2014" }] },
-  { priority: 6, name: "NID Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "🎨", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/A_building_within_NID_campus%2C_Ahmedabad.jpg/1280px-A_building_within_NID_campus%2C_Ahmedabad.jpg", bg: "linear-gradient(135deg,#FFF0F8,#FBCFE8)", about: "NID...", campus: "...", place: "...", courses: [{ n: "B.Des", d: "4 Yrs" }], info: [{ l: "Established", v: "1961" }] },
-  { priority: 7, name: "Acharya Bangalore B-School", loc: "Bangalore, Karnataka", icon: "🏫", image: "https://abbs.edu.in/wp-content/uploads/2023/11/abbs-campus.jpg", bg: "linear-gradient(135deg,#FFF0F8,#FBCFE8)", about: "One of the top business schools in Bangalore.", campus: "Modern campus.", place: "Top recruiters: IBM, Amazon.", courses: [{ n: "MBA", d: "2 Yrs" }, { n: "B.Sc Nursing", d: "4 Yrs" }], info: [{ l: "Established", v: "2008" }, { l: "Location", v: "Bangalore" }] },
-  { priority: 8, name: "JSS Science & Tech Univ", loc: "Mysore, Karnataka", icon: "🎓", image: "https://jssstuniv.in/wp-content/uploads/2021/11/IMG_20211119_161556-scaled.jpg", bg: "linear-gradient(135deg,#F0F9FF,#BAE6FD)", about: "SJCE Mysore, prestigious engineering college.", campus: "100-acre campus.", place: "Strong placements.", courses: [{ n: "B.E. Computer Science", d: "4 Yrs" }, { n: "B.E. Mechanical", d: "4 Yrs" }], info: [{ l: "Established", v: "1963" }, { l: "Location", v: "Mysore" }] }
+  { priority: 1, name: "Mookambigai College of Nursing", loc: "Mysore Road, Bangalore", icon: "🏥", image: "https://www.rajarajeswarimedicalcollege.in/wp-content/uploads/2018/11/mcon-building-1024x683.jpg", bg: "linear-gradient(135deg,#e0f2fe,#7dd3fc)", about: "Mookambigai College of Nursing is a premier institution in Bangalore, affiliated with RGUHS and approved by INC and KNC. Part of the prestigious RajaRajeswari group, it offers excellence in nursing education with a focus on clinical competence and compassion.", campus: "Integrated with the 1350-bedded RajaRajeswari Medical College & Hospital, the campus provides extensive clinical training, smart classrooms, advanced skill labs, and comfortable hostel facilities.", place: "Boasts a 100% placement track record with graduates placed in top hospitals across India and globally (UK, USA, Canada, Middle East). Comprehensive pre-placement training is provided starting from the first year.", courses: [{ n: "B.Sc Nursing", d: "4 Years", f: "Yr 1: ₹2.5L | Yr 2-4: ₹1.25L" }], info: [{ l: "Total Fees", v: "₹6.25 Lakhs" }, { l: "Hostel Fee", v: "₹75,000/yr" }, { l: "Affiliation", v: "RGUHS" }, { l: "Approval", v: "INC, KNC" }] },
+  { priority: 2, name: "IIT Delhi", loc: "New Delhi, Delhi", icon: "🏛️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/IIT_Delhi_entrance_gate.jpg/1280px-IIT_Delhi_entrance_gate.jpg", bg: "linear-gradient(135deg,#EEF2FF,#C7D2FE)", about: "IIT Delhi is one of the leading public technical and research universities in India.", campus: "Vibrant campus in Hauz Khas.", place: "Highest placements in India.", courses: [{ n: "B.Tech Computer Science", d: "4 Yrs · ₹8.5L/yr" }], info: [{ l: "Established", v: "1961" }] },
+  { priority: 3, name: "IIM Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "💼", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/IIM_Ahmedabad_New_Campus.jpg/1280px-IIM_Ahmedabad_New_Campus.jpg", bg: "linear-gradient(135deg,#FDF4FF,#E9D5FF)", about: "The top management school in India.", campus: "Iconic red-brick campus.", place: "100% placement in global firms.", courses: [{ n: "MBA", d: "2 Yrs" }], info: [{ l: "Established", v: "1961" }] },
+  { priority: 4, name: "BITS Pilani", loc: "Pilani, Rajasthan", icon: "🔬", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BITS_Pilani.jpg/1280px-BITS_Pilani.jpg", bg: "linear-gradient(135deg,#EFF6FF,#BFDBFE)", about: "Deemed university known for engineering excellence.", campus: "Sprawling heritage campus.", place: "0% unemployment for graduates.", courses: [{ n: "B.E. CS", d: "4 Yrs" }], info: [{ l: "Established", v: "1964" }] },
+  { priority: 5, name: "AIIMS New Delhi", loc: "New Delhi, Delhi", icon: "⚗️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/AIIMS_New_Delhi_Overview.jpg/1280px-AIIMS_New_Delhi_Overview.jpg", bg: "linear-gradient(135deg,#ECFDF5,#A7F3D0)", about: "AIIMS New Delhi is the premier hospital and medical university.", campus: "Central Delhi location.", place: "Global medical leaders.", courses: [{ n: "MBBS", d: "5.5 Yrs" }], info: [{ l: "Established", v: "1956" }] },
+  { priority: 6, name: "Acharya Bangalore B-School", loc: "Bangalore, Karnataka", icon: "🏫", image: "https://abbs.edu.in/wp-content/uploads/2023/11/abbs-campus.jpg", bg: "linear-gradient(135deg,#FFF0F8,#FBCFE8)", about: "One of the top business schools in Bangalore.", campus: "Modern campus.", place: "Top recruiters: IBM, Amazon.", courses: [{ n: "MBA", d: "2 Yrs" }, { n: "B.Sc Nursing", d: "4 Yrs" }], info: [{ l: "Established", v: "2008" }, { l: "Location", v: "Bangalore" }] }
 ];
 
 let collegesData = [];
@@ -844,6 +846,9 @@ function getFilteredColleges() {
   const locQ = (document.getElementById('locationSearchInput')?.value || "").toLowerCase().trim();
 
   return collegesData.filter((c) => {
+    // 0. Visibility check: ALWAYS hide from public site if marked as hidden
+    if (c.hidden) return false;
+
     let matchesLoc = true;
     let matchesName = true;
 
@@ -1056,7 +1061,10 @@ function populateCompareDropdowns() {
   const s2 = document.getElementById("compareCol2");
   if (!s1 || !s2) return;
 
-  const options = collegesData.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
+  const options = collegesData
+    .filter(c => !c.hidden)
+    .map(c => `<option value="${c.name}">${c.name}</option>`)
+    .join("");
   s1.innerHTML = `<option value="">Select College 1</option>` + options;
   s2.innerHTML = `<option value="">Select College 2</option>` + options;
 }
@@ -1291,14 +1299,40 @@ function renderCollegesSection() {
     return;
   }
   grid.innerHTML = list.map((c, idx) => {
+    const courseCount = (c.courses || []).length;
+    const topCourse = courseCount > 0 ? c.courses[0].n : "";
+    
     return `
-        <div class="col-card reveal hover-lift" onclick="openCollege(${idx})" style="transition-delay: ${idx * 0.05}s">
-          <div class="col-img">
-            <img src="${c.image}" loading="lazy" />
+        <div class="col-card hover-lift" onclick="openCollege(${idx})" style="transition-delay: ${idx * 0.05}s; position:relative; overflow:hidden; animation: fadeIn 0.5s ease both;">
+          <div class="col-img" style="height:180px;">
+            <img src="${c.image}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+            ${courseCount > 0 ? `<div class="badge-premium" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:4px 10px; border-radius:10px; font-size:0.65rem; font-weight:800; color:var(--pink); border:1px solid rgba(233,30,140,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-transform:uppercase;">PREMIUM</div>` : ''}
           </div>
-          <div class="col-body">
-            <div class="col-name">${c.name}</div>
-            <div class="col-loc">📍 ${c.loc}</div>
+          <div class="col-body" style="padding:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem;">
+                <div class="col-name" style="font-size:1.15rem; font-weight:850; letter-spacing:-0.03em; line-height:1.1; margin-bottom:0;">${c.name}</div>
+            </div>
+            <div class="col-loc" style="font-size:0.8rem; color:var(--gray); display:flex; align-items:center; gap:4px; margin-bottom:0.75rem;">
+                <i class="fa-solid fa-location-dot" style="font-size:0.7rem; color:var(--pink);"></i> ${c.loc}
+            </div>
+            
+            ${topCourse ? `
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.8rem; padding-top:0.8rem; border-top:1.5px solid #F3F4F6;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div style="width:24px; height:24px; border-radius:6px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:0.75rem;">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--dark); opacity:0.8;">${topCourse}</div>
+                </div>
+                <div style="font-size:0.7rem; font-weight:850; color:var(--pink);">${escapeHtml(c.courses[0].f || '')}</div>
+            </div>` : ''}
+            
+            <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.7rem; font-weight:800; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.05em;">View Details</span>
+                <div style="width:28px; height:28px; border-radius:50%; background:var(--dark); color:white; display:flex; align-items:center; justify-content:center; font-size:0.8rem; transition:0.3s;" class="arrow-indicator">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
           </div>
         </div>
       `;
@@ -1351,12 +1385,107 @@ function openCollege(idx, specificList) {
   
   const dCourses = document.getElementById('d-courses');
   const courses = Array.isArray(c.courses) ? c.courses : [];
-  if (dCourses) {
-    dCourses.innerHTML = courses.map(cr =>
-      `<div class="crs-item"><strong>${escapeHtml(cr.n)}</strong><span>${escapeHtml(cr.d)}</span></div>`
-    ).join('');
-  }
   
+  // Reusable function to render a single category's courses with the new fee breakdown
+  window._renderCategoryDetail = (catTitle) => {
+    const c = window._currentColData;
+    if (!c || !c.courses) return;
+    
+    // Filter the courses based on the same logic used to group them
+    const list = c.courses.filter(cr => {
+      const n = (cr.n || "").toLowerCase();
+      if (catTitle === "Management & Arts") return (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business"));
+      if (catTitle === "B.Sc & M.Sc Programs") return (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para"));
+      if (catTitle === "Engineering & B.Tech") return (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e "));
+      if (catTitle === "Diploma Programs") return (n.includes("diploma") || (n.startsWith("d") && n.includes("-")));
+      return false;
+    });
+
+    let html = `<div style="grid-column: 1/-1; animation: fadeIn 0.3s ease both;">
+                  <button onclick="openCollege(window._currentColIdx)" style="background:none; border:none; color:var(--pink); font-weight:800; cursor:pointer; padding:0; margin-bottom:1.5rem; display:flex; align-items:center; gap:8px;">
+                     <i class="fa-solid fa-arrow-left"></i> Back to Categories
+                  </button>
+                  <div style="margin-bottom:2rem;">
+                    <h3 style="font-size:1.8rem; font-weight:850; color:var(--dark); margin:0;">${catTitle}</h3>
+                    <p style="color:var(--gray); margin-top:0.4rem;">Explore specialized programs and detailed fee structures.</p>
+                  </div>
+                </div>`;
+    
+    html += list.map(cr => `
+      <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="flex:1;">
+               <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2;">${escapeHtml(cr.n)}</h4>
+               <div style="font-size:0.75rem; color:var(--gray); margin-top:4px; font-weight:700;">${escapeHtml(cr.d || 'Duration: N/A')}</div>
+            </div>
+            <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
+            <div>
+               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Fees</div>
+               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(cr.f || 'On Request')}</div>
+            </div>
+            <div>
+               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Admission</div>
+               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(cr.af || '₹0')}</div>
+            </div>
+        </div>
+
+        <button onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" class="btn-primary" style="width:100%; border-radius:12px; padding:0.8rem; font-size:0.85rem; font-weight:800;">Apply Now →</button>
+      </div>
+    `).join('');
+    
+    document.getElementById('d-courses').innerHTML = html;
+    document.getElementById('d-courses').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  if (dCourses) {
+    if (courses.length === 0) {
+      dCourses.innerHTML = '<p style="color:#9CA3AF; text-align:center; padding:2rem;">No programs available.</p>';
+    } else {
+      window._currentColIdx = idx; // Store for back navigation
+      window._currentColData = c;   // Store for re-filtering
+      
+      const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Diploma Programs"];
+      const groups = {
+        "B.Sc & M.Sc Programs": { icon: "🔬", img: "https://images.unsplash.com/photo-1579154235602-44373db99a23?q=80&w=400", list: [] },
+        "Management & Arts": { icon: "💼", img: "https://images.unsplash.com/photo-1454165833756-9a28622bde80?q=80&w=400", list: [] },
+        "Engineering & B.Tech": { icon: "⚙️", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=400", list: [] },
+        "Diploma Programs": { icon: "📜", img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=400", list: [] }
+      };
+
+      courses.forEach(cr => {
+        const n = (cr.n || "").toLowerCase();
+        // Check Diploma FIRST in Logic (to avoid misgrouping) but Order it last in UI
+        if (n.includes("diploma") || (n.startsWith("d") && n.includes("-"))) groups["Diploma Programs"].list.push(cr);
+        else if (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business")) groups["Management & Arts"].list.push(cr);
+        else if (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) groups["B.Sc & M.Sc Programs"].list.push(cr);
+        else if (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e ")) groups["Engineering & B.Tech"].list.push(cr);
+      });
+
+      let html = `<div style="grid-column: 1/-1; margin-bottom:1.5rem;"><h3 style="font-size:1.5rem; font-weight:850; color:var(--dark); margin:0;">Explore Programs</h3><p style="color:var(--gray); margin-top:0.3rem;">Secure your future with the right path.</p></div>`;
+      
+      order.forEach(title => {
+        const data = groups[title];
+        if (data.list.length > 0) {
+           html += `
+             <div class="cat-discovery-box" onclick="_renderCategoryDetail('${title}')">
+                <div class="cat-discovery-icon">${data.icon}</div>
+                <div class="cat-discovery-content">
+                   <h4 class="cat-discovery-title">${title}</h4>
+                   <p class="cat-discovery-msg">${data.list.length} programs</p>
+                </div>
+                <div class="cat-discovery-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+             </div>
+           `;
+        }
+      });
+      dCourses.innerHTML = html;
+      dCourses.className = "cat-discovery-grid";
+    }
+  }
+
   const dInfo = document.getElementById('d-info');
   const info = Array.isArray(c.info) ? c.info : [];
   if (dInfo) {
@@ -1396,7 +1525,10 @@ function toggleMenu() {
   const h = document.getElementById('ham');
   const m = document.getElementById('mobMenu');
   if (h) h.classList.toggle('open');
-  if (m) m.classList.toggle('open');
+  if (m) {
+    m.classList.toggle('open');
+    document.body.classList.toggle('menu-active');
+  }
 }
 window.toggleMenu = toggleMenu;
 
@@ -1404,7 +1536,10 @@ function closeMobileMenu() {
     const h = document.getElementById('ham');
     const m = document.getElementById('mobMenu');
     if (h && h.classList.contains('open')) h.classList.remove('open');
-    if (m && m.classList.contains('open')) m.classList.remove('open');
+    if (m && m.classList.contains('open')) {
+        m.classList.remove('open');
+        document.body.classList.remove('menu-active');
+    }
 }
 window.closeMobileMenu = closeMobileMenu;
 
@@ -1583,18 +1718,46 @@ function switchAdminTab(tab) {
 window.switchAdminTab = switchAdminTab;
 
 async function seedDefaultColleges() {
+  const input = prompt("How many items would you like to seed? (Enter a number)\nType 'F' after the number (e.g. '5F') to seed BLANK FORMATS instead of real details.", "5");
+  if (!input) return;
+
+  const isFormat = input.toLowerCase().includes("f");
+  const count = parseInt(input) || 1;
   const msgEl = document.getElementById("adminCollegesMessage");
-  if (msgEl) msgEl.textContent = "Seeding…";
+  
+  if (msgEl) msgEl.textContent = "Seeding " + (isFormat ? "blank formats" : "real data") + "...";
+  
   try {
-    for (const c of DEFAULT_COLLEGES) {
+    const toSeed = [];
+    if (isFormat) {
+      for (let i = 1; i <= count; i++) {
+        toSeed.push({
+          name: "New College #" + i,
+          loc: "City, State",
+          image: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1000",
+          icon: "🏫",
+          bg: "linear-gradient(135deg,#f3f4f6,#e5e7eb)",
+          about: "Description goes here...",
+          campus: "Campus details...",
+          place: "Placement info...",
+          courses: [{ n: "B.Sc Nursing", d: "4 Years", f: "₹0" }],
+          info: [{ l: "Established", v: "2024" }],
+          priority: 99
+        });
+      }
+    } else {
+      toSeed.push(...DEFAULT_COLLEGES.slice(0, count));
+    }
+
+    for (const c of toSeed) {
       await addDoc(collection(db, "colleges"), c);
     }
-    if (msgEl) msgEl.textContent = "Seeded " + DEFAULT_COLLEGES.length + " colleges.";
+    if (msgEl) msgEl.textContent = "Seeded " + toSeed.length + " items.";
     await loadAdminColleges();
     await loadColleges();
   } catch (err) {
     console.error(err);
-    if (msgEl) msgEl.textContent = "Error: " + (err.message || "seed failed");
+    if (msgEl) msgEl.textContent = "Seed error.";
   }
 }
 
@@ -1609,13 +1772,20 @@ async function loadAdminColleges() {
   try {
     const snapshot = await getDocs(collection(db, "colleges"));
     adminCollegesList = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-    if (msgEl && !msgEl.textContent.startsWith("Seeded")) msgEl.textContent = adminCollegesList.length + " colleges.";
-    adminCollegesList.forEach((c) => {
+    
+    // Respect the "Show Hidden" checkbox
+    const showHidden = document.getElementById("adminShowHidden")?.checked;
+    const listToShow = showHidden ? adminCollegesList : adminCollegesList.filter(c => !c.hidden);
+
+    if (msgEl && !msgEl.textContent.startsWith("Seeded")) msgEl.textContent = listToShow.length + " colleges.";
+    listToShow.forEach((c) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
           <td>${escapeHtml(c.name || "—")}</td>
           <td>${escapeHtml(c.loc || "—")}</td>
-          <td style="display:flex; gap:0.5rem;">
+          <td style="display:flex; gap:0.5rem; align-items:center;">
+            <div style="font-size:0.75rem; color:${c.hidden ? '#dc2626' : '#059669'}; font-weight:700;">${c.hidden ? 'Hidden' : 'Public'}</div>
+            <button type="button" class="btn-nav" onclick="toggleCollegeVisibility('${c.id}', ${!!c.hidden})" style="padding: .2rem .5rem; font-size: .75rem; background: ${c.hidden ? '#059669' : '#f59e0b'}; color:white;">${c.hidden ? 'Unhide' : 'Hide'}</button>
             <button type="button" class="btn-nav btn-login" onclick="openCollegeEdit('${c.id}')" style="padding: .2rem .5rem; font-size: .75rem;">Edit</button>
             <button type="button" class="btn-nav btn-logout" onclick="deleteCollege('${c.id}')" style="padding: .2rem .5rem; font-size: .75rem;">Delete</button>
           </td>
@@ -1640,6 +1810,65 @@ window.deleteCollege = async function (collegeId) {
     alert("Error deleting college. See console for details.");
   }
 };
+
+async function deleteAllColleges() {
+  if (!confirm("Are you SURE? This will permanently delete ALL colleges from the database!")) return;
+  const msgEl = document.getElementById("adminCollegesMessage");
+  if (msgEl) msgEl.textContent = "Clearing database...";
+  try {
+    const snapshot = await getDocs(collection(db, "colleges"));
+    const deletePromises = snapshot.docs.map(d => deleteDoc(doc(db, "colleges", d.id)));
+    await Promise.all(deletePromises);
+    if (msgEl) msgEl.textContent = "Deleted all " + snapshot.docs.length + " colleges.";
+    await loadAdminColleges();
+    await loadColleges();
+  } catch (err) {
+    console.error("Bulk delete error:", err);
+    if (msgEl) msgEl.textContent = "Clear failed. See console.";
+  }
+}
+
+async function toggleCollegeVisibility(id, isCurrentlyHidden) {
+  try {
+    await updateDoc(doc(db, "colleges", id), { hidden: !isCurrentlyHidden });
+    await loadAdminColleges();
+    await loadColleges();
+  } catch (err) {
+    console.error("Visibility toggle error:", err);
+  }
+}
+
+async function hideAllColleges() {
+  if (!confirm("Hide all colleges from the public site?")) return;
+  const msgEl = document.getElementById("adminCollegesMessage");
+  if (msgEl) msgEl.textContent = "Hiding all...";
+  try {
+    const snapshot = await getDocs(collection(db, "colleges"));
+    const updatePromises = snapshot.docs.map(d => updateDoc(doc(db, "colleges", d.id), { hidden: true }));
+    await Promise.all(updatePromises);
+    if (msgEl) msgEl.textContent = "Hidden all colleges.";
+    await loadAdminColleges();
+    await loadColleges();
+  } catch (err) {
+    console.error("Hide all error:", err);
+  }
+}
+
+async function unhideAllColleges() {
+  if (!confirm("Unhide all colleges and make them public?")) return;
+  const msgEl = document.getElementById("adminCollegesMessage");
+  if (msgEl) msgEl.textContent = "Unhiding all...";
+  try {
+    const snapshot = await getDocs(collection(db, "colleges"));
+    const updatePromises = snapshot.docs.map(d => updateDoc(doc(db, "colleges", d.id), { hidden: false }));
+    await Promise.all(updatePromises);
+    if (msgEl) msgEl.textContent = "Restored all colleges.";
+    await loadAdminColleges();
+    await loadColleges();
+  } catch (err) {
+    console.error("Unhide all error:", err);
+  }
+}
 
 async function loadAdminApplications() {
   const tbody = document.getElementById("adminApplicationsBody");
@@ -1817,9 +2046,12 @@ window.toggleMenu = toggleMenu;
 function populateCollegeDropdown() {
   const dropdown = document.getElementById("collegeSuggestions");
   if (!dropdown) return;
-  dropdown.innerHTML = collegesData.map((c, idx) => {
+  dropdown.innerHTML = collegesData
+    .map((c, idx) => ({ ...c, idx }))
+    .filter(c => !c.hidden)
+    .map((c) => {
     return `
-        <div class="suggestion-item" onclick="selectCollege(${idx})">
+        <div class="suggestion-item" onclick="selectCollege(${c.idx})">
           <div class="suggestion-name">${c.name}</div>
           <div class="suggestion-loc">${c.loc || ""}</div>
         </div>
@@ -1849,64 +2081,24 @@ window.selectCollege = selectCollege;
 
 const COURSE_CATEGORIES = [
   {
-    name: "Engineering & Technology",
+    name: "Engineering & B.Tech",
     icon: "⚙️",
-    keywords: ["B.TECH", "M.TECH", "B.E", "M.E", "ENGINEERING", "MECHANICAL", "CIVIL", "ELECTRICAL", "ELECTRONICS", "AEROSPACE", "ROBOTICS", "AUTOMOBILE", "CHEMICAL", "BIOTECHNOLOGY", "INSTRUMENTATION", "METALLURGY", "MINING", "POLYTECHNIC", "DIPLOMA IN ENG"]
+    keywords: ["B.TECH", "M.TECH", "B.E", "M.E", "BE ", "ENGINEERING"]
   },
   {
-    name: "Medical & Health Sciences",
-    icon: "🩺",
-    keywords: ["MBBS", "BDS", "MD", "MS ", "BAMS", "BHMS", "VETERINARY", "PHARMACY", "D.PHARM", "B.PHARM", "M.PHARM", "PHYSIOTHERAPY", "BPT", "MPT", "OPTOMETRY", "HOMEOPATHY", "AYURVEDA", "PHARM.D"]
-  },
-  {
-    name: "Nursing",
-    icon: "🏥",
-    keywords: ["NURSING", "GNM", "ANM", "POST BASIC"]
-  },
-  {
-    name: "Computer & IT",
-    icon: "💻",
-    keywords: ["BCA", "MCA", "COMPUTER APPLICATION", "CYBER SECURITY", "BLOCKCHAIN", "SOFTWARE", "IT ", "INFORMATION TECHNOLOGY", "COMPUTER SCIENCE", "DATA SCIENCE", "AI & DS"]
-  },
-  {
-    name: "Management & Commerce",
-    icon: "💼",
-    keywords: ["MBA", "BBA", "M.COM", "B.COM", "MANAGEMENT", "BUSINESS", "PGDM", "COMMERCE", "FINANCE", "HR", "MARKETING", "HOSPITAL ADMINISTRATION", "LOGISTICS", "ACCOUNTING", "HUMAN RESOURCE", "HOTEL MANAGEMENT", "BHM"]
-  },
-  {
-    name: "Paramedical & Allied Health",
-    icon: "🧬",
-    keywords: ["PARAMEDICAL", "LABORATORY", "RADIOLOGY", "DIALYSIS", "OPERATION THEATRE", "CARDIAC", "NEPHROLOGY", "AUDIOLOGY", "NUTRITION", "DIETETICS", "REHABILITATION", "IMAGING", "ANAESTHESIA", "PERFUSION", "MEDICAL TECHNOLOGY"]
-  },
-  {
-    name: "Arts & Humanities",
-    icon: "🎨",
-    keywords: ["B.A", "M.A", "ECONOMICS", "PSYCHOLOGY", "SOCIOLOGY", "ENGLISH", "HISTORY", "GEOGRAPHY", "PHILOSOPHY", "POLITICAL SCIENCE", "LINGUISTICS", "JOURNALISM", "MASS COMMUNICATION", "SOCIAL WORK", "BSW", "MSW"]
-  },
-  {
-    name: "Pure Sciences",
+    name: "B.Sc & M.Sc Programs",
     icon: "🔬",
-    keywords: ["B.SC", "M.SC", "PHYSICS", "CHEMISTRY", "BIOLOGY", "MATHEMATICS", "BOTANY", "ZOOLOGY", "GEOLOGY", "MICROBIOLOGY", "BIOCHEMISTRY", "GENETICS", "ENVIRONMENTAL SCIENCE", "FORENSIC SCIENCE", "STATISTICS"]
+    keywords: ["B.SC", "M.SC", "BSC", "MSC", "NURSING", "PHYSIOTHERAPY", "ALLIED", "PARAMEDICAL"]
   },
   {
-    name: "Education & Teaching",
-    icon: "🍎",
-    keywords: ["B.ED", "M.ED", "BED", "MED", "EDUCATION", "TEACHING", "TTC", "D.EL.ED", "B.EL.ED"]
+    name: "Management & Arts",
+    icon: "💼",
+    keywords: ["BCA", "MCA", "MBA", "BBA", "B.COM", "M.COM", "BCOM", "MCOM", " B.A", " M.A", "BA ", "MA ", "MANAGEMENT", "BUSINESS"]
   },
   {
-    name: "Law, Design & Architecture",
-    icon: "⚖️",
-    keywords: ["LAW", "LLB", "LLM", "DESIGN", "B.DES", "M.DES", "ANIMATION", "FILM", "MULTIMEDIA", "VFX", "FASHION", "ARCHITECTURE", "B.ARCH", "M.ARCH"]
-  },
-  {
-    name: "Agriculture & Forestry",
-    icon: "🌱",
-    keywords: ["AGRICULTURE", "FORESTRY", "HORTICULTURE", "FISHERIES", "B.SC AGRI", "M.SC AGRI", "AGRONOMY", "SERICULTURE"]
-  },
-  {
-    name: "All Courses",
-    icon: "📋",
-    keywords: []
+    name: "Diploma Programs",
+    icon: "📜",
+    keywords: ["DIPLOMA", "LATERAL ENTRY", "ITI", "D-PHARM", "D-NURSING"]
   }
 ];
 
@@ -1970,27 +2162,36 @@ function renderCourseCategories() {
   if (eyebrow) eyebrow.style.display = "none";
   if (subText) subText.textContent = "Choose a category to explore colleges and programs.";
 
-  // Replace grid with a wrapper that has crs-cat-grid class
-  grid.className = "crs-cat-grid";
-  grid.innerHTML = COURSE_CATEGORIES.map((cat, idx) => {
-    const col = CAT_COLORS[idx % CAT_COLORS.length];
-    const isAll = cat.keywords.length === 0;
+  grid.className = "crs-list-all";
+  // ENFORCE ORDER: BSC -> MANAGEMENT -> ENGINEERING -> DIPLOMA
+  const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Diploma Programs"];
+  const imgMap = {
+    "Engineering & B.Tech": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600",
+    "B.Sc & M.Sc Programs": "https://images.unsplash.com/photo-1579154235602-44373db99a23?q=80&w=600",
+    "Management & Arts": "https://images.unsplash.com/photo-1454165833756-9a28622bde80?q=80&w=600",
+    "Diploma Programs": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=600"
+  };
 
-    return `
-        <div class="crs-cat-card${isAll ? " crs-cat-all" : ""}" onclick="selectCourseCategory(${idx})">
-          <div class="crs-cat-icon-box" style="background:${col.bg}; color:${col.color};">
-            ${cat.icon}
+  html += `<div class="cat-discovery-grid">`;
+  order.forEach(title => {
+    const catIdx = COURSE_CATEGORIES.findIndex(c => c.name === title);
+    if (catIdx !== -1) {
+      const cat = COURSE_CATEGORIES[catIdx];
+      html += `
+          <div class="cat-discovery-box" onclick="selectCourseCategory(${catIdx})" style="background-image:url('${imgMap[title]}'); height:220px;">
+             <div class="cat-discovery-content">
+                <div class="cat-discovery-icon">${cat.icon}</div>
+                <h3 class="cat-discovery-title" style="font-size:1.1rem;">${title}</h3>
+                <p class="cat-discovery-msg">Click to explore</p>
+             </div>
+             <div class="cat-discovery-arrow"><i class="fa-solid fa-arrow-right"></i></div>
           </div>
-          <div class="crs-cat-content">
-            <h3 class="crs-cat-name">${cat.name}</h3>
-            <div class="crs-cat-footer">
-               <span class="crs-cat-explore">Explore Category</span>
-               <i class="fa-solid fa-arrow-right"></i>
-            </div>
-          </div>
-        </div>
       `;
-  }).join("");
+    }
+  });
+  html += `</div>`;
+
+  grid.innerHTML = html;
 }
 window.renderCourseCategories = renderCourseCategories;
 
@@ -2237,25 +2438,31 @@ function renderCourses() {
     return;
   }
 
-  // Store flat list for detail view (needed for openCourseDetail by idx)
-  window._flatCourses = filtered;
+  // Show individual courses as simplified Apply-focused cards
+  grid.innerHTML = filtered.map(({ course, college }, idx) => `
+    <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="flex:1;">
+             <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2;">${escapeHtml(course.n)}</h4>
+             <div onclick="openCollegeByName('${escapeQuote(college.name)}')" style="cursor:pointer; font-size:0.75rem; color:var(--gray); margin-top:4px; font-weight:700;">🏛️ ${escapeHtml(college.name)}</div>
+          </div>
+          <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+      </div>
+      
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
+          <div>
+             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Total Fees</div>
+             <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(course.f || 'On Request')}</div>
+          </div>
+          <div>
+             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Location</div>
+             <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(college.loc || '—')}</div>
+          </div>
+      </div>
 
-  // Build a college-grouped card view using the cleaner 'col-card' style
-  grid.innerHTML = groups.map((group) => {
-    const { college, courses } = group;
-    
-    return `
-        <div class="col-card" onclick="openCollegeByName('${escapeQuote(college.name)}')">
-          <div class="col-img">
-            <img src="${college.image}" onerror="this.src='https://placehold.co/600x400?text=${escapeHtml(college.name)}'" />
-          </div>
-          <div class="col-body">
-            <div class="col-name">${escapeHtml(college.name)}</div>
-            <div class="col-loc">📍 ${escapeHtml(college.loc || "")}</div>
-          </div>
-        </div>
-      `;
-  }).join("");
+      <button onclick="openApplyModal('${escapeQuote(college.name)}', '${escapeQuote(course.n)}', '')" class="btn-primary" style="width:100%; border-radius:12px; padding:0.8rem; font-size:0.85rem; font-weight:800;">Apply Now →</button>
+    </div>
+  `).join("");
 }
 window.renderCourses = renderCourses;
 
@@ -2279,6 +2486,7 @@ function openCourseDetail(idx) {
 
   const info = Array.isArray(college.info) ? college.info : [];
   const courseInfo = [
+    { l: "Fees", v: course.f || "On Request" },
     { l: "Duration", v: course.d || "—" },
     { l: "College", v: college.name || "—" },
     { l: "Location", v: college.loc || "—" },
