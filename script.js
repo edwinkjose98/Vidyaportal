@@ -115,6 +115,7 @@ console.log("Firebase initialized with API Key:", firebaseConfig.apiKey);
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // ===== PHONE / OTP MODAL =====
 let confirmationResult = null;
