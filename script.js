@@ -1161,7 +1161,7 @@ function showCollegesByCategory(category) {
   const keywordMap = {
     engineering: ['b.tech', 'btech', 'b.e', 'engineering', 'cse', 'mechanical', 'electrical', 'civil', 'ece'],
     management:  ['mba', 'bba', 'management', 'business', 'commerce', 'finance', 'marketing', 'b.com', 'bcom'],
-    medical:     ['mbbs', 'nursing', 'pharmacy', 'bpharma', 'b.pharm', 'medical', 'bsc nursing', 'ayurveda', 'dental'],
+    medical:     ['mbbs', 'nursing', 'pharmacy', 'bpharma', 'b.pharm', 'medical', 'bsc nursing', 'ayurveda', 'dental', 'bpt', 'physio', 'physiotherapy'],
     design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'visual'],
     arts:        ['ba', 'b.a', 'arts', 'humanities', 'social', 'literature', 'psychology', 'sociology']
   };
@@ -1548,9 +1548,9 @@ function openCollege(idx, specificList) {
     const list = c.courses.filter(cr => {
       const n = (cr.n || "").toLowerCase();
       if (catTitle === "Management & Arts") return (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business"));
-      if (catTitle === "B.Sc & M.Sc Programs") return (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para"));
+      if (catTitle === "B.Sc & M.Sc Programs") return (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) && !n.includes("bpt") && !n.includes("physio") && !n.includes("pharmacy");
       if (catTitle === "Engineering & B.Tech") return (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e "));
-      if (catTitle === "Diploma Programs") return (n.includes("diploma") || (n.startsWith("d") && n.includes("-")));
+      if (catTitle === "Other Courses & Diplomas") return (n.includes("diploma") || (n.startsWith("d") && n.includes("-")) || n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma"));
       return false;
     });
 
@@ -1625,7 +1625,7 @@ function openCollege(idx, specificList) {
       let yearHtml = '';
       for (let i = 1; i <= dur; i++) {
         const label = i === 1 ? "1st" : i === 2 ? "2nd" : i === 3 ? "3rd" : "4th";
-        const val = yearMap[i] ? indianFmt(yearMap[i]) : "On Request";
+        const val = (yearMap[i] === "INTERNSHIP" || (cr[`year_${i}`] || "").toLowerCase().includes("internship")) ? "Internship" : (yearMap[i] ? indianFmt(yearMap[i]) : "On Request");
         yearHtml += `
           <div style="padding:0.6rem; background:#fff; border:1px solid #F3F4F6; border-radius:12px; text-align:center;">
              <div style="font-size:0.55rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">${label} Year</div>
@@ -1677,18 +1677,18 @@ function openCollege(idx, specificList) {
       window._currentColIdx = idx; // Store for back navigation
       window._currentColData = c;   // Store for re-filtering
       
-      const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Diploma Programs"];
+      const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Other Courses & Diplomas"];
       const groups = {
         "B.Sc & M.Sc Programs": { icon: "🔬", img: "nursing_college_category_1774427669008.png", list: [] },
         "Management & Arts": { icon: "💼", img: "management_college_category_1774427684353.png", list: [] },
         "Engineering & B.Tech": { icon: "⚙️", img: "engineering_college_category_1774427701464.png", list: [] },
-        "Diploma Programs": { icon: "📜", img: "paramedical_college_category_1774427719498.png", list: [] }
+        "Other Courses & Diplomas": { icon: "🎓", img: "paramedical_college_category_1774427719498.png", list: [] }
       };
 
       courses.forEach(cr => {
         const n = (cr.n || "").toLowerCase();
         // Check Diploma FIRST in Logic (to avoid misgrouping) but Order it last in UI
-        if (n.includes("diploma") || (n.startsWith("d") && n.includes("-"))) groups["Diploma Programs"].list.push(cr);
+        if (n.includes("diploma") || (n.startsWith("d") && n.includes("-")) || n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma")) groups["Other Courses & Diplomas"].list.push(cr);
         else if (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business")) groups["Management & Arts"].list.push(cr);
         else if (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) groups["B.Sc & M.Sc Programs"].list.push(cr);
         else if (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e ")) groups["Engineering & B.Tech"].list.push(cr);
