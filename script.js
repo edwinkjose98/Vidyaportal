@@ -199,11 +199,14 @@ function isAdminEmail(email) {
 }
 
 function updateAuthUI(loggedIn) {
-  const authBtns = document.querySelectorAll(".nav-auth-buttons");
   const logoutBtns = document.querySelectorAll(".nav-logout-wrap");
   
-  authBtns.forEach(el => { if (el) el.style.setProperty("display", loggedIn ? "none" : "flex", "important"); });
   logoutBtns.forEach(el => { if (el) el.style.setProperty("display", loggedIn ? "flex" : "none", "important"); });
+
+  const main = document.getElementById("mainPage");
+  const login = document.getElementById("login-div");
+  if (main) main.style.display = loggedIn ? "block" : "none";
+  if (login) login.style.display = loggedIn ? "none" : "flex";
 
   const userNameEls = document.querySelectorAll(".nav-user-name");
   const adminLinks = document.querySelectorAll(".nav-admin-link");
@@ -257,19 +260,18 @@ function updateAuthUI(loggedIn) {
 }
 
 function logout() {
-  const main = document.getElementById("mainPage");
-  const login = document.getElementById("login-div");
-  if (main) main.style.display = "none";
-  if (login) login.style.display = "flex";
   signOut(auth).then(() => {
     clearUserFromStorage();
     updateAuthUI(false);
     const m = document.getElementById("mobMenu");
     if (m && m.classList.contains("open")) toggleMenu();
+    // Force a reload to clear any cached states/variables
+    window.location.reload();
   }).catch((err) => {
     console.error("Logout error:", err);
     clearUserFromStorage();
     updateAuthUI(false);
+    window.location.reload();
   });
 }
 window.logout = logout;
