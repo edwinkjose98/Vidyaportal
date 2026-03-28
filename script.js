@@ -1683,9 +1683,9 @@ function openCollege(idx, specificList) {
         const label = i === 1 ? "1st" : i === 2 ? "2nd" : i === 3 ? "3rd" : "4th";
         const val = (yearMap[i] === "INTERNSHIP" || (cr[`year_${i}`] || "").toLowerCase().includes("internship")) ? "Internship" : (yearMap[i] ? indianFmt(yearMap[i]) : "On Request");
         yearHtml += `
-          <div style="padding:0.6rem; background:#fff; border:1px solid #F3F4F6; border-radius:12px; text-align:center;">
+          <div class="year-box" style="padding:0.6rem; background:#fff; border:1px solid #F3F4F6; border-radius:12px; text-align:center;">
              <div style="font-size:0.55rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">${label} Year</div>
-             <div style="font-size:0.8rem; font-weight:800; color:var(--dark);">${val}</div>
+             <div class="year-val" style="font-size:0.8rem; font-weight:800; color:var(--dark);">${val}</div>
           </div>
         `;
       }
@@ -1703,14 +1703,14 @@ function openCollege(idx, specificList) {
             <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem; flex-shrink:0;"><i class="fa-solid fa-graduation-cap"></i></div>
         </div>
         
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
+        <div class="fee-box-wrap" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
             <div style="text-align:center;">
                <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px; white-space:nowrap;">TOTAL FEES</div>
-               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(totalFmt)}</div>
+               <div class="fee-val" style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(totalFmt)}</div>
             </div>
             <div style="text-align:center;">
                <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px; white-space:nowrap;">ADMISSION FEE</div>
-               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(admFeeRaw)}</div>
+               <div class="fee-val" style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(admFeeRaw)}</div>
             </div>
         </div>
 
@@ -1718,7 +1718,7 @@ function openCollege(idx, specificList) {
             ${yearHtml}
         </div>
 
-        <button onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" style="width:100%; border-radius:16px; padding:1.1rem; font-size:0.92rem; font-weight:900; margin-top:1.25rem; background:var(--pink); color:white; border:none; box-shadow: 0 10px 25px -8px rgba(233,30,140,0.45); cursor:pointer; transition:0.3s; letter-spacing:-0.01em; display:flex; align-items:center; justify-content:center; gap:8px;">Apply Now <i class="fa-solid fa-arrow-right" style="font-size:0.8em;"></i></button>
+        <button class="btn-apply-course" onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" style="width:100%; border-radius:16px; padding:1.1rem; font-size:0.92rem; font-weight:900; margin-top:1.25rem; background:var(--pink); color:white; border:none; box-shadow: 0 10px 25px -8px rgba(233,30,140,0.45); cursor:pointer; transition:0.3s; letter-spacing:-0.01em; display:flex; align-items:center; justify-content:center; gap:8px;">Apply Now <i class="fa-solid fa-arrow-right" style="font-size:0.8em;"></i></button>
       </div>`;
     }).join('');
     

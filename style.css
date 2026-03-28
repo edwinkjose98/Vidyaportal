@@ -5091,20 +5091,49 @@ body:has(#signup-div[style*="display: flex"]) {
         gap: 0.75rem !important;
     }
     .crs-list {
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+        padding: 0 0.5rem !important;
     }
     .crs-item-premium {
-        padding: 1rem !important;
-        border-radius: 20px !important;
-        gap: 0.8rem !important;
+        padding: 0.8rem 0.6rem !important;
+        border-radius: 16px !important;
+        gap: 0.7rem !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        border-width: 1.5px !important;
     }
     .crs-item-premium h4 {
-        font-size: 1rem !important;
+        font-size: 0.82rem !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        font-weight: 800 !important;
+        line-height: 1.15 !important;
+        height: 1.85rem !important; /* Force certain height for alignment */
     }
-    .crs-item-premium .btn-primary {
-        padding: 0.7rem !important;
+    .crs-item-premium .fee-box-wrap {
+        padding: 0.5rem !important;
+        gap: 0.4rem !important;
+        border-radius: 10px !important;
+    }
+    .crs-item-premium .fee-box-wrap .fee-val {
         font-size: 0.75rem !important;
+    }
+    .crs-item-premium .year-box {
+        padding: 0.4rem 0.2rem !important;
+        border-radius: 8px !important;
+    }
+    .crs-item-premium .year-val {
+        font-size: 0.65rem !important;
+    }
+    .crs-item-premium .btn-apply-course {
+        padding: 0.6rem !important;
+        font-size: 0.72rem !important;
+        margin-top: 0.5rem !important;
+        border-radius: 10px !important;
     }
 }
 
