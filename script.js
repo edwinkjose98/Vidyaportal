@@ -30,6 +30,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
   RecaptchaVerifier,
@@ -37,7 +39,9 @@ import {
   EmailAuthProvider,
   linkWithCredential,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  updatePassword,
+  updateEmail
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import {
   getFirestore,
@@ -50,8 +54,19 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where
+  where,
+  limit,
+  orderBy,
+  onSnapshot,
+  increment,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
 
 // ===== EXPORTS (Top Level for Reliability) =====
 // Note: functions assigned here are hoisted, so this is safe for function declarations.
@@ -420,8 +435,9 @@ function setupRecaptcha() {
   }
   const container = document.getElementById('recaptcha-container');
   if (container) {
+    container.style.display = "none";
     window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      size: 'normal', callback: () => { }
+      size: 'invisible', callback: () => { }
     });
   }
 }
@@ -500,9 +516,9 @@ async function sendRegistrationOTP() {
         const fullPhone = "+91" + phone;
         if (!window.recaptchaRegVerifier) {
             const container = document.getElementById('recaptcha-reg-container');
-            if (container) container.style.display = 'block';
+            if (container) container.style.display = 'none';
             window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
-                size: 'normal',
+                size: 'invisible',
                 callback: () => { }
             });
         }
@@ -701,7 +717,18 @@ async function doLogin(event) {
 const _googleProvider = new GoogleAuthProvider();
 async function doGoogleLogin() {
   try {
-    const result = await signInWithPopup(auth, _googleProvider);
+    await signInWithRedirect(auth, _googleProvider);
+  } catch (err) {
+    console.error("Google Redirect Error:", err);
+  }
+}
+
+// Logic to handle user data after redirect returns
+async function handleGoogleRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result) return; // No result yet or normal page load
+
     const user = result.user;
     const userSnap = await getDoc(doc(db, "users", user.uid));
     const isUserAdmin = isAdminEmail(user.email);
@@ -2211,6 +2238,46 @@ function openAddCollege() {
 
 window.openAdminPanel = openAdminPanel;
 window.closeAdminPanel = closeAdminPanel;
+
+async function adminUploadCollegeImage(el) {
+    const file = el.files[0];
+    if (!file) return;
+
+    const msg = document.getElementById("uploadStatusMsg");
+    if (msg) {
+        msg.style.display = "block";
+        msg.textContent = "⏳ Uploading...";
+    }
+
+    try {
+        const timestamp = Date.now();
+        const fileName = `colleges/${timestamp}_${file.name}`;
+        const storageRef = ref(storage, fileName);
+        
+        const uploadTask = uploadBytesResumable(storageRef, file);
+        
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                msg.textContent = `⏳ Uploading (${Math.round(progress)}%)...`;
+            }, 
+            (error) => {
+                console.error("Upload Error:", error);
+                msg.textContent = "❌ Upload failed.";
+            }, 
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                const urlIn = document.getElementById("editImage");
+                if (urlIn) urlIn.value = downloadURL;
+                msg.textContent = "✅ Upload Successful!";
+            }
+        );
+    } catch (err) {
+        console.error(err);
+        if (msg) msg.textContent = "❌ Error uploading file.";
+    }
+}
+window.adminUploadCollegeImage = adminUploadCollegeImage;
 window.switchAdminTab = switchAdminTab;
 window.seedDefaultColleges = seedDefaultColleges;
 window.openCollegeEdit = openCollegeEdit;

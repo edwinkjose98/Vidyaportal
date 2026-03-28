@@ -1172,6 +1172,13 @@
 
                             <label>Image URL (college photo)</label>
                             <input type="url" id="editImage" placeholder="https://example.com/college-photo.jpg" />
+                            
+                            <!-- New Direct Upload Option -->
+                            <div style="margin-top: 0.5rem; background: #fdf2f8; border: 1px dashed #f9a8d4; border-radius: 10px; padding: 1rem;">
+                                <label style="display:block; font-size: 0.75rem; font-weight: 700; color: #be185d; margin-bottom: 0.4rem;">OR Upload Image Direct</label>
+                                <input type="file" id="editImageFile" accept="image/*" style="font-size: 0.8rem; color: #6b7280;" onchange="adminUploadCollegeImage(this)" />
+                                <div id="uploadStatusMsg" style="font-size: 0.75rem; font-weight: 600; color: #db2777; margin-top: 0.3rem; display: none;">Uploading...</div>
+                            </div>
 
                             <label>Icon (emoji, fallback if no image)</label>
                             <input type="text" id="editIcon" placeholder="🏛️" />
