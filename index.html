@@ -1012,17 +1012,38 @@
                             <!-- Info Strip -->
                             <div class="det-info-strip" id="d-info"></div>
 
-                            <!-- About -->
-                            <h3 class="det-sec-h">About the Institution</h3>
-                            <p class="det-txt" id="d-about"></p>
+                             <!-- About Accordion -->
+                             <div class="det-accordion-item">
+                                 <button class="det-accordion-btn" onclick="toggleDetAccordion('d-about-wrap', this)">
+                                     <span><i class="fa-solid fa-circle-info"></i> About the Institution</span>
+                                     <i class="fa-solid fa-chevron-down chevron"></i>
+                                 </button>
+                                 <div id="d-about-wrap" class="det-accordion-content">
+                                     <p class="det-txt" id="d-about"></p>
+                                 </div>
+                             </div>
 
-                            <!-- Campus -->
-                            <h3 class="det-sec-h">Campus Life & Facilities</h3>
-                            <p class="det-txt" id="d-campus"></p>
+                             <!-- Campus Accordion -->
+                             <div class="det-accordion-item">
+                                 <button class="det-accordion-btn" onclick="toggleDetAccordion('d-campus-wrap', this)">
+                                     <span><i class="fa-solid fa-building-columns"></i> Campus Life & Facilities</span>
+                                     <i class="fa-solid fa-chevron-down chevron"></i>
+                                 </button>
+                                 <div id="d-campus-wrap" class="det-accordion-content">
+                                     <p class="det-txt" id="d-campus"></p>
+                                 </div>
+                             </div>
 
-                            <!-- Placements -->
-                            <h3 class="det-sec-h">Placements & Career Outcomes</h3>
-                            <p class="det-txt" id="d-place"></p>
+                             <!-- Placements Accordion -->
+                             <div class="det-accordion-item">
+                                 <button class="det-accordion-btn" onclick="toggleDetAccordion('d-place-wrap', this)">
+                                     <span><i class="fa-solid fa-briefcase"></i> Placements & Career Outcomes</span>
+                                     <i class="fa-solid fa-chevron-down chevron"></i>
+                                 </button>
+                                 <div id="d-place-wrap" class="det-accordion-content">
+                                     <p class="det-txt" id="d-place"></p>
+                                 </div>
+                             </div>
                         </div>
 
                         <!-- Programs (Moved to Last) -->
@@ -1403,7 +1424,7 @@
                         <label
                             style="display:block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#374151;margin-bottom:.3rem;">Phone
                             *</label>
-                        <input id="applyPhone" type="tel" placeholder="+91 98765 43210"
+                        <input id="applyPhone" type="tel" placeholder="10-digit Mobile Number" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '');"
                             style="width:100%;padding:.7rem 1rem!important;border:1.5px solid #E5E7EB!important;border-radius:10px!important;font-size:.88rem;font-family:inherit;outline:none;background:#F9FAFB;"
                             onfocus="this.style.borderColor='#E91E8C'" onblur="this.style.borderColor='#E5E7EB'" />
                     </div>

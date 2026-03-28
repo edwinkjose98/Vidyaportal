@@ -5092,3 +5092,64 @@ body:has(#signup-div[style*="display: flex"]) {
     top: 40px;
     opacity: 1;
 }
+
+/* College Detail Accordion */
+.det-accordion-item {
+    margin-bottom: 0.75rem;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #F3F4F6;
+    background: #fff;
+    transition: 0.3s ease;
+}
+.det-accordion-btn {
+    width: 100%;
+    padding: 1.1rem 1.4rem;
+    background: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.det-accordion-btn span {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.det-accordion-btn span i {
+    color: var(--pink);
+    width: 20px;
+    text-align: center;
+}
+.det-accordion-btn .chevron {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.det-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+}
+.det-accordion-item.active {
+    border-color: rgba(233, 30, 140, 0.2);
+    box-shadow: 0 10px 25px -10px rgba(0,0,0,0.05);
+}
+.det-accordion-item.active .det-accordion-btn {
+    background: rgba(233, 30, 140, 0.02);
+}
+.det-accordion-item.active .chevron {
+    transform: rotate(180deg);
+    color: var(--pink);
+}
+.det-accordion-item.active .det-accordion-content {
+    max-height: 1000px;
+    padding-bottom: 1.25rem;
+    padding-top: 0;
+} .det-txt { padding: 0 1.4rem 1.2rem; margin: 0; }

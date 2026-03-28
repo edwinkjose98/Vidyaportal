@@ -1527,6 +1527,11 @@ function openCollege(idx, specificList) {
   
   const dPlace = document.getElementById('d-place');
   if (dPlace) dPlace.textContent = c.place || '';
+
+  // Handle Accordion Reset and Default Open
+  document.querySelectorAll('.det-accordion-item').forEach(item => item.classList.remove('active'));
+  const firstAcc = document.querySelector('.det-accordion-item');
+  if (firstAcc) { /* No auto-open */ }
   
   const dCourses = document.getElementById('d-courses');
   const courses = Array.isArray(c.courses) ? c.courses : [];
@@ -1597,16 +1602,30 @@ function openCollege(idx, specificList) {
          });
       } else {
          totalNum = parseFee(rawFee);
-         const avg = totalNum ? Math.floor(totalNum / dur) : 0;
-         for(let i=1; i<=dur; i++) yearMap[i] = avg;
+         // Check for specific year_X keys in the JSON (e.g. year_1, year_2)
+         for (let i = 1; i <= dur; i++) {
+           const yVal = cr[`year_${i}`];
+           if (yVal) {
+             yearMap[i] = parseFee(yVal);
+           } else {
+             // Fallback to average if individual year keys are missing
+             yearMap[i] = totalNum ? Math.floor(totalNum / dur) : 0;
+           }
+         }
       }
 
-      const totalFmt = totalNum ? "₹" + (totalNum / 100000).toFixed(2) + "L" : "On Request";
+      // Helper for Indian Currency Formatting (e.g. ₹1,50,000 instead of 1.5L)
+      const indianFmt = (num) => {
+         if (!num) return "On Request";
+         return "₹" + Math.round(num).toLocaleString('en-IN');
+      };
+
+      const totalFmt = totalNum ? indianFmt(totalNum) : "On Request";
 
       let yearHtml = '';
       for (let i = 1; i <= dur; i++) {
         const label = i === 1 ? "1st" : i === 2 ? "2nd" : i === 3 ? "3rd" : "4th";
-        const val = yearMap[i] ? "₹" + (yearMap[i] / 100000).toFixed(2) + "L" : "On Request";
+        const val = yearMap[i] ? indianFmt(yearMap[i]) : "On Request";
         yearHtml += `
           <div style="padding:0.6rem; background:#fff; border:1px solid #F3F4F6; border-radius:12px; text-align:center;">
              <div style="font-size:0.55rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">${label} Year</div>
@@ -1614,6 +1633,9 @@ function openCollege(idx, specificList) {
           </div>
         `;
       }
+
+      // Always show Admission Fee box per user request
+      const admFeeRaw = (cr.admission_fee || cr.af || '₹0').toString();
 
       return `
       <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1.2rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both; min-height:100%;">
@@ -1626,13 +1648,13 @@ function openCollege(idx, specificList) {
         </div>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
-            <div>
-               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">TOTAL FEES</div>
+            <div style="text-align:center;">
+               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px; white-space:nowrap;">TOTAL FEES</div>
                <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(totalFmt)}</div>
             </div>
-            <div>
-               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">ADMISSION FEE</div>
-               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(cr.af || '₹0')}</div>
+            <div style="text-align:center;">
+               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px; white-space:nowrap;">ADMISSION FEE</div>
+               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(admFeeRaw)}</div>
             </div>
         </div>
 
@@ -1640,7 +1662,7 @@ function openCollege(idx, specificList) {
             ${yearHtml}
         </div>
 
-        <button onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" class="btn-primary" style="width:100%; border-radius:12px; padding:0.8rem; font-size:0.85rem; font-weight:800; margin-top:1.25rem;">Apply Now →</button>
+        <button onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" style="width:100%; border-radius:16px; padding:1.1rem; font-size:0.92rem; font-weight:900; margin-top:1.25rem; background:var(--pink); color:white; border:none; box-shadow: 0 10px 25px -8px rgba(233,30,140,0.45); cursor:pointer; transition:0.3s; letter-spacing:-0.01em; display:flex; align-items:center; justify-content:center; gap:8px;">Apply Now <i class="fa-solid fa-arrow-right" style="font-size:0.8em;"></i></button>
       </div>`;
     }).join('');
     
@@ -1672,7 +1694,7 @@ function openCollege(idx, specificList) {
         else if (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e ")) groups["Engineering & B.Tech"].list.push(cr);
       });
 
-      let html = `<div style="grid-column: 1/-1; margin-bottom:1.5rem;"><h3 style="font-size:1.5rem; font-weight:850; color:var(--dark); margin:0;">Explore Programs</h3><p style="color:var(--gray); margin-top:0.3rem;">Secure your future with the right path.</p></div>`;
+      let html = "";
       
       order.forEach(title => {
         const data = groups[title];
@@ -3062,3 +3084,24 @@ window.refreshAnimations = () => {
 };
 
 
+
+function toggleDetAccordion(id, btn) {
+    const wrap = document.getElementById(id);
+    if (!wrap) return;
+    const item = wrap.closest('.det-accordion-item');
+    if (!item) return;
+    
+    // Check if it's already active
+    const wasActive = item.classList.contains('active');
+    
+    // EXCLUSIVE BEHAVIOR: Close ALL other open sections
+    document.querySelectorAll('.det-accordion-item').forEach(i => {
+        i.classList.remove('active');
+    });
+    
+    // If it WAS active, it's now closed. If it WASN'T active, we open it!
+    if (!wasActive) {
+        item.classList.add('active');
+    }
+}
+window.toggleDetAccordion = toggleDetAccordion;
