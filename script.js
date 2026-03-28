@@ -1308,28 +1308,17 @@ function renderCollegesSection() {
             <img src="${c.image}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
             ${courseCount > 0 ? `<div class="badge-premium" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:4px 10px; border-radius:10px; font-size:0.65rem; font-weight:800; color:var(--pink); border:1px solid rgba(233,30,140,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-transform:uppercase;">PREMIUM</div>` : ''}
           </div>
-          <div class="col-body" style="padding:1.25rem;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem;">
-                <div class="col-name" style="font-size:1.15rem; font-weight:850; letter-spacing:-0.03em; line-height:1.1; margin-bottom:0;">${c.name}</div>
-            </div>
-            <div class="col-loc" style="font-size:0.8rem; color:var(--gray); display:flex; align-items:center; gap:4px; margin-bottom:0.75rem;">
-                <i class="fa-solid fa-location-dot" style="font-size:0.7rem; color:var(--pink);"></i> ${c.loc}
-            </div>
-            
-            ${topCourse ? `
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.8rem; padding-top:0.8rem; border-top:1.5px solid #F3F4F6;">
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <div style="width:24px; height:24px; border-radius:6px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:0.75rem;">
-                        <i class="fa-solid fa-graduation-cap"></i>
-                    </div>
-                    <div style="font-size:0.75rem; font-weight:700; color:var(--dark); opacity:0.8;">${topCourse}</div>
+          <div class="col-body" style="padding:1.25rem; display:flex; flex-direction:column; flex-grow:1;">
+            <div style="min-height:95px;">
+                <div class="col-name" style="font-size:1.15rem; font-weight:850; letter-spacing:-0.03em; line-height:1.1; margin-bottom:0.4rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${c.name}</div>
+                <div class="col-loc" style="font-size:0.8rem; color:var(--gray); display:flex; align-items:center; gap:4px; margin-bottom:0.75rem;">
+                    <i class="fa-solid fa-location-dot" style="font-size:0.75rem; color:var(--pink);"></i> ${c.loc}
                 </div>
-                <div style="font-size:0.7rem; font-weight:850; color:var(--pink);">${escapeHtml(c.courses[0].f || '')}</div>
-            </div>` : ''}
+            </div>
             
-            <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.7rem; font-weight:800; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.05em;">View Details</span>
-                <div style="width:28px; height:28px; border-radius:50%; background:var(--dark); color:white; display:flex; align-items:center; justify-content:center; font-size:0.8rem; transition:0.3s;" class="arrow-indicator">
+            <div style="margin-top:auto; display:flex; justify-content:space-between; align-items:center; padding-top:1.25rem; border-top:1.5px solid #F3F4F6;">
+                <span style="font-size:0.75rem; font-weight:850; color:var(--dark); text-transform:uppercase; letter-spacing:0.05em; opacity:0.6;">View Details</span>
+                <div style="width:32px; height:32px; border-radius:50%; border:1.8px solid var(--dark); color:var(--dark); display:flex; align-items:center; justify-content:center; font-size:0.85rem; transition:0.3s;" class="arrow-indicator">
                     <i class="fa-solid fa-arrow-right"></i>
                 </div>
             </div>
@@ -1417,30 +1406,90 @@ function openCollege(idx, specificList) {
                   </div>
                 </div>`;
     
-    html += list.map(cr => `
-      <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    html += list.map(cr => {
+      const fullDur = cr.d || "N/A";
+      const cleanDur = fullDur.split(/[·\-\|]/)[0].trim();
+      const dur = parseInt(cleanDur) || 3;
+      
+      let rawFee = cr.f || "";
+      if ((!rawFee || rawFee === "On Request") && fullDur.includes('₹')) {
+         const parts = fullDur.split('·');
+         if (parts.length > 1) rawFee = parts[1].replace(/Total Tuition Fees/i, "").trim();
+      }
+
+      // Helper for L/K parsing
+      const parseFee = (str) => {
+         const val = parseFloat(str.replace(/[^0-9\.]/g, ""));
+         if (isNaN(val)) return 0;
+         if (str.toLowerCase().includes('l')) return val * 100000;
+         if (str.toLowerCase().includes('k')) return val * 1000;
+         return val;
+      };
+
+      let totalNum = 0;
+      let yearMap = {};
+      if (rawFee && rawFee.includes("Yr")) {
+         const blocks = rawFee.split('|');
+         blocks.forEach(blk => {
+            const matches = blk.match(/Yr(\d+)(?:-(\d+))?:\s*₹?([\d\.]+)(\w?)/i);
+            if (matches) {
+               const start = parseInt(matches[1]);
+               const end = matches[2] ? parseInt(matches[2]) : start;
+               const realVal = parseFee(matches[3] + (matches[4] || ""));
+               for(let i=start; i<=end; i++) {
+                 yearMap[i] = realVal;
+                 totalNum += realVal;
+               }
+            }
+         });
+      } else {
+         totalNum = parseFee(rawFee);
+         const avg = totalNum ? Math.floor(totalNum / dur) : 0;
+         for(let i=1; i<=dur; i++) yearMap[i] = avg;
+      }
+
+      const totalFmt = totalNum ? "₹" + (totalNum / 100000).toFixed(2) + "L" : "On Request";
+
+      let yearHtml = '';
+      for (let i = 1; i <= dur; i++) {
+        const label = i === 1 ? "1st" : i === 2 ? "2nd" : i === 3 ? "3rd" : "4th";
+        const val = yearMap[i] ? "₹" + (yearMap[i] / 100000).toFixed(2) + "L" : "On Request";
+        yearHtml += `
+          <div style="padding:0.6rem; background:#fff; border:1px solid #F3F4F6; border-radius:12px; text-align:center;">
+             <div style="font-size:0.55rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">${label} Year</div>
+             <div style="font-size:0.8rem; font-weight:800; color:var(--dark);">${val}</div>
+          </div>
+        `;
+      }
+
+      return `
+      <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1.2rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both; min-height:100%;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; min-height:95px;">
             <div style="flex:1;">
-               <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2;">${escapeHtml(cr.n)}</h4>
-               <div style="font-size:0.75rem; color:var(--gray); margin-top:4px; font-weight:700;">${escapeHtml(cr.d || 'Duration: N/A')}</div>
+               <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${escapeHtml(cr.n)}</h4>
+               <div style="font-size:0.75rem; color:var(--gray); margin-top:6px; font-weight:700;">Duration: ${escapeHtml(cleanDur)}</div>
             </div>
-            <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem; flex-shrink:0;"><i class="fa-solid fa-graduation-cap"></i></div>
         </div>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
             <div>
-               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Fees</div>
-               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(cr.f || 'On Request')}</div>
+               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">TOTAL FEES</div>
+               <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(totalFmt)}</div>
             </div>
             <div>
-               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Admission</div>
+               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">ADMISSION FEE</div>
                <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(cr.af || '₹0')}</div>
             </div>
         </div>
 
-        <button onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" class="btn-primary" style="width:100%; border-radius:12px; padding:0.8rem; font-size:0.85rem; font-weight:800;">Apply Now →</button>
-      </div>
-    `).join('');
+        <div style="display:grid; grid-template-columns: repeat(${dur > 2 ? 2 : dur}, 1fr); gap:0.6rem; flex: 1;">
+            ${yearHtml}
+        </div>
+
+        <button onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" class="btn-primary" style="width:100%; border-radius:12px; padding:0.8rem; font-size:0.85rem; font-weight:800; margin-top:1.25rem;">Apply Now →</button>
+      </div>`;
+    }).join('');
     
     document.getElementById('d-courses').innerHTML = html;
     document.getElementById('d-courses').scrollIntoView({ behavior: 'smooth' });
@@ -1455,10 +1504,10 @@ function openCollege(idx, specificList) {
       
       const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Diploma Programs"];
       const groups = {
-        "B.Sc & M.Sc Programs": { icon: "🔬", img: "https://images.unsplash.com/photo-1579154235602-44373db99a23?q=80&w=400", list: [] },
-        "Management & Arts": { icon: "💼", img: "https://images.unsplash.com/photo-1454165833756-9a28622bde80?q=80&w=400", list: [] },
-        "Engineering & B.Tech": { icon: "⚙️", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=400", list: [] },
-        "Diploma Programs": { icon: "📜", img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=400", list: [] }
+        "B.Sc & M.Sc Programs": { icon: "🔬", img: "nursing_college_category_1774427669008.png", list: [] },
+        "Management & Arts": { icon: "💼", img: "management_college_category_1774427684353.png", list: [] },
+        "Engineering & B.Tech": { icon: "⚙️", img: "engineering_college_category_1774427701464.png", list: [] },
+        "Diploma Programs": { icon: "📜", img: "paramedical_college_category_1774427719498.png", list: [] }
       };
 
       courses.forEach(cr => {
@@ -1476,13 +1525,12 @@ function openCollege(idx, specificList) {
         const data = groups[title];
         if (data.list.length > 0) {
            html += `
-             <div class="cat-discovery-box" onclick="_renderCategoryDetail('${title}')">
-                <div class="cat-discovery-icon">${data.icon}</div>
-                <div class="cat-discovery-content">
-                   <h4 class="cat-discovery-title">${title}</h4>
-                   <p class="cat-discovery-msg">${data.list.length} programs</p>
+             <div class="hover-lift" onclick="_renderCategoryDetail('${title}')" style="position:relative; height:180px; border-radius:24px; overflow:hidden; cursor:pointer;">
+                <img src="${data.img}" style="width:100%; height:100%; object-fit:cover; position:absolute;">
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.25)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
+                    <div style="font-size:0.6rem; font-weight:850; color:rgba(255,255,255,0.8); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">${data.list.length} PROGRAMS AVAILABLE</div>
+                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2; letter-spacing:-0.01em;">${title}</h4>
                 </div>
-                <div class="cat-discovery-arrow"><i class="fa-solid fa-arrow-right"></i></div>
              </div>
            `;
         }
@@ -1493,7 +1541,15 @@ function openCollege(idx, specificList) {
   }
 
   const dInfo = document.getElementById('d-info');
-  const info = Array.isArray(c.info) ? c.info : [];
+  let info = Array.isArray(c.info) ? c.info : [];
+  
+  // Filter out redundant fee info from the top stats strip
+  const forbidden = ["fee", "fees", "tuition", "admission"];
+  info = info.filter(i => {
+    const label = (i.l || "").toLowerCase();
+    return !forbidden.some(f => label.includes(f));
+  });
+
   if (dInfo) {
     dInfo.innerHTML = info.map(i =>
       `<div class="dic"><div class="dic-l">${escapeHtml(i.l)}</div><div class="dic-v">${escapeHtml(i.v)}</div></div>`
@@ -2443,30 +2499,89 @@ function renderCourses() {
   }
 
   // Show individual courses as simplified Apply-focused cards
-  grid.innerHTML = filtered.map(({ course, college }, idx) => `
-    <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+  grid.innerHTML = filtered.map(({ course, college }, idx) => {
+    const fullDur = course.d || "N/A";
+    const cleanDur = fullDur.split(/[·\-\|]/)[0].trim();
+    const dur = parseInt(cleanDur) || 3;
+    
+    let rawFee = course.f || "";
+    if ((!rawFee || rawFee === "On Request") && fullDur.includes('₹')) {
+       const parts = fullDur.split('·');
+       if (parts.length > 1) rawFee = parts[1].replace(/Total Tuition Fees/i, "").trim();
+    }
+
+    const parseFee = (str) => {
+       const val = parseFloat(str.replace(/[^0-9\.]/g, ""));
+       if (isNaN(val)) return 0;
+       if (str.toLowerCase().includes('l')) return val * 100000;
+       if (str.toLowerCase().includes('k')) return val * 1000;
+       return val;
+    };
+
+    let totalNum = 0;
+    let yearMap = {};
+    if (rawFee && rawFee.includes("Yr")) {
+       const blocks = rawFee.split('|');
+       blocks.forEach(blk => {
+          const matches = blk.match(/Yr(\d+)(?:-(\d+))?:\s*₹?([\d\.]+)(\w?)/i);
+          if (matches) {
+             const start = parseInt(matches[1]);
+             const end = matches[2] ? parseInt(matches[2]) : start;
+             const realVal = parseFee(matches[3] + (matches[4] || ""));
+             for(let i=start; i<=end; i++) {
+               yearMap[i] = realVal;
+               totalNum += realVal;
+             }
+          }
+       });
+    } else {
+       totalNum = parseFee(rawFee);
+       const avg = totalNum ? Math.floor(totalNum / dur) : 0;
+       for(let i=1; i<=dur; i++) yearMap[i] = avg;
+    }
+
+    const totalFmt = totalNum ? "₹" + (totalNum / 100000).toFixed(2) + "L" : "On Request";
+
+    let yearHtml = '';
+    for (let i = 1; i <= dur; i++) {
+      const label = i === 1 ? "1st" : i === 2 ? "2nd" : i === 3 ? "3rd" : "4th";
+      const val = yearMap[i] ? "₹" + (yearMap[i] / 100000).toFixed(2) + "L" : "On Request";
+      yearHtml += `
+        <div style="padding:0.6rem; background:#fff; border:1px solid #F3F4F6; border-radius:12px; text-align:center;">
+           <div style="font-size:0.55rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">${label} Year</div>
+           <div style="font-size:0.8rem; font-weight:800; color:var(--dark);">${val}</div>
+        </div>
+      `;
+    }
+
+    return `
+    <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1.2rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both; min-height:100%;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; min-height:95px;">
           <div style="flex:1;">
-             <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2;">${escapeHtml(course.n)}</h4>
-             <div onclick="openCollegeByName('${escapeQuote(college.name)}')" style="cursor:pointer; font-size:0.75rem; color:var(--gray); margin-top:4px; font-weight:700;">🏛️ ${escapeHtml(college.name)}</div>
+             <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${escapeHtml(course.n)}</h4>
+             <div onclick="openCollegeByName('${escapeQuote(college.name)}')" style="cursor:pointer; font-size:0.75rem; color:var(--gray); margin-top:6px; font-weight:700;">🏛️ ${escapeHtml(college.name)}</div>
           </div>
-          <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem; flex-shrink:0;"><i class="fa-solid fa-graduation-cap"></i></div>
       </div>
       
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
           <div>
-             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Total Fees</div>
-             <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(course.f || 'On Request')}</div>
+             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">TOTAL FEES</div>
+             <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(totalFmt)}</div>
           </div>
           <div>
-             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">Location</div>
-             <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(college.loc || '—')}</div>
+             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">ADMISSION FEE</div>
+             <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(course.af || '₹0')}</div>
           </div>
       </div>
 
-      <button onclick="openApplyModal('${escapeQuote(college.name)}', '${escapeQuote(course.n)}', '')" class="btn-primary" style="width:100%; border-radius:12px; padding:0.8rem; font-size:0.85rem; font-weight:800;">Apply Now →</button>
-    </div>
-  `).join("");
+      <div style="display:grid; grid-template-columns: repeat(${dur > 2 ? 2 : dur}, 1fr); gap:0.6rem; flex:1;">
+          ${yearHtml}
+      </div>
+
+      <button onclick="openApplyModal('${escapeQuote(college.name)}', '${escapeQuote(course.n)}', '')" class="btn-primary" style="width:100%; border-radius:12px; padding:0.8rem; font-size:0.85rem; font-weight:800; margin-top:1.25rem;">Apply Now →</button>
+    </div>`;
+  }).join("");
 }
 window.renderCourses = renderCourses;
 
@@ -2488,10 +2603,17 @@ function openCourseDetail(idx) {
   document.getElementById("cd-campus").textContent = college.campus || "";
   document.getElementById("cd-place").textContent = college.place || "";
 
-  const info = Array.isArray(college.info) ? college.info : [];
+  let info = Array.isArray(college.info) ? college.info : [];
+  const forbidden = ["fee", "fees", "tuition", "admission"];
+  info = info.filter(i => {
+    const label = (i.l || "").toLowerCase();
+    return !forbidden.some(f => label.includes(f));
+  });
+
   const courseInfo = [
-    { l: "Fees", v: course.f || "On Request" },
-    { l: "Duration", v: course.d || "—" },
+    { l: "TOTAL FEES", v: course.f || "On Request" },
+    { l: "ADMISSION FEE", v: course.af || "₹0" },
+    { l: "Duration", v: cleanDur || "—" },
     { l: "College", v: college.name || "—" },
     { l: "Location", v: college.loc || "—" },
     ...info

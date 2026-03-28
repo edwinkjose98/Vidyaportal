@@ -5021,6 +5021,22 @@ body:has(#signup-div[style*="display: flex"]) {
     .nav-logout-wrap.desk-auth {
         display: none !important;
     }
+    .cat-discovery-grid, .crs-list {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+    }
+    .crs-item-premium {
+        padding: 1rem !important;
+        border-radius: 20px !important;
+        gap: 0.8rem !important;
+    }
+    .crs-item-premium h4 {
+        font-size: 1rem !important;
+    }
+    .crs-item-premium .btn-primary {
+        padding: 0.7rem !important;
+        font-size: 0.75rem !important;
+    }
 }
 
 /* Toast Popup Styles */
