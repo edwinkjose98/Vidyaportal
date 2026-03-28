@@ -716,11 +716,36 @@ async function doLogin(event) {
 
 // doGoogleLogin — must be at module scope so window.doGoogleLogin works before DOMContentLoaded
 const _googleProvider = new GoogleAuthProvider();
+
+function isBlockedEnvironment() {
+  const ua = window.navigator.userAgent.toLowerCase();
+  // Detecting common WebViews (in-app browsers) that Google blocks
+  const isWebView = (ua.includes('wv') || (ua.includes('fbav') || ua.includes('instagram')) || (ua.includes('messenger')));
+  return isWebView;
+}
+
 async function doGoogleLogin() {
+  if (isBlockedEnvironment()) {
+    alert("⚠️ Direct Google Sign-In is blocked in this 'In-App' browser. Please click the three dots (⋮) or (⋯) at the top-right and select 'Open in Chrome' or 'Open in Safari' to continue.");
+    return;
+  }
+  
   try {
-    await signInWithRedirect(auth, _googleProvider);
+    // Attempt popup first for a smoother experience
+    await signInWithPopup(auth, _googleProvider);
   } catch (err) {
-    console.error("Google Redirect Error:", err);
+    console.error("Google Login Error:", err);
+    if (err.code === "auth/disallowed-user-agent") {
+      alert("⚠️ Access Blocked: Please open our site directly in your phone's main browser (Chrome or Safari). This specific app environment is not supported by Google.");
+    } else if (err.code === "auth/popup-blocked") {
+      try {
+        await signInWithRedirect(auth, _googleProvider);
+      } catch (redirErr) {
+        console.error("Google Redirect Error:", redirErr);
+      }
+    } else if (err.code !== "auth/popup-closed-by-user") {
+      alert("Google login failed: " + (err.message || err.code));
+    }
   }
 }
 
@@ -728,38 +753,31 @@ async function doGoogleLogin() {
 async function handleGoogleRedirectResult() {
   try {
     const result = await getRedirectResult(auth);
-    if (!result) return; // No result yet or normal page load
+    if (!result) return;
 
     const user = result.user;
     const userSnap = await getDoc(doc(db, "users", user.uid));
     const isUserAdmin = isAdminEmail(user.email);
 
     if (!userSnap.exists() && !isUserAdmin) {
-      // MANDATORY PHONE CHECK: Divert new Google users to Phone verification
       if(!isRegPhoneVerified) {
           alert("👋 Welcome to Kerala Vidya Portal! To ensure verified institutional leads, mobile number verification is mandatory for new users.");
           openSignUp();
-          // Optional: Prefill the name if they go back to manual entry
           const nameInput = document.getElementById("signupName");
           if (nameInput) nameInput.value = user.displayName || "";
           return;
       }
-      // If phone is already verified (this is the SignUp Form Step 2 "Quick Fill")
       const nameEl = document.getElementById("signupName");
       const emailEl = document.getElementById("signupEmail");
       if (nameEl) nameEl.value = user.displayName || "";
       if (emailEl) emailEl.value = user.email || "";
-      
       showToast("✅ Google info pulled successfully!");
-      
-      // Highlight the Finalize button to guide the user
       const fBtn = document.getElementById("signupSubmit");
       if(fBtn) {
           fBtn.style.boxShadow = "0 0 0 4px rgba(233, 30, 140, 0.3)";
           setTimeout(() => fBtn.style.boxShadow = "", 2000);
       }
     } else {
-      // Existing user: Standard Login
       saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
       updateAuthUI(true);
       openHome();
@@ -767,11 +785,16 @@ async function handleGoogleRedirectResult() {
     }
   } catch (err) {
     console.error("Google login error:", err);
-    if (err.code !== "auth/popup-closed-by-user") {
+    if (err.code === "auth/disallowed-user-agent") {
+      alert("⚠️ This environment is blocked by Google. Please use Chrome or Safari.");
+    } else if (err.code !== "auth/popup-closed-by-user") {
       alert("Google login failed: " + (err.message || err.code));
     }
   }
 }
+
+// Call on load to handle after-redirect results
+handleGoogleRedirectResult();
 
 // Initial Setup
 window.addEventListener("DOMContentLoaded", () => {
@@ -814,11 +837,12 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Wire Google login buttons (doGoogleLogin is already defined at module scope)
-  const gBtn = document.getElementById("googleLogin");
-  if (gBtn) gBtn.onclick = () => doGoogleLogin();
-  const gBtnS = document.getElementById("googleLoginSignup");
-  if (gBtnS) gBtnS.onclick = () => doGoogleLogin();
+  // Wire Google login buttons
+  const gLoginBtn = document.getElementById("googleLogin");
+  if (gLoginBtn) gLoginBtn.onclick = doGoogleLogin;
+
+  const gSignupBtn = document.getElementById("googleLoginSignup");
+  if (gSignupBtn) gSignupBtn.onclick = doGoogleLogin;
 
   const resetSave = document.getElementById("finalizeResetBtn");
   if (resetSave) resetSave.onclick = finalizeReset;
@@ -1459,7 +1483,7 @@ function renderCollegesSection() {
         <div class="col-card hover-lift" onclick="openCollege(${idx})" style="transition-delay: ${idx * 0.05}s; position:relative; overflow:hidden; animation: fadeIn 0.5s ease both;">
           <div class="col-img" style="height:180px;">
             <img src="${c.image}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
-            ${courseCount > 0 ? `<div class="badge-premium" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:4px 10px; border-radius:10px; font-size:0.65rem; font-weight:800; color:var(--pink); border:1px solid rgba(233,30,140,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-transform:uppercase;">PREMIUM</div>` : ''}
+            ${courseCount > 0 ? `<div class="badge-premium" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:4px 10px; border-radius:10px; font-size:0.65rem; font-weight:800; color:var(--pink); border:1px solid rgba(233,30,140,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-transform:uppercase;">100% job guarantee</div>` : ''}
           </div>
           <div class="col-body" style="padding:1.25rem; display:flex; flex-direction:column; flex-grow:1;">
             <div style="min-height:95px;">
@@ -1550,7 +1574,8 @@ function openCollege(idx, specificList) {
       if (catTitle === "Management & Arts") return (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business"));
       if (catTitle === "B.Sc & M.Sc Programs") return (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) && !n.includes("bpt") && !n.includes("physio") && !n.includes("pharmacy");
       if (catTitle === "Engineering & B.Tech") return (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e "));
-      if (catTitle === "Other Courses & Diplomas") return (n.includes("diploma") || (n.startsWith("d") && n.includes("-")) || n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma"));
+      if (catTitle === "Other Courses") return (n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma"));
+      if (catTitle === "Diploma Programs") return (n.includes("diploma") || (n.startsWith("d") && n.includes("-")));
       return false;
     });
 
@@ -1677,18 +1702,20 @@ function openCollege(idx, specificList) {
       window._currentColIdx = idx; // Store for back navigation
       window._currentColData = c;   // Store for re-filtering
       
-      const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Other Courses & Diplomas"];
+      const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Other Courses", "Diploma Programs"];
       const groups = {
         "B.Sc & M.Sc Programs": { icon: "🔬", img: "nursing_college_category_1774427669008.png", list: [] },
         "Management & Arts": { icon: "💼", img: "management_college_category_1774427684353.png", list: [] },
         "Engineering & B.Tech": { icon: "⚙️", img: "engineering_college_category_1774427701464.png", list: [] },
-        "Other Courses & Diplomas": { icon: "🎓", img: "paramedical_college_category_1774427719498.png", list: [] }
+        "Other Courses": { icon: "🏥", img: "paramedical_college_category_1774427719498.png", list: [] },
+        "Diploma Programs": { icon: "📜", img: "assets/paramedical.png", list: [] }
       };
 
       courses.forEach(cr => {
         const n = (cr.n || "").toLowerCase();
         // Check Diploma FIRST in Logic (to avoid misgrouping) but Order it last in UI
-        if (n.includes("diploma") || (n.startsWith("d") && n.includes("-")) || n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma")) groups["Other Courses & Diplomas"].list.push(cr);
+        if (n.includes("diploma") || (n.startsWith("d") && n.includes("-"))) groups["Diploma Programs"].list.push(cr);
+        else if (n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma")) groups["Other Courses"].list.push(cr);
         else if (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business")) groups["Management & Arts"].list.push(cr);
         else if (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) groups["B.Sc & M.Sc Programs"].list.push(cr);
         else if (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e ")) groups["Engineering & B.Tech"].list.push(cr);
