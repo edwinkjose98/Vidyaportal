@@ -448,6 +448,7 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     clearUserFromStorage();
     updateAuthUI(false);
+    openLogin();
     return;
   }
   
@@ -647,6 +648,9 @@ function openHome() {
   renderCollegesSection();
 
   if (typeof syncNav === "function") syncNav("home");
+  localStorage.setItem("kvp_last_view", "home");
+  localStorage.removeItem("kvp_last_college");
+
 }
 
 // doLogin handles phone/email + password sign-in
@@ -970,8 +974,24 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (localStorage.getItem(STORAGE_KEY)) {
     updateAuthUI(true);
+  }
+
+  // Restore Last View on Refresh
+  const lastView = localStorage.getItem("kvp_last_view");
+  const lastCollege = localStorage.getItem("kvp_last_college");
+  
+  if (lastView === "colleges") {
+    showAllCollegesView();
+    if (lastCollege) setTimeout(() => openCollegeByName(lastCollege), 400);
+  } else if (lastView === "courses") {
+    showAllCoursesView();
+  } else if (lastView === "compare") {
+    showCompareView();
+  } else {
+    // Default or explicitly home
     openHome();
   }
+
 
   if (typeof loadColleges === "function") loadColleges();
 });
@@ -1160,6 +1180,9 @@ function showAllCollegesView() {
   }
 
   syncNav("colleges");
+  localStorage.setItem("kvp_last_view", "colleges");
+  localStorage.removeItem("kvp_last_college");
+
   renderCollegesSection();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
@@ -1228,6 +1251,9 @@ function showCompareView() {
   }
 
   syncNav("compare");
+  localStorage.setItem("kvp_last_view", "compare");
+  localStorage.removeItem("kvp_last_college");
+
   populateCompareDropdowns();
   if (window.refreshAnimations) window.refreshAnimations();
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1770,6 +1796,8 @@ function openCollegeByName(name) {
   const idx = collegesData.findIndex(c => c.name === name);
   if (idx !== -1) {
     openCollege(idx, collegesData);
+    localStorage.setItem("kvp_last_college", name);
+
   }
 }
 window.openCollegeByName = openCollegeByName;
@@ -2428,7 +2456,9 @@ function showAllCoursesView(e) {
     console.error("courses-section NOT FOUND");
   }
 
-  syncNav("Courses");
+  syncNav("courses");
+  localStorage.setItem("kvp_last_view", "courses");
+
   renderCourseCategories();
   if (cs) cs.scrollIntoView({ behavior: "smooth" });
 }
