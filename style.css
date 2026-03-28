@@ -27,6 +27,17 @@ body {
   overflow-x: hidden;
 }
 
+/* Hide Browser Default Password Toggles */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .filterBtn {
 
   button {
@@ -4522,17 +4533,34 @@ video {
 }
 
 .comparison-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 4rem !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    width: 100%;
 }
 
-#compare-section .compare-controls {
-    max-width: 100% !important;
-    width: 100% !important;
-    gap: 4rem !important;
+.compare-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .compare-controls, 
+    .comparison-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    
+    #compare-section {
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+    }
+
+    .compare-card {
+        padding: 1.5rem !important;
+    }
 }
 
 /* Increase Comparison Box Size */

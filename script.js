@@ -11,6 +11,20 @@ window.showToast = function(msg) {
     setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 
+window.togglePasswordVisibility = function(id, icon) {
+    const input = document.getElementById(id);
+    if (!input) return;
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+};
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   getAuth,
@@ -90,13 +104,26 @@ const db = getFirestore(app);
 // ===== PHONE / OTP MODAL =====
 let confirmationResult = null;
 
-function openPhoneModal() {
+let phoneModalMode = "login";
+function openPhoneModal(mode = "login") {
+  phoneModalMode = mode;
   const modal = document.getElementById("phoneModal");
   if (modal) modal.style.display = "flex";
+  
   const step1 = document.getElementById("modalPhoneStep");
-  if (step1) step1.style.display = "";
   const step2 = document.getElementById("modalOtpStep");
+  const step3 = document.getElementById("modalResetStep");
+  
+  if (step1) step1.style.display = "block";
   if (step2) step2.style.display = "none";
+  if (step3) step3.style.display = "none";
+  
+  // Custom Headings
+  const title = document.querySelector("#modalPhoneStep h2");
+  const sub = document.querySelector("#modalPhoneStep p");
+  if (title) title.textContent = (mode === "reset") ? "Password Reset" : "Log in via SMS";
+  if (sub) sub.textContent = (mode === "reset") ? "Enter verified mobile number" : "We'll send a 6-digit OTP to verify";
+
   const input = document.getElementById("phoneInput");
   if (input) { input.value = ""; input.focus(); }
   const err = document.getElementById("phoneError");
@@ -240,18 +267,20 @@ async function sendOtp() {
   if (!codeEl || !phoneEl || !errorEl || !btn) return;
 
   const code = codeEl.value;
-  const num = phoneEl.value.trim().replace(/\s/g, "");
-  if (!num || num.length < 7) {
-    errorEl.textContent = "Enter a valid phone number.";
+  const num = phoneEl.value.trim().replace(/\D/g, "");
+  if (!num || num.length !== 10) {
+    errorEl.textContent = "Enter a valid 10-digit mobile number.";
     errorEl.style.display = "";
     return;
   }
-  const fullPhone = code + num;
+  // Standardize with +91 for Kerala/India
+  const fullPhone = "+91" + num;
   errorEl.style.display = "none";
 
   try {
     btn.disabled = true;
-    btn.textContent = "Sending…";
+    btn.textContent = "Wait…";
+    
     if (typeof setupRecaptcha === "function") setupRecaptcha();
     confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
 
@@ -297,17 +326,35 @@ async function verifyOtp() {
     const user = result.user;
     const userSnap = await getDoc(doc(db, "users", user.uid));
 
-    closePhoneModal();
-
-    if (!userSnap.exists()) {
-      alert("Account not found. Please sign up first.");
-      openSignUp();
-      const phoneEl = document.getElementById("signupPhone");
-      if (phoneEl) phoneEl.value = user.phoneNumber || "";
+    if (phoneModalMode === "reset") {
+      // IF RESET MODE: Ensure the account exists before allowing password update
+      if (!userSnap.exists()) {
+          alert("👋 Profile Not Found! It seems you haven't completed your registration yet. Redirecting to Sign Up...");
+          closePhoneModal();
+          openSignUp();
+          const pEl = document.getElementById("signupPhone");
+          if(pEl) pEl.value = user.phoneNumber ? user.phoneNumber.replace("+91", "") : "";
+          return;
+      }
+      // Transition to New Password Input (KEEP MODAL OPEN)
+      const step2 = document.getElementById("modalOtpStep");
+      const step3 = document.getElementById("modalResetStep");
+      if (step2) step2.style.display = "none";
+      if (step3) step3.style.display = "block";
+      const pwIn = document.getElementById("newResetPassword");
+      if (pwIn) { pwIn.value = ""; pwIn.focus(); }
     } else {
-      saveUserToStorage(user);
-      updateAuthUI(true);
-      openHome();
+      closePhoneModal(); // Normal login: close immediately
+      if (!userSnap.exists()) {
+        alert("Account not found. Please sign up first.");
+        openSignUp();
+        const phoneEl = document.getElementById("signupPhone");
+        if (phoneEl) phoneEl.value = user.phoneNumber ? user.phoneNumber.replace("+91", "") : "";
+      } else {
+        saveUserToStorage(user, userSnap.data());
+        updateAuthUI(true);
+        openHome();
+      }
     }
   } catch (err) {
     console.error(err);
@@ -318,6 +365,53 @@ async function verifyOtp() {
     btn.textContent = "Verify & Login →";
   }
 }
+
+async function finalizeReset() {
+    const pw = document.getElementById("newResetPassword").value.trim();
+    const pwConfirm = document.getElementById("newResetPasswordConfirm").value.trim();
+    
+    if (pw.length < 8) {
+        alert("Password must be at least 8 characters.");
+        return;
+    }
+    if (pw !== pwConfirm) {
+        alert("Passwords do not match! Please re-enter carefully.");
+        return;
+    }
+
+    const btn = document.getElementById("finalizeResetBtn");
+    btn.disabled = true;
+    btn.textContent = "Saving...";
+
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user context.");
+
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if (!userSnap.exists()) throw new Error("Profile lost.");
+
+        await updateDoc(doc(db, "users", user.uid), {
+            password: pw // Updating in firestore (if you store it for re-login)
+        });
+
+        // Also update Firebase Auth password
+        const { updatePassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+        await updatePassword(user, pw);
+
+        saveUserToStorage(user, userSnap.data());
+        updateAuthUI(true);
+        closePhoneModal();
+        openHome();
+        showToast("✅ Password Updated Successfully!");
+    } catch (err) {
+        console.error("Reset Finalize Error:", err);
+        alert("Update failed. Please login normally and change password in profile.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Save & Login";
+    }
+}
+window.finalizeReset = finalizeReset;
 
 function setupRecaptcha() {
   if (window.recaptchaVerifier) {
@@ -403,9 +497,13 @@ async function sendRegistrationOTP() {
     }
 
     try {
+        const fullPhone = "+91" + phone;
         if (!window.recaptchaRegVerifier) {
+            const container = document.getElementById('recaptcha-reg-container');
+            if (container) container.style.display = 'block';
             window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
-                'size': 'invisible'
+                size: 'normal',
+                callback: () => { }
             });
         }
         
@@ -609,22 +707,35 @@ async function doGoogleLogin() {
     const isUserAdmin = isAdminEmail(user.email);
 
     if (!userSnap.exists() && !isUserAdmin) {
-      // User must verify phone first
+      // MANDATORY PHONE CHECK: Divert new Google users to Phone verification
       if(!isRegPhoneVerified) {
-          alert("Phone verification required first. Please verify your mobile number.");
+          alert("👋 Welcome to Kerala Vidya Portal! To ensure verified institutional leads, mobile number verification is mandatory for new users.");
           openSignUp();
+          // Optional: Prefill the name if they go back to manual entry
+          const nameInput = document.getElementById("signupName");
+          if (nameInput) nameInput.value = user.displayName || "";
           return;
       }
-      // If phone is already verified, we can let them finalize
+      // If phone is already verified (this is the SignUp Form Step 2 "Quick Fill")
       const nameEl = document.getElementById("signupName");
       const emailEl = document.getElementById("signupEmail");
       if (nameEl) nameEl.value = user.displayName || "";
       if (emailEl) emailEl.value = user.email || "";
-      alert("Google info pulled. Review and click 'Finalize' to complete.");
+      
+      showToast("✅ Google info pulled successfully!");
+      
+      // Highlight the Finalize button to guide the user
+      const fBtn = document.getElementById("signupSubmit");
+      if(fBtn) {
+          fBtn.style.boxShadow = "0 0 0 4px rgba(233, 30, 140, 0.3)";
+          setTimeout(() => fBtn.style.boxShadow = "", 2000);
+      }
     } else {
+      // Existing user: Standard Login
       saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
       updateAuthUI(true);
       openHome();
+      showToast("Welcome back, " + (user.displayName || "User") + "!");
     }
   } catch (err) {
     console.error("Google login error:", err);
@@ -677,9 +788,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Wire Google login buttons (doGoogleLogin is already defined at module scope)
   const gBtn = document.getElementById("googleLogin");
-  if (gBtn) gBtn.onclick = doGoogleLogin;
+  if (gBtn) gBtn.onclick = () => doGoogleLogin();
   const gBtnS = document.getElementById("googleLoginSignup");
-  if (gBtnS) gBtnS.onclick = doGoogleLogin;
+  if (gBtnS) gBtnS.onclick = () => doGoogleLogin();
+
+  const resetSave = document.getElementById("finalizeResetBtn");
+  if (resetSave) resetSave.onclick = finalizeReset;
 
   // Signup Submit
   const sSubmit = document.getElementById("signupSubmit");
@@ -700,6 +814,17 @@ window.addEventListener("DOMContentLoaded", () => {
       // Strict Validation
       if (!nameVal || !emailVal || !passwordVal || !phoneVal) {
           alert("Please fill in all required fields (Name, Phone, and Password).");
+          return;
+      }
+      
+      // Password Policy Enforcement
+      const passwordConfirmVal = getVal("signupPasswordConfirm").trim();
+      if (passwordVal.length < 8) {
+          alert("🔐 Security Check: Your password is too short! Please create a password with at least 8 characters (alphabets, numbers, or symbols) to keep your account safe.");
+          return;
+      }
+      if (passwordVal !== passwordConfirmVal) {
+          alert("Passwords do not match! Please ensure both password fields are identical.");
           return;
       }
       

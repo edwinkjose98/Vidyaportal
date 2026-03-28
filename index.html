@@ -162,17 +162,18 @@
                             autocomplete="username" required style="width:100%; padding:0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
                     </div>
                     
-                    <div class="input-group" style="margin-bottom: 1.2rem;">
+                    <div class="input-group" style="margin-bottom: 1.2rem; position:relative;">
                         <label for="loginPassword" style="display:block; font-size:0.85rem; font-weight:700; color:#822f4e; margin-bottom:0.6rem;">Password</label>
                         <input type="password" id="loginPassword" class="input-field" placeholder="••••••••"
-                            autocomplete="current-password" required style="width:100%; padding:0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
+                            autocomplete="current-password" required style="width:100%; padding:0.85rem 2.8rem 0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('loginPassword', this)" style="position:absolute; right:12px; bottom:12px; cursor:pointer; color:#c57f9a; font-size:0.9rem;"></i>
                     </div>
 
                     <div class="remember-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; font-size:0.85rem;">
                         <label class="checkbox-wrapper" style="display:flex; align-items:center; gap:0.5rem; color:#6b4d5a; cursor:pointer;">
                             <input type="checkbox" checked style="width:16px; height:16px; accent-color:#c7285a; cursor:pointer;"> <span>Remember me</span>
                         </label>
-                        <a href="javascript:void(0)" style="color:#c7285a; text-decoration:none; font-weight:700;">Forget password?</a>
+                        <a href="javascript:void(0)" onclick="openPhoneModal('reset')" style="color:#c7285a; text-decoration:none; font-weight:700;">Forget password?</a>
                     </div>
 
                     <button type="submit" class="signin-btn" id="loginSubmitBtn" style="width:100%; background:linear-gradient(135deg, #c7285a, #b0174c); border:none; padding:1rem; font-size:1.1rem; font-weight:800; color:white; border-radius:12px; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow:0 8px 20px rgba(192, 35, 80, 0.2); transition:transform 0.2s, box-shadow 0.2s;">
@@ -277,9 +278,16 @@
                     <input type="email" id="signupEmail" placeholder="you@example.com" style="width:100%; padding:0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
                 </div>
 
-                <div style="margin-bottom: 0.9rem;">
-                    <label for="signupPassword" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Create Password for Re-login</label>
-                    <input type="password" id="signupPassword" placeholder="Choose a strong password" style="width:100%; padding:0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
+                <div style="margin-bottom: 0.9rem; position:relative;">
+                    <label for="signupPassword" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Create Password (8+ chars)</label>
+                    <input type="password" id="signupPassword" placeholder="••••••••" style="width:100%; padding:0.8rem 2.5rem 0.8rem 0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('signupPassword', this)" style="position:absolute; right:10px; bottom:10px; cursor:pointer; color:#c57f9a; font-size:0.85rem;"></i>
+                </div>
+
+                <div style="margin-bottom: 0.9rem; position:relative;">
+                    <label for="signupPasswordConfirm" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Re-enter Password</label>
+                    <input type="password" id="signupPasswordConfirm" placeholder="••••••••" style="width:100%; padding:0.8rem 2.5rem 0.8rem 0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('signupPasswordConfirm', this)" style="position:absolute; right:10px; bottom:10px; cursor:pointer; color:#c57f9a; font-size:0.85rem;"></i>
                 </div>
 
 
@@ -721,7 +729,7 @@
                     <h2 class="sec-h rev">AI <span class="pink-word">Comparison</span></h2>
                     <p class="sec-p rev rd1" style="max-width:600px; margin-inline:auto;">Select two colleges from the lists below to see a detailed side-by-side comparison of their features and offerings.</p>
                     
-                    <div class="compare-controls" style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; margin-bottom: 3rem;">
+                    <div class="compare-controls" style="display:grid; margin-top: 3rem; margin-bottom: 3rem;">
                         <div class="compare-box hover-lift">
                             <label style="display:block; font-size:.7rem; font-weight:800; text-transform:uppercase; color:var(--pink); margin-bottom:.6rem; letter-spacing:1px;">First Institution</label>
                             <select id="compareCol1" onchange="updateComparison()" class="input-field" style="width:100%; border-radius:12px; cursor:pointer; font-weight:600;"></select>
@@ -1297,6 +1305,35 @@
                 <p id="otpError"
                     style="color:#EF4444; font-size:.8rem; margin-top:.8rem; text-align:center; display:none; font-weight:500;">
                 </p>
+            </div>
+
+            <!-- Step 3: New Password (for Resets) -->
+            <div id="modalResetStep" style="display:none;">
+                <div style="text-align:center; margin-bottom:1.8rem;">
+                    <div
+                        style="width:60px;height:60px;background:linear-gradient(135deg,#c7285a,#F472B6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 8px 20px rgba(233,30,140,0.25);">
+                        <i class="fas fa-key" style="font-size:1.6rem;color:#fff;"></i>
+                    </div>
+                    <h2
+                        style="font-size:1.35rem; font-weight:800; color:#180911; margin:0 0 .4rem; letter-spacing:-0.02em;">
+                        Set New Password</h2>
+                    <p style="font-size:.85rem; color:#8c5a6e; margin:0; font-weight:500;">Create a strong password (min 8 chars)</p>
+                </div>
+
+                <div style="margin-bottom:1rem; position:relative;">
+                    <input type="password" id="newResetPassword" placeholder="New Password (8+ chars)" class="input-field" style="width:100%; font-weight:600; padding-right:2.5rem;" />
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('newResetPassword', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; color:#c57f9a; font-size:0.9rem;"></i>
+                </div>
+                <div style="margin-bottom:1.5rem; position:relative;">
+                    <input type="password" id="newResetPasswordConfirm" placeholder="Re-enter New Password" class="input-field" style="width:100%; font-weight:600; padding-right:2.5rem;" />
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('newResetPasswordConfirm', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; color:#c57f9a; font-size:0.9rem;"></i>
+                </div>
+
+                <button id="finalizeResetBtn" type="button" class="signin-btn" style="margin-bottom:0;">
+                    Save & Login <i class="fas fa-save"></i>
+                </button>
+            </div>
+
 
                 <div style="text-align:center; margin-top:1.2rem;">
                     <button id="resendOtpBtn" type="button"
