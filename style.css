@@ -483,25 +483,29 @@ body {
 .nav-pills-container {
     background: #fff;
     border-radius: 50px;
-    padding: 5px;
+    padding: 4px;
     display: flex;
-    gap: 3px;
+    gap: 2px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     border: 1px solid #F3F4F6;
     margin: 4px auto;
-    width: 92%;
+    width: 95%;
+    max-width: 450px;
+    justify-content: space-between;
     position: relative;
 }
 
 .nav-pill {
-    padding: 9px 12px;
+    padding: 8px 12px;
     border-radius: 50px;
-    font-size: 0.78rem;
-    font-weight: 750;
+    font-size: clamp(0.68rem, 2.5vw, 0.78rem);
+    font-weight: 800;
     color: #4B5563;
     text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s ease;
     white-space: nowrap;
+    flex: 1;
+    text-align: center;
 }
 
 .nav-pill.active {
@@ -1377,7 +1381,7 @@ video {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2000;
+  z-index: 100;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -1395,6 +1399,27 @@ video {
   align-items: center;
   justify-content: space-between;
   padding: 9px 5px;
+}
+
+.section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #FFF0F8;
+    color: #E91E8C;
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    border: 1px solid rgba(233,30,140,0.08);
+    backdrop-filter: blur(4px);
+    width: fit-content;
+}
+.section-badge i {
+    font-size: 0.82rem;
 }
 
 .mobile-only {
@@ -1445,29 +1470,6 @@ video {
   gap: 4px;
   cursor: pointer;
   background: #fff;
-  position: relative;
-  z-index: 2000;
-}
-
-body.menu-active {
-  overflow: hidden;
-}
-
-body.menu-active .header-nav-wrap,
-body.menu-active .nav-inner .mobile-only p,
-body.menu-active .mob-only-banner {
-  display: none !important;
-}
-
-body.menu-active .nav-inner {
-    gap: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-body.menu-active .nav-wrap {
-    background: #ffffff !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
 }
 
 .hamburger span {
@@ -1605,19 +1607,20 @@ body.menu-active .nav-wrap {
   padding: 0.65rem 1rem;
 }
 
-/* Mobile Menu - Premium Full Screen Overlay */
+/* Mobile Menu */
 .mob-menu {
   display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100dvh;
-  z-index: 1500;
-  background: #ffffff;
-  padding: 100px 1.5rem 3rem;
+  position: absolute;
+  top: 100%;
+  height: auto;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: none;
+  right: 0;
+  background: #fff;
+  border-bottom: 1px solid #F3F4F6;
+  padding: 1rem 1.25rem 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  width: 100%;
 }
 
 .mob-menu.open {
@@ -1625,25 +1628,13 @@ body.menu-active .nav-wrap {
 }
 
 .mob-menu a {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  padding: 1.2rem 1rem;
-  font-size: 1.15rem;
-  font-weight: 750;
+  display: block;
+  padding: .75rem 0;
+  font-size: .95rem;
+  font-weight: 600;
   color: var(--dark);
   text-decoration: none;
-  border-bottom: 1px solid rgba(233, 30, 140, 0.05);
-  border-radius: 12px;
-  margin-bottom: 5px;
-  transition: all 0.2s ease;
-}
-
-.mob-menu a i {
-  font-size: 1.3rem;
-  color: var(--pink);
-  width: 30px;
-  text-align: center;
+  border-bottom: 1px solid #F9FAFB;
 }
 
 .mob-menu a:hover {
@@ -4968,8 +4959,16 @@ body:has(#signup-div[style*="display: flex"]) {
         font-weight: 870 !important;
     }
     
-    /* REVEAL styling for tabs so they perfectly fit without scroll */
+    .hero-badge {
+        display: none !important;
+    }
     .nav-desktop {
+        display: none !important;
+    }
+    
+    /* Hide pills & quote when menu is open */
+    .nav-wrap.menu-open #mobile-quote-wrap,
+    .nav-wrap.menu-open .header-nav-wrap.mobile-only {
         display: none !important;
     }
     .nav-desktop a {

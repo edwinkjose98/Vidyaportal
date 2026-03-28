@@ -1524,22 +1524,20 @@ function goto(id) { const el = document.getElementById(id); if (el) el.scrollInt
 function toggleMenu() {
   const h = document.getElementById('ham');
   const m = document.getElementById('mobMenu');
+  const nav = document.getElementById('nav');
   if (h) h.classList.toggle('open');
-  if (m) {
-    m.classList.toggle('open');
-    document.body.classList.toggle('menu-active');
-  }
+  if (m) m.classList.toggle('open');
+  if (nav) nav.classList.toggle('menu-open');
 }
 window.toggleMenu = toggleMenu;
 
 function closeMobileMenu() {
     const h = document.getElementById('ham');
     const m = document.getElementById('mobMenu');
+    const nav = document.getElementById('nav');
     if (h && h.classList.contains('open')) h.classList.remove('open');
-    if (m && m.classList.contains('open')) {
-        m.classList.remove('open');
-        document.body.classList.remove('menu-active');
-    }
+    if (m && m.classList.contains('open')) m.classList.remove('open');
+    if (nav) nav.classList.remove('menu-open');
 }
 window.closeMobileMenu = closeMobileMenu;
 
