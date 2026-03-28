@@ -1486,14 +1486,14 @@ function renderCollegesSection() {
             ${courseCount > 0 ? `<div class="badge-premium" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:4px 10px; border-radius:10px; font-size:0.65rem; font-weight:800; color:var(--pink); border:1px solid rgba(233,30,140,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-transform:uppercase;">100% job guarantee</div>` : ''}
           </div>
           <div class="col-body" style="padding:1.25rem; display:flex; flex-direction:column; flex-grow:1;">
-            <div style="min-height:95px;">
+            <div>
                 <div class="col-name" style="font-size:1.15rem; font-weight:850; letter-spacing:-0.03em; line-height:1.1; margin-bottom:0.4rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${c.name}</div>
-                <div class="col-loc" style="font-size:0.8rem; color:var(--gray); display:flex; align-items:center; gap:4px; margin-bottom:0.75rem;">
+                <div class="col-loc" style="font-size:0.8rem; color:var(--gray); display:flex; align-items:center; gap:4px; margin-bottom:0.4rem;">
                     <i class="fa-solid fa-location-dot" style="font-size:0.75rem; color:var(--pink);"></i> ${c.loc}
                 </div>
             </div>
             
-            <div style="margin-top:auto; display:flex; justify-content:space-between; align-items:center; padding-top:1.25rem; border-top:1.5px solid #F3F4F6;">
+            <div style="margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center; padding-top:1.25rem; border-top:1.5px solid #F3F4F6;">
                 <span style="font-size:0.75rem; font-weight:850; color:var(--dark); text-transform:uppercase; letter-spacing:0.05em; opacity:0.6;">View Details</span>
                 <div style="width:32px; height:32px; border-radius:50%; border:1.8px solid var(--dark); color:var(--dark); display:flex; align-items:center; justify-content:center; font-size:0.85rem; transition:0.3s;" class="arrow-indicator">
                     <i class="fa-solid fa-arrow-right"></i>
