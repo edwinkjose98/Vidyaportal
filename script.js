@@ -962,7 +962,7 @@ function showAllCollegesView() {
   const viewAllBtn = document.getElementById("viewAllCollegesBtn");
   if (viewAllBtn) viewAllBtn.style.display = "none";
 
-  const hideIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection",
+  const hideIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection",
     "collageDetailsText", "collageTopDetailsText", "courses-section", "aboutSection", "testimonialsSection", "compare-section", "crsResultHeader"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
@@ -1034,7 +1034,7 @@ window.showCollegesByCategory = showCollegesByCategory;
 
 function showCompareView() {
   closeAdminPanel();
-  const hideIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", 
+  const hideIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", 
     "colleges", "courses-section", "aboutSection", "testimonialsSection", "crsResultHeader"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
@@ -1347,6 +1347,9 @@ function openCollege(idx, specificList) {
   const c = listToUse[idx];
   if (!c) return;
   
+  const dExtra = document.getElementById('d-details-extra');
+  if (dExtra) dExtra.style.display = '';
+  
   // Update detail view contents (same logic as before)
   const dNavName = document.getElementById('d-nav-name');
   if (dNavName) dNavName.textContent = c.name;
@@ -1390,6 +1393,9 @@ function openCollege(idx, specificList) {
   window._renderCategoryDetail = (catTitle) => {
     const c = window._currentColData;
     if (!c || !c.courses) return;
+
+    const dExtra = document.getElementById('d-details-extra');
+    if (dExtra) dExtra.style.display = 'none';
     
     // Filter the courses based on the same logic used to group them
     const list = c.courses.filter(cr => {
@@ -2353,7 +2359,7 @@ window.filterBySpecificCourse = filterBySpecificCourse;
 window.selectCourseCategory = selectCourseCategory;
 
 function showHome() {
-  const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
+  const showIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
   showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ""; });
   
   const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
