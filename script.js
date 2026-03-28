@@ -205,8 +205,8 @@ function updateAuthUI(loggedIn) {
 
   const main = document.getElementById("mainPage");
   const login = document.getElementById("login-div");
-  if (main) main.style.display = loggedIn ? "block" : "none";
-  if (login) login.style.display = loggedIn ? "none" : "flex";
+  if (main) main.style.setProperty("display", loggedIn ? "block" : "none", "important");
+  if (login) login.style.setProperty("display", loggedIn ? "none" : "flex", "important");
 
   const userNameEls = document.querySelectorAll(".nav-user-name");
   const adminLinks = document.querySelectorAll(".nav-admin-link");
@@ -262,6 +262,8 @@ function updateAuthUI(loggedIn) {
 function logout() {
   signOut(auth).then(() => {
     clearUserFromStorage();
+    localStorage.removeItem("kvp_last_view");
+    localStorage.removeItem("kvp_last_college");
     updateAuthUI(false);
     const m = document.getElementById("mobMenu");
     if (m && m.classList.contains("open")) toggleMenu();
@@ -270,6 +272,8 @@ function logout() {
   }).catch((err) => {
     console.error("Logout error:", err);
     clearUserFromStorage();
+    localStorage.removeItem("kvp_last_view");
+    localStorage.removeItem("kvp_last_college");
     updateAuthUI(false);
     window.location.reload();
   });
@@ -470,14 +474,45 @@ onAuthStateChanged(auth, async (user) => {
     }
     
     const lastView = localStorage.getItem("kvp_last_view");
-    if (!lastView || lastView === "home") {
+    const lastCol = localStorage.getItem("kvp_last_college");
+    const lastCat = localStorage.getItem("kvp_last_category");
+
+    if (lastView === "colleges") {
+        showAllCollegesView();
+        if (lastCol) {
+            setTimeout(() => {
+                openCollegeByName(lastCol);
+                if (lastCat && typeof window._renderCategoryDetail === "function") {
+                    setTimeout(() => window._renderCategoryDetail(lastCat), 450);
+                }
+            }, 350);
+        }
+    } else if (lastView === "compare") {
+        showCompareView();
+    } else if (lastView === "courses") {
+        showAllCoursesView();
+    } else {
         openHome();
     }
 
   } else {
-    // Regular users without a profile are logged out/sent to Sign Up
-    clearUserFromStorage();
-    updateAuthUI(false);
+    // NEW USER (Google and potentially haven't finished signup)
+    // We stay logged in but open the signup modal FORCE OTP
+    updateAuthUI(false); // Default logic
+    
+    // Explicitly hide the login card to avoid seeing it behind the signup modal
+    const loginDiv = document.getElementById("login-div");
+    if (loginDiv) loginDiv.style.display = "none";
+    
+    openSignUp(); // Show signup modal
+    
+    // Pre-fill name/email from Google account if available
+    const nameInput = document.getElementById("signupName");
+    const emailInput = document.getElementById("signupEmail");
+    if (nameInput) nameInput.value = user.displayName || "";
+    if (emailInput) emailInput.value = user.email || "";
+    
+    showToast("✅ Google verified! Please verify your phone number.");
   }
 });
 
@@ -486,9 +521,9 @@ function openLogin() {
   const main = document.getElementById("mainPage");
   const login = document.getElementById("login-div");
   const signup = document.getElementById("signup-div");
-  if (main) main.style.display = "none";
-  if (signup) signup.style.display = "none";
-  if (login) login.style.display = "flex";
+  if (main) main.style.setProperty("display", "none", "important");
+  if (signup) signup.style.setProperty("display", "none", "important");
+  if (login) login.style.setProperty("display", "flex", "important");
 }
 
 let isRegPhoneVerified = false;
@@ -620,11 +655,11 @@ function openHome() {
   const adminPanel = document.getElementById("adminPanel");
   const mainPage = document.getElementById("mainPage");
 
-  if (login) login.style.display = "none";
-  if (signup) signup.style.display = "none";
-  if (mainContent) mainContent.style.display = "";
+  if (login) login.style.setProperty("display", "none", "important");
+  if (signup) signup.style.setProperty("display", "none", "important");
+  if (mainContent) mainContent.style.display = ""; 
   if (adminPanel) adminPanel.style.display = "none";
-  if (mainPage) mainPage.style.display = "";
+  if (mainPage) mainPage.style.setProperty("display", "block", "important");
 
   // Restore Home elements (HIDE colleges so it only shows in dedicated views)
   const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
@@ -741,8 +776,8 @@ async function doGoogleLogin() {
   }
   
   try {
-    // Attempt popup first for a smoother experience
     await signInWithPopup(auth, _googleProvider);
+    // onAuthStateChanged takes it from here
   } catch (err) {
     console.error("Google Login Error:", err);
     if (err.code === "auth/disallowed-user-agent") {
@@ -759,47 +794,12 @@ async function doGoogleLogin() {
   }
 }
 
-// Logic to handle user data after redirect returns
 async function handleGoogleRedirectResult() {
   try {
-    const result = await getRedirectResult(auth);
-    if (!result) return;
-
-    const user = result.user;
-    const userSnap = await getDoc(doc(db, "users", user.uid));
-    const isUserAdmin = isAdminEmail(user.email);
-
-    if (!userSnap.exists() && !isUserAdmin) {
-      if(!isRegPhoneVerified) {
-          alert("👋 Welcome to Kerala Vidya Portal! To ensure verified institutional leads, mobile number verification is mandatory for new users.");
-          openSignUp();
-          const nameInput = document.getElementById("signupName");
-          if (nameInput) nameInput.value = user.displayName || "";
-          return;
-      }
-      const nameEl = document.getElementById("signupName");
-      const emailEl = document.getElementById("signupEmail");
-      if (nameEl) nameEl.value = user.displayName || "";
-      if (emailEl) emailEl.value = user.email || "";
-      showToast("✅ Google info pulled successfully!");
-      const fBtn = document.getElementById("signupSubmit");
-      if(fBtn) {
-          fBtn.style.boxShadow = "0 0 0 4px rgba(233, 30, 140, 0.3)";
-          setTimeout(() => fBtn.style.boxShadow = "", 2000);
-      }
-    } else {
-      saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
-      updateAuthUI(true);
-      openHome();
-      showToast("Welcome back, " + (user.displayName || "User") + "!");
-    }
+    await getRedirectResult(auth);
+    // onAuthStateChanged will handle profile check
   } catch (err) {
-    console.error("Google login error:", err);
-    if (err.code === "auth/disallowed-user-agent") {
-      alert("⚠️ This environment is blocked by Google. Please use Chrome or Safari.");
-    } else if (err.code !== "auth/popup-closed-by-user") {
-      alert("Google login failed: " + (err.message || err.code));
-    }
+    console.error("Google handleRedirect Error:", err);
   }
 }
 
@@ -983,22 +983,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (typeof loadColleges === "function") await loadColleges();
-
-  // Restore Last View on Refresh
-  const lastView = localStorage.getItem("kvp_last_view");
-  const lastCollege = localStorage.getItem("kvp_last_college");
-  
-  if (lastView === "colleges") {
-    showAllCollegesView();
-    if (lastCollege) setTimeout(() => openCollegeByName(lastCollege), 400);
-  } else if (lastView === "courses") {
-    showAllCoursesView();
-  } else if (lastView === "compare") {
-    showCompareView();
-  } else {
-    // Default or explicitly home
-    openHome();
-  }
 });
 
 // Update this with your Google Apps Script URL later
@@ -1593,6 +1577,7 @@ function openCollege(idx, specificList) {
   
   // Reusable function to render a single category's courses with the new fee breakdown
   window._renderCategoryDetail = (catTitle) => {
+    localStorage.setItem("kvp_last_category", catTitle);
     const c = window._currentColData;
     if (!c || !c.courses) return;
 
@@ -1793,6 +1778,7 @@ function openCollege(idx, specificList) {
   const sc = document.querySelector('.search-container');
   if (sc) sc.style.display = 'none';
   window.scrollTo(0, 0);
+  localStorage.removeItem("kvp_last_category");
 }
 window.openCollege = openCollege;
 
@@ -1802,7 +1788,7 @@ function openCollegeByName(name) {
   if (idx !== -1) {
     openCollege(idx, collegesData);
     localStorage.setItem("kvp_last_college", name);
-
+    localStorage.removeItem("kvp_last_category");
   }
 }
 window.openCollegeByName = openCollegeByName;
