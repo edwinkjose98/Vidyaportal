@@ -467,7 +467,11 @@ onAuthStateChanged(auth, async (user) => {
         if (typeof loadColleges === "function") loadColleges();
     }
     
-    openHome();
+    const lastView = localStorage.getItem("kvp_last_view");
+    if (!lastView || lastView === "home") {
+        openHome();
+    }
+
   } else {
     // Regular users without a profile are logged out/sent to Sign Up
     clearUserFromStorage();
@@ -801,7 +805,7 @@ async function handleGoogleRedirectResult() {
 handleGoogleRedirectResult();
 
 // Initial Setup
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
   // Phone OTP Wiring
   const phoneBtn = document.getElementById("phoneLoginBtn");
   if (phoneBtn) phoneBtn.onclick = openPhoneModal;
@@ -976,6 +980,8 @@ window.addEventListener("DOMContentLoaded", () => {
     updateAuthUI(true);
   }
 
+  if (typeof loadColleges === "function") await loadColleges();
+
   // Restore Last View on Refresh
   const lastView = localStorage.getItem("kvp_last_view");
   const lastCollege = localStorage.getItem("kvp_last_college");
@@ -991,9 +997,6 @@ window.addEventListener("DOMContentLoaded", () => {
     // Default or explicitly home
     openHome();
   }
-
-
-  if (typeof loadColleges === "function") loadColleges();
 });
 
 // Update this with your Google Apps Script URL later
@@ -1606,8 +1609,8 @@ function openCollege(idx, specificList) {
     });
 
     let html = `<div style="grid-column: 1/-1; animation: fadeIn 0.3s ease both;">
-                  <button onclick="openCollege(window._currentColIdx)" style="background:none; border:none; color:var(--pink); font-weight:800; cursor:pointer; padding:0; margin-bottom:1.5rem; display:flex; align-items:center; gap:8px;">
-                     <i class="fa-solid fa-arrow-left"></i> Back to Categories
+                  <button onclick="openCollege(window._currentColIdx)" class="back-btn-small" style="margin-bottom:1.5rem;">
+                     <i class="fa-solid fa-arrow-left"></i> Categories
                   </button>
                   <div style="margin-bottom:2rem;">
                     <h3 style="font-size:1.8rem; font-weight:850; color:var(--dark); margin:0;">${catTitle}</h3>
@@ -2550,7 +2553,8 @@ function selectCourseCategory(idx) {
   if (!backBtn) {
     backBtn = document.createElement("button");
     backBtn.id = "courseCategoryBackBtn";
-    backBtn.style.cssText = "display:flex;align-items:center;gap:.4rem;background:none;border:1px solid rgba(233,30,140,0.25);border-radius:50px;padding:.4rem 1.1rem;font-size:.85rem;font-weight:700;color:var(--pink);cursor:pointer;margin-bottom:1.5rem;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;";
+    backBtn.className = "back-btn-small";
+    backBtn.style.marginBottom = "1.5rem";
     const grid = document.getElementById("coursesGrid");
     grid.parentNode.insertBefore(backBtn, grid);
   }
