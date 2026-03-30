@@ -193,7 +193,8 @@ function saveUserToStorage(user, profile = null) {
       uid: user.uid,
       displayName: (profile && profile.displayName) || user.displayName || "",
       email: (profile && profile.email) || user.email || "",
-      phone: (profile && profile.phone) || user.phoneNumber || ""
+      phone: (profile && profile.phone) || user.phoneNumber || "",
+      profile: (profile) ? true : false // LOCK IN FOR INSTANT ROUTER
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
@@ -1496,8 +1497,8 @@ function generateAIComparison() {
 }
 
 function syncNav(activeKey) {
-  // Query both desktop inline tabs AND mobile hamburger menu links
-  const allNavLinks = document.querySelectorAll(".nav-desktop a[data-nav], .mob-menu a[data-nav]");
+  // Query desktop tabs, mobile hamburger menu links, AND mobile pills
+  const allNavLinks = document.querySelectorAll(".nav-desktop a[data-nav], .mob-menu a[data-nav], .nav-pills-container a[data-nav]");
   allNavLinks.forEach(link => {
     if (link.dataset.nav === activeKey) {
       link.classList.add("active");

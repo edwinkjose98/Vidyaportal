@@ -422,9 +422,9 @@
                         <!-- Precisely Styled Pill Navigation (Mobile) -->
                         <div class="header-nav-wrap mobile-only" style="width:100% !important; flex: none !important; margin-top: 4px;">
                             <div class="nav-pills-container">
-                                <a href="javascript:void(0)" onclick="showHome(); this.closest('.nav-pills-container').querySelectorAll('.nav-pill').forEach(a=>a.classList.remove('active')); this.classList.add('active');" class="nav-pill active">Home</a>
-                                <a href="javascript:void(0)" onclick="showAllCollegesView(); this.closest('.nav-pills-container').querySelectorAll('.nav-pill').forEach(a=>a.classList.remove('active')); this.classList.add('active');" class="nav-pill">Colleges & Courses</a>
-                                <a href="javascript:void(0)" onclick="showCompareView(); this.closest('.nav-pills-container').querySelectorAll('.nav-pill').forEach(a=>a.classList.remove('active')); this.classList.add('active');" class="nav-pill">AI Compare</a>
+                                <a href="javascript:void(0)" data-nav="home" onclick="showHome();" class="nav-pill active">Home</a>
+                                <a href="javascript:void(0)" data-nav="colleges" onclick="showAllCollegesView();" class="nav-pill">Colleges & Courses</a>
+                                <a href="javascript:void(0)" data-nav="compare" onclick="showCompareView();" class="nav-pill">AI Compare</a>
                             </div>
                         </div>
                         <nav class="nav-desktop">
