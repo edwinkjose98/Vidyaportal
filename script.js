@@ -458,6 +458,9 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
   
+  // IMMEDIATELY show main app to resolve "2 loading screens" issue (perceived speed)
+  updateAuthUI(true); 
+
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
   const profileData = userSnap.exists() ? userSnap.data() : null;
@@ -466,7 +469,6 @@ onAuthStateChanged(auth, async (user) => {
   
   if (profileData || isUserAdmin) {
     saveUserToStorage(user, profileData);
-    updateAuthUI(true);
     
     // If the list is empty (potentially blocked by security rules before login), load now
     if (!collegesData || collegesData.length === 0) {
@@ -497,12 +499,12 @@ onAuthStateChanged(auth, async (user) => {
 
   } else {
     // NEW USER (Google and potentially haven't finished signup)
-    // We stay logged in but open the signup modal FORCE OTP
-    updateAuthUI(false); // Default logic
+    // Now we hide home and show signup since we verified they have no profile
+    updateAuthUI(false); 
     
     // Explicitly hide the login card to avoid seeing it behind the signup modal
     const loginDiv = document.getElementById("login-div");
-    if (loginDiv) loginDiv.style.display = "none";
+    if (loginDiv) loginDiv.style.setProperty("display", "none", "important");
     
     openSignUp(); // Show signup modal
     
@@ -580,7 +582,10 @@ async function sendRegistrationOTP() {
         sendBtn.textContent = "Resend";
         sendBtn.disabled = false;
         showToast("OTP sent successfully! 📱");
-        setTimeout(() => document.getElementById("regOtpInput").focus(), 100);
+        setTimeout(() => {
+            const firstBox = document.querySelector(".otp-box-reg");
+            if (firstBox) firstBox.focus();
+        }, 100);
     } catch (err) {
         console.error("SMS Registration Error:", err);
         let msg = "SMS failed. Try again soon.";
@@ -595,9 +600,12 @@ async function sendRegistrationOTP() {
 }
 
 async function verifyRegistrationOTP() {
-    const code = document.getElementById("regOtpInput").value.trim();
+    let code = "";
+    document.querySelectorAll(".otp-box-reg").forEach(b => code += b.value);
+    
     if(code.length !== 6) {
-        alert("Enter the 6-digit OTP.");
+        // No alert here to allow auto-submission if they finish typing, or manual error checking if they click deliberately.
+        if (event && event.type === 'click') alert("Complete the 6-digit code! ⚠️");
         return;
     }
 
@@ -827,25 +835,35 @@ window.addEventListener("DOMContentLoaded", async () => {
   const verifyOtpBtn = document.getElementById("verifyOtpBtn");
   if (verifyOtpBtn) verifyOtpBtn.onclick = verifyOtp;
 
-  // Sign up OTP auto-submit
-  const regOtpIn = document.getElementById("regOtpInput");
-  if (regOtpIn) {
-      regOtpIn.addEventListener("input", () => {
-          if (regOtpIn.value.length === 6) {
-              verifyRegistrationOTP();
-          }
+  // Helper to wire multiple OTP box groups (Login/Reset/Signup)
+  const setupOtpBoxes = (selector, onComplete) => {
+      const boxes = document.querySelectorAll(selector);
+      boxes.forEach((box, i) => {
+          box.addEventListener("input", (e) => {
+              box.value = box.value.replace(/\D/g, "");
+              if (box.value && i < boxes.length - 1) boxes[i+1].focus();
+              
+              const code = Array.from(boxes).map(b => b.value).join('');
+              if (code.length === boxes.length && onComplete) onComplete();
+          });
+          box.addEventListener("keydown", (e) => {
+              if (e.key === "Backspace" && !box.value && i > 0) boxes[i-1].focus();
+          });
+          // Allow pasting
+          box.addEventListener("paste", (e) => {
+              e.preventDefault();
+              const data = e.clipboardData.getData("text").replace(/\D/g, "");
+              if (data.length === boxes.length) {
+                  boxes.forEach((b, idx) => b.value = data[idx]);
+                  if (onComplete) onComplete();
+              }
+          });
       });
-  }
+  };
 
-  document.querySelectorAll(".otp-box").forEach((box, i, boxes) => {
-    box.addEventListener("input", () => {
-      box.value = box.value.replace(/\D/g, "");
-      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
-    });
-    box.addEventListener("keydown", (e) => {
-      if (e.key === "Backspace" && !box.value && i > 0) boxes[i - 1].focus();
-    });
-  });
+  // Setup specialized groups
+  setupOtpBoxes(".otp-box", verifyOtp);
+  setupOtpBoxes(".otp-box-reg", verifyRegistrationOTP);
 
   // Wire Google login buttons
   const gLoginBtn = document.getElementById("googleLogin");
@@ -931,7 +949,7 @@ window.addEventListener("DOMContentLoaded", async () => {
           try {
             await linkWithCredential(user, credential);
           } catch (le) {
-            if (le.code !== 'auth/credential-already-in-use') {
+            if (le.code !== 'auth/credential-already-in-use' && le.code !== 'auth/provider-already-linked') {
                throw le;
             }
           }

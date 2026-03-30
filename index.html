@@ -254,12 +254,26 @@
                     </div>
                 </div>
 
-                <div id="regOtpInputWrap" style="display:none; margin-bottom: 1.5rem;">
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Enter 6-Digit Code</label>
-                    <div style="display:flex; gap:0.5rem; align-items:center;">
-                        <input type="text" id="regOtpInput" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" placeholder="123456" maxlength="6" style="flex:1; padding:0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:1rem; outline:none; letter-spacing:4px; text-align:center;">
-                        <button type="button" id="regVerifyBtn" onclick="verifyRegistrationOTP()" style="background:#059669; color:white; border:none; padding:0 1.2rem; border-radius:10px; font-weight:800; font-size:0.85rem; cursor:pointer; white-space:nowrap; height:45px;">Verify</button>
+                <div id="regOtpInputWrap" style="display:none; margin-bottom: 1.5rem; animation: slideUp 0.4s ease both;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.8rem; text-align:center;">Enter 6-Digit Verification Code</label>
+                    <div style="display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.2rem;" id="regOtpBoxes">
+                        <input class="otp-box-reg" maxlength="1" type="tel" inputmode="numeric" 
+                            style="width:45px; height:50px; text-align:center; border:1.5px solid #f3d2df; border-radius:12px; font-size:1.4rem; font-weight:800; background:#fff; outline:none; transition:0.2s;">
+                        <input class="otp-box-reg" maxlength="1" type="tel" inputmode="numeric" 
+                            style="width:45px; height:50px; text-align:center; border:1.5px solid #f3d2df; border-radius:12px; font-size:1.4rem; font-weight:800; background:#fff; outline:none; transition:0.2s;">
+                        <input class="otp-box-reg" maxlength="1" type="tel" inputmode="numeric" 
+                            style="width:45px; height:50px; text-align:center; border:1.5px solid #f3d2df; border-radius:12px; font-size:1.4rem; font-weight:800; background:#fff; outline:none; transition:0.2s;">
+                        <input class="otp-box-reg" maxlength="1" type="tel" inputmode="numeric" 
+                            style="width:45px; height:50px; text-align:center; border:1.5px solid #f3d2df; border-radius:12px; font-size:1.4rem; font-weight:800; background:#fff; outline:none; transition:0.2s;">
+                        <input class="otp-box-reg" maxlength="1" type="tel" inputmode="numeric" 
+                            style="width:45px; height:50px; text-align:center; border:1.5px solid #f3d2df; border-radius:12px; font-size:1.4rem; font-weight:800; background:#fff; outline:none; transition:0.2s;">
+                        <input class="otp-box-reg" maxlength="1" type="tel" inputmode="numeric" 
+                            style="width:45px; height:50px; text-align:center; border:1.5px solid #f3d2df; border-radius:12px; font-size:1.4rem; font-weight:800; background:#fff; outline:none; transition:0.2s;">
                     </div>
+                    <button type="button" id="regVerifyBtn" onclick="verifyRegistrationOTP()" 
+                        style="width:100%; background:#059669; color:white; border:none; padding:1rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow:0 10px 20px rgba(5,150,105,0.2);">
+                        Verify & Continue <i class="fa-solid fa-circle-check"></i>
+                    </button>
                 </div>
                 
                 <div id="recaptcha-reg-container" style="margin-bottom:1rem;"></div>
