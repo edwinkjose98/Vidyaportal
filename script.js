@@ -182,8 +182,7 @@ if (pModal) {
 
 const STORAGE_KEY = "unicircle_user";
 const ADMIN_EMAILS = [
-  "edwinkjose98@gmail.com",
-  "nikhilksiva70@gmail.com"
+  "edwinkjose98@gmail.com"
 ];
 
 // Auth Utilities
@@ -445,7 +444,7 @@ async function finalizeReset() {
         openHome();
         showToast("✅ Password Updated Successfully!");
     } catch (err) {
-        console.error("Reset Finalize Error:", err);
+        console.error("Reset Submit Error:", err);
         alert("Update failed. Please login normally and change password in profile.");
     } finally {
         btn.disabled = false;
@@ -473,12 +472,12 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     clearUserFromStorage();
     updateAuthUI(false);
-    openLogin();
+    openLogin(); // ENSURE LOGIN PAGE IS SHOWN
     return;
   }
   
-  // IMMEDIATELY show main app to resolve "2 loading screens" issue (perceived speed)
-  updateAuthUI(true); 
+  // We WILL call updateAuthUI(true) only AFTER we know they have a profile or are admin
+  // This prevents half-signed-up users from seeing the landing page background
 
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
@@ -487,6 +486,7 @@ onAuthStateChanged(auth, async (user) => {
   const isUserAdmin = isAdminEmail(user.email || (profileData && profileData.email));
   
   if (profileData || isUserAdmin) {
+    updateAuthUI(true); // SHOW LANDING PAGE NOW
     saveUserToStorage(user, profileData);
     
     // If the list is empty (potentially blocked by security rules before login), load now
@@ -517,23 +517,14 @@ onAuthStateChanged(auth, async (user) => {
     }
 
   } else {
-    // NEW USER (Google and potentially haven't finished signup)
-    // Now we hide home and show signup since we verified they have no profile
-    updateAuthUI(false); 
-    
-    // Explicitly hide the login card to avoid seeing it behind the signup modal
+    // NEW / PARTIAL USER detected by Firebase
+    // We stay on the Login page until they act (e.g. they click Continue with Google)
+    updateAuthUI(false);
     const loginDiv = document.getElementById("login-div");
-    if (loginDiv) loginDiv.style.setProperty("display", "none", "important");
+    if (loginDiv) loginDiv.style.setProperty("display", "flex", "important");
     
-    openSignUp(); // Show signup modal
-    
-    // Pre-fill name/email from Google account if available
-    const nameInput = document.getElementById("signupName");
-    const emailInput = document.getElementById("signupEmail");
-    if (nameInput) nameInput.value = user.displayName || "";
-    if (emailInput) emailInput.value = user.email || "";
-    
-    showToast("✅ Google verified! Please verify your phone number.");
+    // We don't call openSignUp() here anymore to respect the "Login Page First" rule.
+    // It will be called when they click Sign Up or Google.
   }
 });
 
@@ -561,19 +552,16 @@ async function sendRegistrationOTP() {
     sendBtn.disabled = true;
     sendBtn.textContent = "Wait...";
 
-    // 1. FAST EXISTENCE CHECK
+    // 1. SILENT EXISTENCE CHECK (Removed Alert to allow Universal Entry)
+    let userExists = false;
     try {
         const q = query(collection(db, "users"), where("phone", "==", phone));
         const qSnap = await getDocs(q);
         if (!qSnap.empty) {
-            alert("Account Already Exists! 📱 Redirecting to Sign In...");
-            openLogin();
-            const logId = document.getElementById("loginEmail");
-            if (logId) logId.value = phone;
-            return;
+            userExists = true;
         }
     } catch (e) {
-        console.warn("Silent failure on existence check:", e);
+        console.warn("Silent existence check error", e);
     }
 
     try {
@@ -644,13 +632,21 @@ async function verifyRegistrationOTP() {
 
     try {
         await regConfirmationResult.confirm(code);
-        isRegPhoneVerified = true;
+        const user = auth.currentUser;
+        const userSnap = await getDoc(doc(db, "users", user.uid));
         
-        // Hide Step 1, Show Step 2
-        document.getElementById("signup-step-otp").style.display = "none";
-        document.getElementById("signup-step-details").style.display = "grid";
-        
-        showToast("Phone verified! ✅ Complete your profile.");
+        if (userSnap.exists()) {
+            // EXISTING USER: Straight to Home
+            saveUserToStorage(user, userSnap.data());
+            updateAuthUI(true);
+            openHome();
+            showToast("Welcome back! 👋 Logged in successfully.");
+        } else {
+            // NEW USER: Show Step 2 (Profile Details)
+            document.getElementById("signup-step-otp").style.display = "none";
+            document.getElementById("signup-step-details").style.display = "grid";
+            showToast("Phone verified! ✅ Complete your profile.");
+        }
     } catch (err) {
         console.error("OTP Verification Error:", err);
         alert("Incorrect Code. Please check the SMS and try again.");
@@ -993,7 +989,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             return;
         }
         alert("Registration failed: " + (err.message || "Please try again later."));
-        if (btn) { btn.disabled = false; btn.textContent = "Finalize Registration →"; }
+        if (btn) { btn.disabled = false; btn.textContent = "Submit Registration →"; }
         return;
       }
 
@@ -1004,6 +1000,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         phone: phoneVal,
         district: getVal("signupDistrict"),
         userType: getVal("signupUserType"),
+        coursePreference: getVal("signupPreference"),
         createdAt: new Date().toISOString()
       };
 
@@ -1020,7 +1017,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         console.error("Firestore save error:", err);
         alert("Account created but profile error. Try logging in again.");
       } finally {
-        if (btn) { btn.disabled = false; btn.textContent = "Finalize Registration →"; }
+        if (btn) { btn.disabled = false; btn.textContent = "Submit Registration →"; }
       }
     };
   }
@@ -1992,6 +1989,7 @@ async function loadAdminUsers() {
           <td>${escapeHtml(u.email || "—")}</td>
           <td>${escapeHtml(u.phone || "—")}</td>
           <td>${escapeHtml(u.userType || "—")}</td>
+          <td style="font-weight:700; color:var(--pink);">${escapeHtml(u.coursePreference || "—")}</td>
           <td>${escapeHtml(u.district || "—")}</td>
           <td>${escapeHtml(u.place || "—")}</td>
           <td>${date}</td>
@@ -2033,13 +2031,13 @@ function escapeQuote(str) {
 async function loadAdminLeads() {
     const listBody = document.getElementById("adminLeadsBody");
     if (!listBody) return;
-    listBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:2rem;'>Loading Leads...</td></tr>";
+    listBody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:2rem;'>Loading Leads...</td></tr>";
 
     try {
         const q = query(collection(db, "leads"), orderBy("timestamp", "desc"), limit(200));
         const snapshot = await getDocs(q);
         if (snapshot.empty) {
-            listBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:2rem; color:#999;'>No signup leads found yet.</td></tr>";
+            listBody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:2rem; color:#999;'>No signup leads found yet.</td></tr>";
             return;
         }
 
@@ -2052,6 +2050,9 @@ async function loadAdminLeads() {
                     <td style="padding:1rem; color:#4B5563;">${escapeHtml(d.email || "—")}</td>
                     <td style="padding:1rem; color:#6B7280; font-size:0.85rem;">${escapeHtml(d.joined || "")}</td>
                     <td style="padding:1rem;"><span style="background:#FFF0F8; color:#D81B60; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">${escapeHtml(d.status || "SENT")}</span></td>
+                    <td style="padding:1rem;">
+                        <button onclick="deleteLead('${escapeQuote(d.phone)}')" style="background:#fee2e2; color:#dc2626; border:none; padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer;">Delete</button>
+                    </td>
                 </tr>
             `;
         }).join("");
@@ -2059,6 +2060,18 @@ async function loadAdminLeads() {
         console.error("Load Leads error:", err);
     }
 }
+
+async function deleteLead(phone) {
+    if (!confirm("Are you sure you want to delete this lead?")) return;
+    try {
+        await deleteDoc(doc(db, "leads", phone));
+        loadAdminLeads();
+    } catch (err) {
+        console.error("Delete lead error:", err);
+        alert("Failed to delete lead.");
+    }
+}
+window.deleteLead = deleteLead;
 
 function switchAdminTab(tab) {
   document.querySelectorAll(".admin-tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === tab));

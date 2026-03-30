@@ -154,11 +154,19 @@
     <!-- Instant Auth Router (Prevent Flicker) -->
     <script>
     (function() {
-        const user = localStorage.getItem("unicircle_user");
-        if (user) {
-            document.write('<style>#mainPage { display: block !important; } #login-div { display: none !important; }</style>');
+        const raw = localStorage.getItem("unicircle_user");
+        let hasProfile = false;
+        if (raw) {
+            try {
+                const data = JSON.parse(raw);
+                if (data.profile) hasProfile = true;
+            } catch(e){}
+        }
+        
+        if (hasProfile) {
+            document.write('<style>#mainPage { display: block !important; } #login-div { display: none !important; } #signup-div { display: none !important; }</style>');
         } else {
-            document.write('<style>#mainPage { display: none !important; } #login-div { display: flex !important; }</style>');
+            document.write('<style>#mainPage { display: none !important; } #login-div { display: flex !important; } #signup-div { display: none; }</style>');
         }
     })();
     </script>
@@ -307,12 +315,24 @@
                     </div>
                 </div>
 
-                <div style="margin-bottom: 0.9rem; grid-column: span 2;">
+                <div style="margin-bottom: 0.9rem; grid-column: span 1;">
                     <label style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">I am a</label>
                     <select id="signupUserType" style="width:100%; padding:0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none; background:#fff; cursor:pointer;">
                         <option value="student">Student</option>
                         <option value="parent">Parent</option>
-                        <option value="other">Consultant / Counselor</option>
+                        <option value="other">Consultant</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 0.9rem; grid-column: span 1;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Preference</label>
+                    <select id="signupPreference" style="width:100%; padding:0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none; background:#fff; cursor:pointer;">
+                        <option value="Medical">Medical</option>
+                        <option value="Management">Management</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Nursing">Nursing</option>
+                        <option value="Paramedical">Paramedical</option>
                     </select>
                 </div>
 
@@ -351,7 +371,7 @@
 
                 <button type="button" id="signupSubmit" 
                     style="grid-column: span 2; width:100%; background:linear-gradient(135deg, #c7285a, #b0174c); border:none; padding:1rem; font-size:1.1rem; font-weight:800; color:white; border-radius:12px; cursor:pointer; box-shadow:0 8px 20px rgba(192, 35, 80, 0.2); transition:0.2s; margin-top:0.5rem;">
-                    Finalize Registration →
+                    Submit Registration →
                 </button>
             </div>
 
@@ -1170,6 +1190,7 @@
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>User Type</th>
+                                    <th>Preference</th>
                                     <th>District</th>
                                     <th>Place</th>
                                     <th>Joined</th>
@@ -1309,6 +1330,7 @@
                                     <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Email</th>
                                     <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Date</th>
                                     <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Status</th>
+                                    <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="adminLeadsBody"></tbody>
