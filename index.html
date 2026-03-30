@@ -155,6 +155,7 @@
     <script>
     (function() {
         const raw = localStorage.getItem("unicircle_user");
+        const lastView = localStorage.getItem("kvp_last_view");
         let hasProfile = false;
         if (raw) {
             try {
@@ -164,7 +165,15 @@
         }
         
         if (hasProfile) {
-            document.write('<style>#mainPage { display: block !important; } #login-div { display: none !important; } #signup-div { display: none !important; }</style>');
+            // VIEW-AWARE ROUTING: Snap instantly to the last page to prevent Home flicker
+            if (lastView === "colleges") {
+                document.write('<style>#mainPage { display: block !important; } #colleges { display: block !important; } #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #collageDetailsText, #collageTopDetailsText, #courses-section, #aboutSection, #testimonialsSection, #compare-section { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
+            } else if (lastView === "compare") {
+                document.write('<style>#mainPage { display: block !important; } #compare-section { display: block !important; } #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #colleges, #courses-section, #aboutSection, #testimonialsSection { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
+            } else {
+                // Default Home
+                document.write('<style>#mainPage { display: block !important; } #login-div { display: none !important; } #signup-div { display: none !important; }</style>');
+            }
         } else {
             document.write('<style>#mainPage { display: none !important; } #login-div { display: flex !important; } #signup-div { display: none; }</style>');
         }
