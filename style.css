@@ -10,6 +10,11 @@
   --border: #F3F4F6;
 }
 
+/* Default Hiding for Flicker Prevention */
+#mainPage, #login-div, #signup-div, #adminPanel, #phoneModal {
+  display: none;
+}
+
 .back-btn-small {
   display: inline-flex;
   align-items: center;
