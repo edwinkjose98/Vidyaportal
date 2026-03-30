@@ -6,30 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <title>Kerala Vidya Portal – #1 Admission portal with job Guarantee</title>
     
-    <!-- Branding & Favicon (Updated for Google Search) -->
-    <link rel="icon" type="image/png" href="kerala-logo.png?v=3">
-    <link rel="apple-touch-icon" href="kerala-logo.png?v=3">
-    <link rel="shortcut icon" href="kerala-logo.png?v=3">
+    <!-- Branding & Favicon (Rigorously updated for Google Search) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="kerala-logo.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="kerala-logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="kerala-logo.png">
+    <link rel="shortcut icon" href="kerala-logo.png">
+    <meta name="msapplication-TileImage" content="kerala-logo.png">
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="Kerala Vidya Portal is India's most trusted admission platform offering ₹0 donations, fee-back guarantees, and legal documentation for your career success.">
     <meta name="keywords" content="Kerala Vidya Portal, college admission, engineering colleges bangalore, bca colleges tamil nadu, aviation colleges india">
     
-    <!-- Site Name Schema for Google Search -->
+    <!-- Schema for Google Search branding -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Kerala Vidya Portal",
-      "alternateName": ["KVP", "Keralavidyaportal"],
-      "url": "https://keralavidyaportal.in"
-    }
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Kerala Vidya Portal",
+        "url": "https://keralavidyaportal.in"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "url": "https://keralavidyaportal.in",
+        "logo": "https://keralavidyaportal.in/kerala-logo.png"
+      }
+    ]
     </script>
     
     <!-- Social Media Sharing (Open Graph) -->
     <meta property="og:title" content="Kerala Vidya Portal – #1 Admission portal with job Guarantee">
     <meta property="og:description" content="Secure your future with India's only fee-back guarantee portal. Discover and apply to top colleges with verified data.">
-    <meta property="og:image" content="kerala-logo.png?v=3">
+    <meta property="og:image" content="https://keralavidyaportal.in/kerala-logo.png">
     <meta property="og:type" content="website">
     <meta name="google-site-verification" content="Y_YfzJb7erPSxoozK98qQWPgiDGUk2ZXgfSN3X7Oz_o" />
 
@@ -185,11 +194,13 @@
                             autocomplete="username" required style="width:100%; padding:0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
                     </div>
                     
-                    <div class="input-group" style="margin-bottom: 1.2rem; position:relative;">
+                    <div class="input-group" style="margin-bottom: 1.2rem;">
                         <label for="loginPassword" style="display:block; font-size:0.85rem; font-weight:700; color:#822f4e; margin-bottom:0.6rem;">Password</label>
-                        <input type="password" id="loginPassword" class="input-field" placeholder="••••••••"
-                            autocomplete="current-password" required style="width:100%; padding:0.85rem 2.8rem 0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
-                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('loginPassword', this)" style="position:absolute; right:12px; bottom:12px; cursor:pointer; color:#c57f9a; font-size:0.9rem;"></i>
+                        <div style="position:relative;">
+                            <input type="password" id="loginPassword" class="input-field" placeholder="••••••••"
+                                autocomplete="current-password" required style="width:100%; padding:0.85rem 2.8rem 0.85rem 1rem; border:1.2px solid #f3d2df; border-radius:12px; background:#fff; font-size:1rem; outline:none; color:#2c2025; box-shadow:0 2px 10px rgba(0,0,0,0.02); transition:0.2s;">
+                            <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('loginPassword', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#c57f9a; font-size:0.9rem;"></i>
+                        </div>
                     </div>
 
                     <div class="remember-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; font-size:0.85rem;">
@@ -317,14 +328,18 @@
 
                 <div style="margin-bottom: 0.9rem; position:relative;">
                     <label for="signupPassword" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Create Password (8+ chars)</label>
-                    <input type="password" id="signupPassword" placeholder="••••••••" style="width:100%; padding:0.8rem 2.5rem 0.8rem 0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
-                    <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('signupPassword', this)" style="position:absolute; right:10px; bottom:10px; cursor:pointer; color:#c57f9a; font-size:0.85rem;"></i>
+                    <div style="position:relative;">
+                        <input type="password" id="signupPassword" placeholder="••••••••" style="width:100%; padding:0.8rem 2.5rem 0.8rem 0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('signupPassword', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#c57f9a; font-size:0.85rem;"></i>
+                    </div>
                 </div>
 
                 <div style="margin-bottom: 0.9rem; position:relative;">
                     <label for="signupPasswordConfirm" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">Re-enter Password</label>
-                    <input type="password" id="signupPasswordConfirm" placeholder="••••••••" style="width:100%; padding:0.8rem 2.5rem 0.8rem 0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
-                    <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('signupPasswordConfirm', this)" style="position:absolute; right:10px; bottom:10px; cursor:pointer; color:#c57f9a; font-size:0.85rem;"></i>
+                    <div style="position:relative;">
+                        <input type="password" id="signupPasswordConfirm" placeholder="••••••••" style="width:100%; padding:0.8rem 2.5rem 0.8rem 0.8rem; border:1.2px solid #f3d2df; border-radius:10px; font-size:0.95rem; outline:none;">
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('signupPasswordConfirm', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#c57f9a; font-size:0.85rem;"></i>
+                    </div>
                 </div>
 
 
@@ -1137,6 +1152,8 @@
                         onclick="switchAdminTab('colleges')">Colleges</button>
                     <button type="button" class="admin-tab" data-tab="applications"
                         onclick="switchAdminTab('applications')">Applications</button>
+                    <button type="button" class="admin-tab" data-tab="leads"
+                        onclick="switchAdminTab('leads')">Signup Leads (OTP Sent)</button>
                 </div>
 
                 <div id="adminUsersSection" class="admin-section">
@@ -1276,6 +1293,25 @@
                                 </tr>
                             </thead>
                             <tbody id="adminApplicationsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Leads Section -->
+                <div id="adminLeadsSection" class="admin-section" style="display:none;">
+                    <div id="adminLeadsMessage" class="admin-message" style="margin-bottom:1rem; font-weight:700; color:var(--pink);">Attempted Registrations (OTP Sent)</div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" style="background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #F3F4F6;">
+                            <thead style="background: #F9FAFB;">
+                                <tr>
+                                    <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Name</th>
+                                    <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Phone</th>
+                                    <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Email</th>
+                                    <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Date</th>
+                                    <th style="padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6B7280;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLeadsBody"></tbody>
                         </table>
                     </div>
                 </div>

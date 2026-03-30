@@ -97,6 +97,25 @@ window.unhideAllColleges = unhideAllColleges;
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.error("Global Error Caught:", msg, "at", url, ":", lineNo);
+  
+  // SILENT ERROR REPORTING FOR ADMIN
+  try {
+      const uRaw = localStorage.getItem(STORAGE_KEY);
+      const userPhone = uRaw ? JSON.parse(uRaw).phone : "GUEST";
+      
+      const errorData = {
+          type: "TECHNICAL_ERROR",
+          message: msg,
+          location: `${url}:${lineNo}`,
+          user: userPhone,
+          timestamp: new Date().toISOString()
+      };
+      
+      // Use existing sheet sync if available
+      if (typeof syncToExternalSheet === "function") syncToExternalSheet(errorData);
+      
+  } catch (e) { /* ignore secondary error */ }
+  
   return false;
 };
 
@@ -577,6 +596,16 @@ async function sendRegistrationOTP() {
         const formattedPhone = "+91" + phone;
         regConfirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaRegVerifier);
         
+        // LEAD CAPTURE: Save as "Attempted Signup" so admin can track phone numbers even if OTP is not verified
+        try {
+            await setDoc(doc(db, "leads", phone), {
+                phone: phone,
+                status: "OTP SENT",
+                joined: new Date().toLocaleDateString(),
+                timestamp: new Date()
+            });
+        } catch (leadErr) { console.warn("Lead record skipped:", leadErr); }
+
         document.getElementById("regOtpInputWrap").style.display = "block";
         document.getElementById("signupPhone").disabled = true;
         sendBtn.textContent = "Resend";
@@ -2001,18 +2030,52 @@ function escapeQuote(str) {
   return str.replace(/'/g, "\\'");
 }
 
+async function loadAdminLeads() {
+    const listBody = document.getElementById("adminLeadsBody");
+    if (!listBody) return;
+    listBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:2rem;'>Loading Leads...</td></tr>";
+
+    try {
+        const q = query(collection(db, "leads"), orderBy("timestamp", "desc"), limit(200));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            listBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:2rem; color:#999;'>No signup leads found yet.</td></tr>";
+            return;
+        }
+
+        listBody.innerHTML = snapshot.docs.map(doc => {
+            const d = doc.data();
+            return `
+                <tr style="border-bottom: 1px solid #F3F4F6;">
+                    <td style="padding:1rem; font-weight:700; color:#111827;">${escapeHtml(d.name || "Unknown")}</td>
+                    <td style="padding:1rem; color:#4B5563;">${escapeHtml(d.phone || "")}${(d.status==="OTP SENT" ? ' <span style="font-size:0.7rem; color:#e91e63;">(In Progress)</span>':'')}</td>
+                    <td style="padding:1rem; color:#4B5563;">${escapeHtml(d.email || "—")}</td>
+                    <td style="padding:1rem; color:#6B7280; font-size:0.85rem;">${escapeHtml(d.joined || "")}</td>
+                    <td style="padding:1rem;"><span style="background:#FFF0F8; color:#D81B60; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">${escapeHtml(d.status || "SENT")}</span></td>
+                </tr>
+            `;
+        }).join("");
+    } catch (err) {
+        console.error("Load Leads error:", err);
+    }
+}
+
 function switchAdminTab(tab) {
   document.querySelectorAll(".admin-tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === tab));
   const usersSec = document.getElementById("adminUsersSection");
   const collegesSec = document.getElementById("adminCollegesSection");
   const appsSec = document.getElementById("adminApplicationsSection");
   const editForm = document.getElementById("adminCollegeEditForm");
+  const leadsSec = document.getElementById("adminLeadsSection");
   if (usersSec) usersSec.style.display = tab === "users" ? "block" : "none";
   if (collegesSec) collegesSec.style.display = tab === "colleges" ? "block" : "none";
   if (appsSec) appsSec.style.display = tab === "applications" ? "block" : "none";
+  if (leadsSec) leadsSec.style.display = tab === "leads" ? "block" : "none";
   if (editForm) editForm.style.display = "none";
+  
   if (tab === "colleges") loadAdminColleges();
   if (tab === "applications") loadAdminApplications();
+  if (tab === "leads") loadAdminLeads();
 }
 window.switchAdminTab = switchAdminTab;
 
