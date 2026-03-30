@@ -248,8 +248,20 @@ function updateAuthUI(loggedIn) {
     if (el) { 
       el.textContent = name ? "Welcome, " + name : ""; 
       el.style.setProperty("display", name ? "inline-block" : "none", "important"); 
-    } 
+    }
   });
+
+  // MOBILE WELCOME HEADER SYNC
+  const mobNote = document.getElementById("mob-welcome-note");
+  const mobName = document.getElementById("mob-student-name");
+  if (mobNote && mobName) {
+    if (loggedIn && name) {
+      mobName.textContent = name;
+      mobNote.style.display = "block";
+    } else {
+      mobNote.style.display = "none";
+    }
+  }
   
   adminLinks.forEach((el) => { 
     if (el) {
@@ -702,6 +714,10 @@ function openHome() {
   const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
+  // Update memory so refresh doesn't jump back to others
+  localStorage.setItem("kvp_last_view", "home");
+  if (typeof syncNav === "function") syncNav("home");
+
   const collegesSec = document.getElementById("colleges");
   if (collegesSec) {
       collegesSec.style.display = "none";
@@ -745,26 +761,14 @@ async function doLogin(event) {
     loginSubmitBtn.textContent = "Verifying...";
   }
 
-  // Handle phone-number mapping (e.g., 9876543210 -> email)
+  // Cleanly handle phone vs email
   let email = loginId;
-  const phoneRegex = /^\d{10}$/;
-  if (phoneRegex.test(loginId)) {
-      try {
-        const q = query(collection(db, "users"), where("phone", "==", loginId));
-        const qSnap = await getDocs(q);
-        if (!qSnap.empty) {
-          email = qSnap.docs[0].data().email || `${loginId}@keralavidyaportal.com`;
-        } else {
-          email = `${loginId}@keralavidyaportal.com`;
-        }
-      } catch (err) {
-        console.warn("Phone lookup failure:", err);
-        email = `${loginId}@keralavidyaportal.com`;
-      }
+  if (/^\d{10}$/.test(loginId)) {
+      email = `${loginId}@keralavidyaportal.com`; // Direct virtual mapping
   }
 
   try {
-    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
     const result = await signInWithEmailAndPassword(auth, email, password);
     const user = result.user;
     const userSnap = await getDoc(doc(db, "users", user.uid));
@@ -779,12 +783,20 @@ async function doLogin(event) {
       openHome();
     }
   } catch (err) {
-    console.error("Login error:", err);
-    if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        alert("Invalid mobile/email or password. Please try again.");
-    } else {
-        alert("Sign in failed: " + (err.message || "Please check your network."));
+    console.error("Login Error:", err);
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        if (/^\d{10}$/.test(loginId)) {
+            // SILENT REDIRECT: Go straight to Signup
+            openSignUp();
+            const sId = document.getElementById("signupPhone");
+            if (sId) {
+                sId.value = loginId;
+                showToast("Account not found. 📱 Continuing to Sign Up...");
+            }
+            return;
+        }
     }
+    alert("Invalid mobile/email or password. Please try again.");
   } finally {
     if (loginSubmitBtn) {
       loginSubmitBtn.disabled = false;
@@ -2785,6 +2797,7 @@ function showHome() {
   if (backBtn) backBtn.remove();
   
   if (typeof syncNav === 'function') syncNav("home");
+  localStorage.setItem("kvp_last_view", "home");
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.showHome = showHome;

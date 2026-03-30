@@ -447,8 +447,11 @@
                         <!-- (Hamburger moved into mobile utility cluster above) -->
                     </div>
                     <div class="mob-menu" id="mobMenu">
-
-                        <!-- (Welcome note removed from mobile as requested) -->
+                        <!-- Student Welcome Header (Mobile Only) -->
+                        <div id="mob-welcome-note" style="padding: 1.5rem; background: var(--pink-light); border-bottom: 2px solid rgba(233,30,140,0.1); display: none;">
+                            <div style="font-size: 0.72rem; font-weight: 850; color: var(--pink); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;">WELCOME BACK</div>
+                            <div id="mob-student-name" style="font-size: 1.25rem; font-weight: 900; color: var(--dark);">Student</div>
+                        </div>
 
                         <a data-nav="home" onclick="showHome(); closeMobileMenu();" class="active" style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #f1f5f9;"><i class="fa-solid fa-house" style="color:var(--pink); width: 20px; font-size: 1.1rem; text-align: center;"></i> Home</a>
                         <a data-nav="colleges" href="javascript:void(0)" onclick="showAllCollegesView(); closeMobileMenu();" style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #f1f5f9;"><i class="fa-solid fa-building-columns" style="color:var(--pink); width: 20px; font-size: 1.1rem; text-align: center;"></i> Colleges & Courses</a>
