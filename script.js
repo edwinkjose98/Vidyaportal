@@ -391,6 +391,7 @@ async function verifyOtp() {
         const phoneEl = document.getElementById("signupPhone");
         if (phoneEl) phoneEl.value = user.phoneNumber ? user.phoneNumber.replace("+91", "") : "";
       } else {
+        isRegPhoneVerified = true; // Pre-verify registration flag just in case
         saveUserToStorage(user, userSnap.data());
         updateAuthUI(true);
         openHome();
@@ -494,11 +495,11 @@ onAuthStateChanged(auth, async (user) => {
         if (typeof loadColleges === "function") loadColleges();
     }
     
-    const lastView = localStorage.getItem("kvp_last_view");
-    const lastCol = localStorage.getItem("kvp_last_college");
-    const lastCat = localStorage.getItem("kvp_last_category");
+    const lastView = localStorage.getItem("kvp_last_view"); // Preferred key
+    const lastCol  = localStorage.getItem("kvp_last_college");
+    const lastCat  = localStorage.getItem("kvp_last_category");
 
-    if (lastView === "colleges") {
+    if (lastView === "colleges" || lastView === "courses") {
         showAllCollegesView();
         if (lastCol) {
             setTimeout(() => {
@@ -510,8 +511,6 @@ onAuthStateChanged(auth, async (user) => {
         }
     } else if (lastView === "compare") {
         showCompareView();
-    } else if (lastView === "courses") {
-        showAllCoursesView();
     } else {
         openHome();
     }
@@ -643,6 +642,7 @@ async function verifyRegistrationOTP() {
             showToast("Welcome back! 👋 Logged in successfully.");
         } else {
             // NEW USER: Show Step 2 (Profile Details)
+            isRegPhoneVerified = true; // SET FLAG NOW
             document.getElementById("signup-step-otp").style.display = "none";
             document.getElementById("signup-step-details").style.display = "grid";
             showToast("Phone verified! ✅ Complete your profile.");
@@ -2541,8 +2541,8 @@ function showAllCoursesView(e) {
     console.error("courses-section NOT FOUND");
   }
 
-  syncNav("courses");
-  localStorage.setItem("kvp_last_view", "courses");
+  syncNav("colleges"); // Match the data-nav="colleges" in index.html
+  localStorage.setItem("kvp_last_view", "colleges");
 
   renderCourseCategories();
   if (cs) cs.scrollIntoView({ behavior: "smooth" });
