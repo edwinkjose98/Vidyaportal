@@ -13,6 +13,13 @@
     <link rel="shortcut icon" href="kerala-logo.png">
     <meta name="msapplication-TileImage" content="kerala-logo.png">
     
+    <!-- PWA Features -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#c7285a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kerala Vidya Portal">
+    
     <!-- SEO Meta Tags -->
     <meta name="description" content="Kerala Vidya Portal is India's most trusted admission platform offering ₹0 donations, fee-back guarantees, and legal documentation for your career success.">
     <meta name="keywords" content="Kerala Vidya Portal, college admission, engineering colleges bangalore, bca colleges tamil nadu, aviation colleges india">
@@ -58,9 +65,8 @@
                 radial-gradient(at 100% 0%, hsla(339, 100%, 94%, 0.8) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, hsla(320, 100%, 96%, 0.7) 0px, transparent 50%),
                 radial-gradient(at 0% 100%, hsla(340, 100%, 95%, 0.7) 0px, transparent 50%) !important;
-            background-size: 200% 200% !important;
+            background-size: 100% 100% !important;
             background-attachment: fixed !important;
-            animation: breathingMesh 15s ease-in-out infinite alternate !important;
         }
 
         .homeBG {
@@ -69,16 +75,6 @@
             box-shadow: none !important;
             background: transparent !important;
             padding: 5rem 1.5rem 3rem !important;
-        }
-
-        @keyframes breathingMesh {
-            0% {
-                background-position: 0% 0%;
-            }
-
-            100% {
-                background-position: 100% 100%;
-            }
         }
 
         /* --- Mobile Overrides (Max Width 768px) --- */

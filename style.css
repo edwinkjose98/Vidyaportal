@@ -1,3 +1,10 @@
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
 :root {
   --pink: #E91E8C;
   --pink-light: #FFF0F8;
@@ -5228,3 +5235,24 @@ body:has(#signup-div[style*="display: flex"]) {
     padding-bottom: 1.25rem;
     padding-top: 0;
 } .det-txt { padding: 0 1.4rem 1.2rem; margin: 0; }
+
+/* 3D Global Enhancements */
+.domain-card, .col-card, .course-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.domain-card img, .col-card img {
+  transition: transform 0.4s ease;
+  backface-visibility: hidden;
+}
+
+.hero-h1 {
+  animation: floating3D 6s ease-in-out infinite;
+  text-shadow: 0 10px 20px rgba(233, 30, 140, 0.1);
+}
+
+@keyframes floating3D {
+  0%, 100% { transform: translateY(0) rotateX(0deg); }
+  50% { transform: translateY(-10px) rotateX(2deg); }
+}

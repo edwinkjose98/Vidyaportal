@@ -1,0 +1,27 @@
+{
+  "name": "Kerala Vidya Portal",
+  "short_name": "KVP",
+  "description": "India's #1 Admission portal with job Guarantee",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fffafb",
+  "theme_color": "#c7285a",
+  "icons": [
+    {
+      "src": "kerala-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "kerala-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "kerala-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

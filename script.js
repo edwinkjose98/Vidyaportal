@@ -1043,23 +1043,30 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 // Update this with your Google Apps Script URL later
-const SHEET_SYNC_URL = "https://script.google.com/macros/s/AKfycbxtB34-9XVwWik1PNWeyvCKkd2Mn4q1Nm8D0uhXz6odQLWx_42auZkiuu7FE-mUjebe/exec";
+const SHEET_SYNC_URL = "https://script.google.com/macros/s/AKfycbyLtQZF7KDgHPBBTeIu89SUvc-oeiupSHHynYK5h_ZVKQsT4fJ41XUnZ1PSKrYHA34Y/exec";
 
 async function syncToExternalSheet(userData) {
-  if (!SHEET_SYNC_URL || SHEET_SYNC_URL.includes("YOUR_GOOGLE")) return;
-  try {
-    // Send data as URL-encoded parameters (Reliable for Google Sheet doPost)
-    const formData = new URLSearchParams();
-    for (const key in userData) {
-        formData.append(key, userData[key]);
-    }
+  if (!SHEET_SYNC_URL || SHEET_SYNC_URL.includes("macros")) {
+    console.log("Sheet Sync URL Found, attempting sync...");
+  } else {
+    return;
+  }
 
-    await fetch(SHEET_SYNC_URL, {
-      method: "POST",
-      mode: "no-cors", 
-      body: formData
+  try {
+    // Send data as URL-encoded parameters (Reliable for Google Sheet doGet)
+    const params = new URLSearchParams();
+    for (const key in userData) {
+        params.append(key, userData[key]);
+    }
+    
+    // Append a unique callback to bypass CORS/Caching
+    const finalUrl = `${SHEET_SYNC_URL}?${params.toString()}&callback=jsonp_callback_${Date.now()}`;
+
+    await fetch(finalUrl, {
+      method: "GET",
+      mode: "no-cors"
     });
-    console.log("Sheet sync attempt sent.");
+    console.log("Sheet sync attempt sent successfully.");
   } catch (err) {
     console.warn("Sheet sync failed silently:", err);
   }
@@ -3262,3 +3269,12 @@ function toggleDetAccordion(id, btn) {
     }
 }
 window.toggleDetAccordion = toggleDetAccordion;
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => console.log('Service Worker registered', reg))
+      .catch((err) => console.log('Service Worker registration failed', err));
+  });
+}
