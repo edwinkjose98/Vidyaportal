@@ -10,7 +10,7 @@ window.showToast = function(msg) {
         t.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;z-index:10000;display:none;";
         document.body.appendChild(t);
     }
-    t.innerHTML = '<span style="color:#e91e63">✦</span> ' + msg;
+    t.innerHTML = '<span style="color:#9000FF">✦</span> ' + msg;
     t.style.display = 'block';
     setTimeout(() => { t.style.display = 'none'; }, 3000);
 }

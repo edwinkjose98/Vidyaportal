@@ -1674,7 +1674,8 @@ function openCollege(idx, specificList) {
       const cleanDur = fullDur.split(/[·\-\|]/)[0].trim();
       const dur = parseInt(cleanDur) || 3;
       
-      let rawFee = cr.f || "";
+      // Robust fee harvesting: Look in 'f', 'total_fee', 'total_fees', 'fee', etc.
+      let rawFee = cr.f || cr.total_fee || cr.total_fees || cr.fee || "";
       if ((!rawFee || rawFee === "On Request") && fullDur.includes('₹')) {
          const parts = fullDur.split('·');
          if (parts.length > 1) rawFee = parts[1].replace(/Total Tuition Fees/i, "").trim();
@@ -1689,7 +1690,7 @@ function openCollege(idx, specificList) {
          return val;
       };
 
-      let totalNum = 0;
+      let totalNum = null;
       let yearMap = {};
       if (rawFee && rawFee.includes("Yr")) {
          const blocks = rawFee.split('|');
@@ -1721,7 +1722,9 @@ function openCollege(idx, specificList) {
 
       // Helper for Indian Currency Formatting (e.g. ₹1,50,000 instead of 1.5L)
       const indianFmt = (num) => {
-         if (!num) return "On Request";
+         if (num === null || num === undefined) return "On Request";
+         if (num === 0) return "₹0";
+
          return "₹" + Math.round(num).toLocaleString('en-IN');
       };
 
@@ -2883,7 +2886,9 @@ function renderCourses() {
     const cleanDur = fullDur.split(/[·\-\|]/)[0].trim();
     const dur = parseInt(cleanDur) || 3;
     
-    let rawFee = course.f || "";
+    // Robust fee harvesting: Look in 'f', 'total_fee', 'total_fees', 'fee', etc.
+    let rawFee = course.f || course.total_fee || course.total_fees || course.fee || ""; 
+
     if ((!rawFee || rawFee === "On Request") && fullDur.includes('₹')) {
        const parts = fullDur.split('·');
        if (parts.length > 1) rawFee = parts[1].replace(/Total Tuition Fees/i, "").trim();
