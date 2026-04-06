@@ -73,14 +73,19 @@ import {
 window.showAllCollegesView = showAllCollegesView;
 window.openAdminPanel = openAdminPanel;
 window.closeAdminPanel = closeAdminPanel;
-window.doLogin = doLogin;
-window.doGoogleLogin = doGoogleLogin;
+window.sendUnifiedOTP = sendUnifiedOTP;
+window.verifyUnifiedOTP = verifyUnifiedOTP;
+window.resetUnifiedLogin = resetUnifiedLogin;
+window.moveFocusUnified = moveFocusUnified;
+window.finalizeUnifiedRegistration = finalizeUnifiedRegistration;
+
+
 window.goSlide = goSlide;
 window.nextSlide = nextSlide;
 window.toggleMenu = toggleMenu;
 window.syncNav = syncNav;
-window.openPhoneModal = openPhoneModal;
-window.closePhoneModal = closePhoneModal;
+
+
 window.openLogin = openLogin;
 window.openSignUp = openSignUp;
 window.openHome = openHome;
@@ -88,8 +93,8 @@ window.showHome = openHome;
 window.showCompareView = showCompareView;
 window.updateComparison = updateComparison;
 window.generateAIComparison = generateAIComparison;
-window.sendRegistrationOTP = sendRegistrationOTP;
-window.verifyRegistrationOTP = verifyRegistrationOTP;
+
+
 window.deleteAllColleges = deleteAllColleges;
 window.toggleCollegeVisibility = toggleCollegeVisibility;
 window.hideAllColleges = hideAllColleges;
@@ -136,34 +141,19 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ===== PHONE / OTP MODAL =====
-let confirmationResult = null;
+// Unified OTP Auth
+let unifiedConfirmationResult = null;
+let verifiedPhoneNumber = "";
 
-let phoneModalMode = "login";
-function openPhoneModal(mode = "login") {
-  phoneModalMode = mode;
-  const modal = document.getElementById("phoneModal");
-  if (modal) modal.style.display = "flex";
-  
-  const step1 = document.getElementById("modalPhoneStep");
-  const step2 = document.getElementById("modalOtpStep");
-  const step3 = document.getElementById("modalResetStep");
-  
+function resetUnifiedLogin() {
+  const step1 = document.getElementById("otp-phone-step");
+  const step2 = document.getElementById("otp-verify-step");
   if (step1) step1.style.display = "block";
   if (step2) step2.style.display = "none";
-  if (step3) step3.style.display = "none";
-  
-  // Custom Headings
-  const title = document.querySelector("#modalPhoneStep h2");
-  const sub = document.querySelector("#modalPhoneStep p");
-  if (title) title.textContent = (mode === "reset") ? "Password Reset" : "Log in via SMS";
-  if (sub) sub.textContent = (mode === "reset") ? "Enter verified mobile number" : "We'll send a 6-digit OTP to verify";
-
-  const input = document.getElementById("phoneInput");
-  if (input) { input.value = ""; input.focus(); }
-  const err = document.getElementById("phoneError");
-  if (err) err.style.display = "none";
+  document.querySelectorAll(".otp-box-unified").forEach(b => b.value = "");
+  unifiedConfirmationResult = null;
 }
+
 
 function closePhoneModal() {
   const modal = document.getElementById("phoneModal");
@@ -181,8 +171,9 @@ if (pModal) {
 }
 
 const STORAGE_KEY = "unicircle_user";
-const ADMIN_EMAILS = [
-  "edwinkjose98@gmail.com"
+const ADMIN_PHONES = [
+  "9400137383",
+  "+919400137383"
 ];
 
 // Auth Utilities
@@ -210,11 +201,11 @@ function clearUserFromStorage() {
   }
 }
 
-function isAdminEmail(email) {
-  if (!email) return false;
-  const lowerEmail = String(email).trim().toLowerCase();
-  const inList = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === lowerEmail);
-  return inList || lowerEmail.includes("edwinkjose98");
+function isAdminPhone(phone) {
+  if (!phone) return false;
+  const cleanPhone = String(phone).replace(/\D/g, "");
+  // Check if it's the super admin phone (9400137383)
+  return ADMIN_PHONES.some(p => p.replace(/\D/g, "") === cleanPhone);
 }
 
 function updateAuthUI(loggedIn) {
@@ -240,9 +231,8 @@ function updateAuthUI(loggedIn) {
   
   const currentUser = auth.currentUser;
   const name = userData ? (userData.displayName || userData.email || "") : (currentUser ? (currentUser.displayName || currentUser.email || "") : "");
-  const email = (userData && userData.email) || (currentUser && currentUser.email) || "";
-  
-  const isUserAdmin = isAdminEmail(email);
+  const phone = (userData && userData.phone) || (currentUser && currentUser.phoneNumber) || "";
+  const isUserAdmin = isAdminPhone(phone);
 
   userNameEls.forEach((el) => { 
     if (el) { 
@@ -311,208 +301,131 @@ function logout() {
 }
 window.logout = logout;
 
-// Phone / OTP Handlers
-async function sendOtp() {
-  const codeEl = document.getElementById("countryCode");
-  const phoneEl = document.getElementById("phoneInput");
-  const errorEl = document.getElementById("phoneError");
-  const btn = document.getElementById("sendOtpBtn");
-  if (!codeEl || !phoneEl || !errorEl || !btn) return;
-
-  const code = codeEl.value;
-  const num = phoneEl.value.trim().replace(/\D/g, "");
-  if (!num || num.length !== 10) {
-    errorEl.textContent = "Enter a valid 10-digit mobile number.";
-    errorEl.style.display = "";
-    return;
-  }
-  // Standardize with +91 for Kerala/India
-  const fullPhone = "+91" + num;
-  errorEl.style.display = "none";
-
-  try {
-    btn.disabled = true;
-    btn.textContent = "Wait…";
-    
-    if (typeof setupRecaptcha === "function") setupRecaptcha();
-    confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
-
-    const step1 = document.getElementById("modalPhoneStep");
-    const step2 = document.getElementById("modalOtpStep");
-    const sentMsg = document.getElementById("otpSentTo");
-    if (step1) step1.style.display = "none";
-    if (step2) step2.style.display = "";
-    if (sentMsg) sentMsg.textContent = `OTP sent to ${fullPhone}`;
-    setTimeout(() => {
-      const firstBox = document.querySelectorAll(".otp-box")[0];
-      if (firstBox) firstBox.focus();
-    }, 100);
-  } catch (err) {
-    console.error(err);
-    errorEl.textContent = err.message || "Failed to send OTP.";
-    errorEl.style.display = "";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Send OTP →";
-  }
-}
-
-async function verifyOtp() {
-  const otp = [...document.querySelectorAll(".otp-box")].map(b => b.value).join("");
-  const errorEl = document.getElementById("otpError");
-  const btn = document.getElementById("verifyOtpBtn");
-  if (!errorEl || !btn) return;
-
-  if (otp.length < 6) {
-    errorEl.textContent = "Enter all 6 digits.";
-    errorEl.style.display = "";
-    return;
-  }
-  if (!confirmationResult) { alert("Please request an OTP first."); return; }
-
-  try {
-    btn.disabled = true;
-    btn.textContent = "Verifying…";
-    errorEl.style.display = "none";
-
-    const result = await confirmationResult.confirm(otp);
-    const user = result.user;
-    const userSnap = await getDoc(doc(db, "users", user.uid));
-
-    if (phoneModalMode === "reset") {
-      // IF RESET MODE: Ensure the account exists before allowing password update
-      if (!userSnap.exists()) {
-          alert("👋 Profile Not Found! It seems you haven't completed your registration yet. Redirecting to Sign Up...");
-          closePhoneModal();
-          openSignUp();
-          const pEl = document.getElementById("signupPhone");
-          if(pEl) pEl.value = user.phoneNumber ? user.phoneNumber.replace("+91", "") : "";
-          return;
-      }
-      // Transition to New Password Input (KEEP MODAL OPEN)
-      const step2 = document.getElementById("modalOtpStep");
-      const step3 = document.getElementById("modalResetStep");
-      if (step2) step2.style.display = "none";
-      if (step3) step3.style.display = "block";
-      const pwIn = document.getElementById("newResetPassword");
-      if (pwIn) { pwIn.value = ""; pwIn.focus(); }
-    } else {
-      closePhoneModal(); // Normal login: close immediately
-      if (!userSnap.exists()) {
-        alert("Account not found. Please sign up first.");
-        openSignUp();
-        const phoneEl = document.getElementById("signupPhone");
-        if (phoneEl) phoneEl.value = user.phoneNumber ? user.phoneNumber.replace("+91", "") : "";
-      } else {
-        isRegPhoneVerified = true; // Pre-verify registration flag just in case
-        saveUserToStorage(user, userSnap.data());
-        updateAuthUI(true);
-        openHome();
-      }
-    }
-  } catch (err) {
-    console.error(err);
-    errorEl.textContent = "Incorrect OTP. Try again.";
-    errorEl.style.display = "";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Verify & Login →";
-  }
-}
-
-async function finalizeReset() {
-    const pw = document.getElementById("newResetPassword").value.trim();
-    const pwConfirm = document.getElementById("newResetPasswordConfirm").value.trim();
-    
-    if (pw.length < 8) {
-        alert("Password must be at least 8 characters.");
+// NEW Unified OTP Flow
+async function sendUnifiedOTP() {
+    const phone = document.getElementById("otpPhone").value.trim().replace(/\D/g, "");
+    if(phone.length !== 10) {
+        alert("Please enter a valid 10-digit mobile number.");
         return;
     }
-    if (pw !== pwConfirm) {
-        alert("Passwords do not match! Please re-enter carefully.");
-        return;
-    }
-
-    const btn = document.getElementById("finalizeResetBtn");
-    btn.disabled = true;
-    btn.textContent = "Saving...";
+    
+    const sendBtn = document.getElementById("sendOtpBtn");
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Wait...";
 
     try {
-        const user = auth.currentUser;
-        if (!user) throw new Error("No user context.");
+        const fullPhone = "+91" + phone;
+        if (!window.recaptchaVerifier) {
+            const container = document.getElementById('recaptcha-container');
+            if (container) container.style.display = 'none';
+            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                size: 'invisible',
+                callback: () => { }
+            });
+        }
+        
+        if (typeof window.recaptchaVerifier.reset === "function") {
+            window.recaptchaVerifier.reset();
+        }
+        
+        unifiedConfirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
+        verifiedPhoneNumber = phone;
 
-        const userSnap = await getDoc(doc(db, "users", user.uid));
-        if (!userSnap.exists()) throw new Error("Profile lost.");
-
-        await updateDoc(doc(db, "users", user.uid), {
-            password: pw // Updating in firestore (if you store it for re-login)
-        });
-
-        // Also update Firebase Auth password
-        const { updatePassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
-        await updatePassword(user, pw);
-
-        saveUserToStorage(user, userSnap.data());
-        updateAuthUI(true);
-        closePhoneModal();
-        openHome();
-        showToast("✅ Password Updated Successfully!");
+        document.getElementById("otp-phone-step").style.display = "none";
+        document.getElementById("otp-verify-step").style.display = "block";
+        document.getElementById("otpSentNum").textContent = "+91" + phone;
+        
+        showToast("OTP sent successfully! 📱");
+        setTimeout(() => {
+            const firstBox = document.querySelectorAll(".otp-box-unified")[0];
+            if (firstBox) firstBox.focus();
+        }, 100);
     } catch (err) {
-        console.error("Reset Submit Error:", err);
-        alert("Update failed. Please login normally and change password in profile.");
-    } finally {
-        btn.disabled = false;
-        btn.textContent = "Save & Login";
+        console.error("Unified OTP Error:", err);
+        let msg = "SMS failed. Try again.";
+        if (err.code === "auth/quota-exceeded") msg = "Daily limit reached! ⚠️";
+        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 10 mins. 🔒";
+        showToast(msg);
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Continue →";
     }
 }
-window.finalizeReset = finalizeReset;
 
-function setupRecaptcha() {
-  if (window.recaptchaVerifier) {
-    try { window.recaptchaVerifier.clear(); } catch (_) { }
-    window.recaptchaVerifier = null;
-  }
-  const container = document.getElementById('recaptcha-container');
-  if (container) {
-    container.style.display = "none";
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      size: 'invisible', callback: () => { }
-    });
-  }
+async function verifyUnifiedOTP() {
+    let code = "";
+    document.querySelectorAll(".otp-box-unified").forEach(b => code += b.value);
+    
+    if(code.length !== 6) return;
+
+    const verifyBtn = document.getElementById("verifyOtpBtn");
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = "...";
+
+    try {
+        await unifiedConfirmationResult.confirm(code);
+        const user = auth.currentUser;
+        if (!user) throw new Error("Verification failed.");
+
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        
+        if (userSnap.exists()) {
+            saveUserToStorage(user, userSnap.data());
+            updateAuthUI(true);
+            openHome();
+            showToast("Welcome back! 👋 Logged in successfully.");
+        } else {
+            openSignUp(true, verifiedPhoneNumber);
+            showToast("Phone verified! ✅ Complete your profile.");
+        }
+    } catch (err) {
+        console.error("Unified Verify Error:", err);
+        alert("Incorrect Code. Please check the SMS and try again.");
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = "Verify & Access";
+    }
 }
 
-// Auth State Observer
+function setupRecaptcha() {
+    if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear(); } catch (_) { }
+        window.recaptchaVerifier = null;
+    }
+    const container = document.getElementById('recaptcha-container');
+    if (container) {
+        container.style.display = "none";
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            size: 'invisible', callback: () => { }
+        });
+    }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     clearUserFromStorage();
     updateAuthUI(false);
-    openLogin(); // ENSURE LOGIN PAGE IS SHOWN
+    openLogin();
     return;
   }
   
-  // We WILL call updateAuthUI(true) only AFTER we know they have a profile or are admin
-  // This prevents half-signed-up users from seeing the landing page background
-
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
   const profileData = userSnap.exists() ? userSnap.data() : null;
   
-  const isUserAdmin = isAdminEmail(user.email || (profileData && profileData.email));
-  
-  if (profileData || isUserAdmin) {
-    updateAuthUI(true); // SHOW LANDING PAGE NOW
+  if (profileData) {
     saveUserToStorage(user, profileData);
+    updateAuthUI(true);
     
-    // If the list is empty (potentially blocked by security rules before login), load now
+    // Load colleges if not already there
     if (!collegesData || collegesData.length === 0) {
         if (typeof loadColleges === "function") loadColleges();
     }
     
-    const lastView = localStorage.getItem("kvp_last_view"); // Preferred key
+    // Resume previous view
+    const lastView = localStorage.getItem("kvp_last_view") || "home";
     const lastCol  = localStorage.getItem("kvp_last_college");
     const lastCat  = localStorage.getItem("kvp_last_category");
 
-    if (lastView === "colleges" || lastView === "courses") {
+    if (lastView === "colleges") {
         showAllCollegesView();
         if (lastCol) {
             setTimeout(() => {
@@ -527,20 +440,17 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         openHome();
     }
-
   } else {
-    // NEW / PARTIAL USER detected by Firebase
-    // We stay on the Login page until they act (e.g. they click Continue with Google)
+    // Authenticated but no profile -> must complete registration
     updateAuthUI(false);
-    const loginDiv = document.getElementById("login-div");
-    if (loginDiv) loginDiv.style.setProperty("display", "flex", "important");
-    
-    // We don't call openSignUp() here anymore to respect the "Login Page First" rule.
-    // It will be called when they click Sign Up or Google.
+    openSignUp(true, user.phoneNumber || "");
   }
 });
 
-// Navigation visibility & routing
+
+
+
+
 function openLogin() {
   const main = document.getElementById("mainPage");
   const login = document.getElementById("login-div");
@@ -548,150 +458,7 @@ function openLogin() {
   if (main) main.style.setProperty("display", "none", "important");
   if (signup) signup.style.setProperty("display", "none", "important");
   if (login) login.style.setProperty("display", "flex", "important");
-}
-
-let isRegPhoneVerified = false;
-let regConfirmationResult = null;
-
-async function sendRegistrationOTP() {
-    const phone = document.getElementById("signupPhone").value.trim();
-    if(phone.length !== 10 || isNaN(phone)) {
-        alert("Enter a 10-digit mobile number.");
-        return;
-    }
-    
-    const sendBtn = document.getElementById("regSendOtp");
-    sendBtn.disabled = true;
-    sendBtn.textContent = "Wait...";
-
-    // 1. SILENT EXISTENCE CHECK (Removed Alert to allow Universal Entry)
-    let userExists = false;
-    try {
-        const q = query(collection(db, "users"), where("phone", "==", phone));
-        const qSnap = await getDocs(q);
-        if (!qSnap.empty) {
-            userExists = true;
-        }
-    } catch (e) {
-        console.warn("Silent existence check error", e);
-    }
-
-    try {
-        const fullPhone = "+91" + phone;
-        if (!window.recaptchaRegVerifier) {
-            const container = document.getElementById('recaptcha-reg-container');
-            if (container) container.style.display = 'none';
-            window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
-                size: 'invisible',
-                callback: () => { }
-            });
-        }
-        
-        // Auto-reset if needed
-        if (typeof window.recaptchaRegVerifier.reset === "function") {
-            window.recaptchaRegVerifier.reset();
-        }
-        
-        // Format to +91 (assuming India for Kerala Vidya Portal)
-        const formattedPhone = "+91" + phone;
-        regConfirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaRegVerifier);
-        
-        // LEAD CAPTURE: Save as "Attempted Signup" so admin can track phone numbers even if OTP is not verified
-        try {
-            await setDoc(doc(db, "leads", phone), {
-                phone: phone,
-                status: "OTP SENT",
-                joined: new Date().toLocaleDateString(),
-                timestamp: new Date()
-            });
-        } catch (leadErr) { console.warn("Lead record skipped:", leadErr); }
-
-        document.getElementById("regOtpInputWrap").style.display = "block";
-        document.getElementById("signupPhone").disabled = true;
-        sendBtn.textContent = "Resend";
-        sendBtn.disabled = false;
-        showToast("OTP sent successfully! 📱");
-        setTimeout(() => {
-            const firstBox = document.querySelector(".otp-box-reg");
-            if (firstBox) firstBox.focus();
-        }, 100);
-    } catch (err) {
-        console.error("SMS Registration Error:", err);
-        let msg = "SMS failed. Try again soon.";
-        if (err.code === "auth/quota-exceeded") msg = "Daily limit of 10 SMS reached! ⚠️";
-        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 10 mins. 🔒";
-        if (err.code === "auth/invalid-phone-number") msg = "Invalid phone number format.";
-        
-        showToast(msg);
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Get OTP";
-    }
-}
-
-async function verifyRegistrationOTP() {
-    let code = "";
-    document.querySelectorAll(".otp-box-reg").forEach(b => code += b.value);
-    
-    if(code.length !== 6) {
-        // No alert here to allow auto-submission if they finish typing, or manual error checking if they click deliberately.
-        if (event && event.type === 'click') alert("Complete the 6-digit code! ⚠️");
-        return;
-    }
-
-    const verifyBtn = document.getElementById("regVerifyBtn");
-    verifyBtn.disabled = true;
-    verifyBtn.textContent = "...";
-
-    try {
-        await regConfirmationResult.confirm(code);
-        const user = auth.currentUser;
-        const userSnap = await getDoc(doc(db, "users", user.uid));
-        
-        if (userSnap.exists()) {
-            // EXISTING USER: Straight to Home
-            saveUserToStorage(user, userSnap.data());
-            updateAuthUI(true);
-            openHome();
-            showToast("Welcome back! 👋 Logged in successfully.");
-        } else {
-            // NEW USER: Show Step 2 (Profile Details)
-            isRegPhoneVerified = true; // SET FLAG NOW
-            document.getElementById("signup-step-otp").style.display = "none";
-            document.getElementById("signup-step-details").style.display = "grid";
-            showToast("Phone verified! ✅ Complete your profile.");
-        }
-    } catch (err) {
-        console.error("OTP Verification Error:", err);
-        alert("Incorrect Code. Please check the SMS and try again.");
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = "Verify";
-    }
-}
-
-function openSignUp() {
-  const login = document.getElementById("login-div");
-  const signup = document.getElementById("signup-div");
-  const main = document.getElementById("mainPage");
-  
-  // Show signup div
-  if (login) login.style.display = "none";
-  if (signup) signup.style.display = "flex";
-  if (main) main.style.display = "none";
-  
-  // RESET UI TO STEP 1 (OTP)
-  isRegPhoneVerified = false;
-  const stepOtp = document.getElementById("signup-step-otp");
-  const stepDetails = document.getElementById("signup-step-details");
-  if(stepOtp) stepOtp.style.display = "block";
-  if(stepDetails) stepDetails.style.display = "none";
-  
-  const user = auth.currentUser;
-  if (user) {
-    const nameEl = document.getElementById("signupName");
-    const emailEl = document.getElementById("signupEmail");
-    if (nameEl && !nameEl.value) nameEl.value = user.displayName || "";
-    if (emailEl && !emailEl.value) emailEl.value = user.email || "";
-  }
+  resetUnifiedLogin();
 }
 
 function openHome() {
@@ -741,305 +508,111 @@ function openHome() {
   if (typeof syncNav === "function") syncNav("home");
   localStorage.setItem("kvp_last_view", "home");
   localStorage.removeItem("kvp_last_college");
-
 }
 
-// doLogin handles phone/email + password sign-in
-async function doLogin(event) {
-  if (event) event.preventDefault();
-  let loginId = (document.getElementById("loginEmail")?.value || "").trim();
-  const password = (document.getElementById("loginPassword")?.value || "").trim();
-  
-  if (!loginId || !password) {
-    alert("Please enter your login ID and password.");
-    return;
-  }
 
-  const loginSubmitBtn = document.getElementById("loginSubmitBtn");
-  if (loginSubmitBtn) {
-    loginSubmitBtn.disabled = true;
-    loginSubmitBtn.textContent = "Verifying...";
-  }
+function openSignUp(preVerified = false, verifiedNum = "") {
+    const login = document.getElementById("login-div");
+    const signup = document.getElementById("signup-div");
+    const main = document.getElementById("mainPage");
+    
+    if (login) login.style.display = "none";
+    if (signup) signup.style.display = "flex";
+    if (main) main.style.display = "none";
 
-  // Cleanly handle phone vs email
-  let email = loginId;
-  if (/^\d{10}$/.test(loginId)) {
-      email = `${loginId}@keralavidyaportal.com`; // Direct virtual mapping
-  }
+    // Auto-populate the number
+    const phoneDisplay = document.getElementById("signupPhoneDisplay");
+    if (phoneDisplay) phoneDisplay.value = verifiedNum || "";
+}
 
-  try {
-    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    const user = result.user;
-    const userSnap = await getDoc(doc(db, "users", user.uid));
-    const isUserAdmin = isAdminEmail(user.email);
-
-    if (!userSnap.exists() && !isUserAdmin) {
-      alert("Login successful, but profile record missing. completing registration...");
-      openSignUp();
-    } else {
-      saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
-      updateAuthUI(true);
-      openHome();
+async function finalizeUnifiedRegistration() {
+    const name = document.getElementById("signupName").value.trim();
+    const type = document.getElementById("signupUserType").value;
+    const pref = document.getElementById("signupPreference").value;
+    
+    if (!name) {
+        alert("Please enter your full name.");
+        return;
     }
-  } catch (err) {
-    console.error("Login Error:", err);
-    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        if (/^\d{10}$/.test(loginId)) {
-            // SILENT REDIRECT: Go straight to Signup
-            openSignUp();
-            const sId = document.getElementById("signupPhone");
-            if (sId) {
-                sId.value = loginId;
-                showToast("Account not found. 📱 Continuing to Sign Up...");
-            }
-            return;
-        }
+
+    const btn = document.getElementById("signupSubmit");
+    btn.disabled = true;
+    btn.textContent = "Joining...";
+
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Authentication session lost.");
+
+        const profileData = {
+            displayName: name,
+            userType: type,
+            preference: pref,
+            phone: verifiedPhoneNumber || user.phoneNumber || "",
+            joined: new Date().toLocaleDateString(),
+            timestamp: new Date()
+        };
+
+        await setDoc(doc(db, "users", user.uid), profileData);
+        saveUserToStorage(user, profileData);
+        updateAuthUI(true);
+        openHome();
+        showToast("Registration successful! 🌟");
+    } catch (err) {
+        console.error("Finalize registration error:", err);
+        alert("Failed to save profile. Please try again.");
+    } finally {
+        btn.textContent = "Explore Now →";
     }
-    alert("Invalid mobile/email or password. Please try again.");
-  } finally {
-    if (loginSubmitBtn) {
-      loginSubmitBtn.disabled = false;
-      loginSubmitBtn.textContent = "Sign In Free";
-    }
-  }
 }
-
-// doGoogleLogin — must be at module scope so window.doGoogleLogin works before DOMContentLoaded
-const _googleProvider = new GoogleAuthProvider();
-
-function isBlockedEnvironment() {
-  const ua = window.navigator.userAgent.toLowerCase();
-  // Detecting common WebViews (in-app browsers) that Google blocks
-  const isWebView = (ua.includes('wv') || (ua.includes('fbav') || ua.includes('instagram')) || (ua.includes('messenger')));
-  return isWebView;
-}
-
-async function doGoogleLogin() {
-  if (isBlockedEnvironment()) {
-    alert("⚠️ Direct Google Sign-In is blocked in this 'In-App' browser. Please click the three dots (⋮) or (⋯) at the top-right and select 'Open in Chrome' or 'Open in Safari' to continue.");
-    return;
-  }
-  
-  try {
-    await signInWithPopup(auth, _googleProvider);
-    // onAuthStateChanged takes it from here
-  } catch (err) {
-    console.error("Google Login Error:", err);
-    if (err.code === "auth/disallowed-user-agent") {
-      alert("⚠️ Access Blocked: Please open our site directly in your phone's main browser (Chrome or Safari). This specific app environment is not supported by Google.");
-    } else if (err.code === "auth/popup-blocked") {
-      try {
-        await signInWithRedirect(auth, _googleProvider);
-      } catch (redirErr) {
-        console.error("Google Redirect Error:", redirErr);
-      }
-    } else if (err.code !== "auth/popup-closed-by-user") {
-      alert("Google login failed: " + (err.message || err.code));
-    }
-  }
-}
-
-async function handleGoogleRedirectResult() {
-  try {
-    await getRedirectResult(auth);
-    // onAuthStateChanged will handle profile check
-  } catch (err) {
-    console.error("Google handleRedirect Error:", err);
-  }
-}
-
-// Call on load to handle after-redirect results
-handleGoogleRedirectResult();
 
 // Initial Setup
 window.addEventListener("DOMContentLoaded", async () => {
-  // Phone OTP Wiring
-  const phoneBtn = document.getElementById("phoneLoginBtn");
-  if (phoneBtn) phoneBtn.onclick = openPhoneModal;
-
-  const resendBtn = document.getElementById("resendOtpBtn");
-  if (resendBtn) resendBtn.onclick = () => {
-    const step1 = document.getElementById("modalPhoneStep");
-    const step2 = document.getElementById("modalOtpStep");
-    if (step1) step1.style.display = "";
-    if (step2) step2.style.display = "none";
-    document.querySelectorAll(".otp-box").forEach(b => b.value = "");
-    confirmationResult = null;
-  };
-
-  const sendOtpBtn = document.getElementById("sendOtpBtn");
-  if (sendOtpBtn) sendOtpBtn.onclick = sendOtp;
-  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
-  if (verifyOtpBtn) verifyOtpBtn.onclick = verifyOtp;
-
-  // Helper to wire multiple OTP box groups (Login/Reset/Signup)
-  const setupOtpBoxes = (selector, onComplete) => {
-      const boxes = document.querySelectorAll(selector);
-      boxes.forEach((box, i) => {
-          box.addEventListener("input", (e) => {
-              box.value = box.value.replace(/\D/g, "");
-              if (box.value && i < boxes.length - 1) boxes[i+1].focus();
-              
-              const code = Array.from(boxes).map(b => b.value).join('');
-              if (code.length === boxes.length && onComplete) onComplete();
-          });
-          box.addEventListener("keydown", (e) => {
-              if (e.key === "Backspace" && !box.value && i > 0) boxes[i-1].focus();
-          });
-          // Allow pasting
-          box.addEventListener("paste", (e) => {
-              e.preventDefault();
-              const data = e.clipboardData.getData("text").replace(/\D/g, "");
-              if (data.length === boxes.length) {
-                  boxes.forEach((b, idx) => b.value = data[idx]);
-                  if (onComplete) onComplete();
-              }
-          });
-      });
-  };
-
-  // Setup specialized groups
-  setupOtpBoxes(".otp-box", verifyOtp);
-  setupOtpBoxes(".otp-box-reg", verifyRegistrationOTP);
-
-  // Wire Google login buttons
-  const gLoginBtn = document.getElementById("googleLogin");
-  if (gLoginBtn) gLoginBtn.onclick = doGoogleLogin;
-
-  const gSignupBtn = document.getElementById("googleLoginSignup");
-  if (gSignupBtn) gSignupBtn.onclick = doGoogleLogin;
-
-  const resetSave = document.getElementById("finalizeResetBtn");
-  if (resetSave) resetSave.onclick = finalizeReset;
-
-  // Signup Submit
-  const sSubmit = document.getElementById("signupSubmit");
-  if (sSubmit) {
-    sSubmit.onclick = async () => {
-      if (!isRegPhoneVerified) {
-          alert("Please verify your phone number with OTP first.");
-          return;
-      }
-
-      const getVal = (id) => (document.getElementById(id) && document.getElementById(id).value) || "";
-      const emailInput = getVal("signupEmail").trim();
-      const passwordVal = getVal("signupPassword").trim();
-      const nameVal = getVal("signupName").trim();
-      const phoneVal = getVal("signupPhone").trim().replace(/\D/g, "");
-      const emailVal = emailInput || (phoneVal ? `${phoneVal}@keralavidyaportal.com` : "");
-      
-      // Strict Validation
-      if (!nameVal || !emailVal || !passwordVal || !phoneVal) {
-          alert("Please fill in all required fields (Name, Phone, and Password).");
-          return;
-      }
-      
-      // Password Policy Enforcement
-      const passwordConfirmVal = getVal("signupPasswordConfirm").trim();
-      if (passwordVal.length < 8) {
-          alert("🔐 Security Check: Your password is too short! Please create a password with at least 8 characters (alphabets, numbers, or symbols) to keep your account safe.");
-          return;
-      }
-      if (passwordVal !== passwordConfirmVal) {
-          alert("Passwords do not match! Please ensure both password fields are identical.");
-          return;
-      }
-      
-      // Better Phone Validation (Exactly 10 digits, no fake patterns)
-      if (phoneVal.length !== 10 || isNaN(phoneVal)) {
-          alert("Please enter a valid 10-digit mobile number.");
-          return;
-      }
-      if (phoneVal.startsWith("0")) {
-          alert("Mobile numbers cannot start with 0. Please enter a valid Indian mobile number.");
-          return;
-      }
-      // Check for repetitive sequences (e.g. 000..., 111..., 999...)
-      if (/^(\d)\1{9}$/.test(phoneVal)) {
-          alert("Repetitive digit patterns are not allowed. Please enter a genuine phone number.");
-          return;
-      }
-      // Check for obvious sequential patterns
-      if ("0123456789".includes(phoneVal) || "9876543210".includes(phoneVal)) {
-          alert("Sequential digit patterns are not allowed. Please enter a genuine phone number.");
-          return;
-      }
-
-      const btn = document.getElementById("signupSubmit");
-      if (btn) {
-          btn.disabled = true;
-          btn.textContent = "Creating Account...";
-      }
-
-      let user = auth.currentUser;
-      const virtualEmail = `${phoneVal}@keralavidyaportal.com`;
-      const authEmail = emailInput || (user && user.email) || virtualEmail;
-
-      try {
-        if (!user) {
-          // Case A: Fresh Signup (Email/Password)
-          const result = await createUserWithEmailAndPassword(auth, authEmail, passwordVal);
-          user = result.user;
-        } else {
-          // Case B: Google User finalize (Link Password Credential)
-          const credential = EmailAuthProvider.credential(authEmail, passwordVal);
-          try {
-            await linkWithCredential(user, credential);
-          } catch (le) {
-            if (le.code !== 'auth/credential-already-in-use' && le.code !== 'auth/provider-already-linked') {
-               throw le;
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Finalization error:", err);
-        if (err.code === 'auth/email-already-in-use') {
-            alert("This Mobile Number or Email is already registered! 👋 Please Sign In to continue.");
-            openLogin();
-            const logId = document.getElementById("loginEmail");
-            if (logId) logId.value = phoneVal;
-            return;
-        }
-        alert("Registration failed: " + (err.message || "Please try again later."));
-        if (btn) { btn.disabled = false; btn.textContent = "Submit Registration →"; }
-        return;
-      }
-
-      const userData = {
-        uid: user.uid,
-        displayName: nameVal || user.displayName || "",
-        email: authEmail,
-        phone: phoneVal,
-        district: getVal("signupDistrict"),
-        userType: getVal("signupUserType"),
-        coursePreference: getVal("signupPreference"),
-        createdAt: new Date().toISOString()
-      };
-
-      try {
-        await setDoc(doc(db, "users", user.uid), userData);
-        saveUserToStorage(user, userData);
-        
-        // --- GOOGLE SHEET SYNC (Silent Background Push) ---
-        syncToExternalSheet(userData);
-        
-        updateAuthUI(true);
-        openHome();
-      } catch (err) {
-        console.error("Firestore save error:", err);
-        alert("Account created but profile error. Try logging in again.");
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = "Submit Registration →"; }
-      }
+    // 1. Setup OTP Box Auto-Focus & Pasting
+    const setupOtpGroup = (selector) => {
+        const boxes = document.querySelectorAll(selector);
+        boxes.forEach((box, i) => {
+            box.addEventListener("input", (e) => {
+                box.value = box.value.replace(/\D/g, "");
+                if (box.value && i < boxes.length - 1) boxes[i+1].focus();
+            });
+            box.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && !box.value && i > 0) {
+                    boxes[i-1].focus();
+                }
+            });
+            box.addEventListener("paste", (e) => {
+                e.preventDefault();
+                const data = e.clipboardData.getData("text").replace(/\D/g, "");
+                if (data.length === boxes.length) {
+                    boxes.forEach((b, idx) => b.value = data[idx]);
+                    if (selector === ".otp-box-unified") verifyUnifiedOTP();
+                }
+            });
+        });
     };
-  }
+    setupOtpGroup(".otp-box-unified");
 
-  if (localStorage.getItem(STORAGE_KEY)) {
-    updateAuthUI(true);
-  }
+    // 2. Wire Buttons
+    const sendBtn = document.getElementById("sendOtpBtn");
+    if (sendBtn) sendBtn.onclick = sendUnifiedOTP;
 
-  if (typeof loadColleges === "function") await loadColleges();
+    const verifyBtn = document.getElementById("verifyOtpBtn");
+    if (verifyBtn) verifyBtn.onclick = verifyUnifiedOTP;
+
+    const signupBtn = document.getElementById("signupSubmit");
+    if (signupBtn) signupBtn.onclick = finalizeUnifiedRegistration;
+
+    const changePhoneBtn = document.getElementById("changePhoneBtn");
+    if (changePhoneBtn) changePhoneBtn.onclick = resetUnifiedLogin;
+
+    // 3. Auto-load colleges
+    if (typeof loadColleges === "function") await loadColleges();
+
+    // 4. Initial Auth state check (already handled by onAuthStateChanged, 
+    // but we can force UI update if storage exists)
+    if (localStorage.getItem(STORAGE_KEY)) {
+        updateAuthUI(true);
+    }
 });
 
 // Update this with your Google Apps Script URL later
@@ -1674,8 +1247,7 @@ function openCollege(idx, specificList) {
       const cleanDur = fullDur.split(/[·\-\|]/)[0].trim();
       const dur = parseInt(cleanDur) || 3;
       
-      // Robust fee harvesting: Look in 'f', 'total_fee', 'total_fees', 'fee', etc.
-      let rawFee = cr.f || cr.total_fee || cr.total_fees || cr.fee || "";
+      let rawFee = cr.f || "";
       if ((!rawFee || rawFee === "On Request") && fullDur.includes('₹')) {
          const parts = fullDur.split('·');
          if (parts.length > 1) rawFee = parts[1].replace(/Total Tuition Fees/i, "").trim();
@@ -1690,7 +1262,7 @@ function openCollege(idx, specificList) {
          return val;
       };
 
-      let totalNum = null;
+      let totalNum = 0;
       let yearMap = {};
       if (rawFee && rawFee.includes("Yr")) {
          const blocks = rawFee.split('|');
@@ -1722,9 +1294,7 @@ function openCollege(idx, specificList) {
 
       // Helper for Indian Currency Formatting (e.g. ₹1,50,000 instead of 1.5L)
       const indianFmt = (num) => {
-         if (num === null || num === undefined) return "On Request";
-         if (num === 0) return "₹0";
-
+         if (!num) return "On Request";
          return "₹" + Math.round(num).toLocaleString('en-IN');
       };
 
@@ -1932,20 +1502,20 @@ window.addEventListener('load', () => {
 
 async function openAdminPanel() {
   const user = auth.currentUser;
-  let email = user ? user.email : "";
+  let phone = user ? user.phoneNumber : "";
   
-  if (!email) {
+  if (!phone) {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const userData = JSON.parse(raw);
-        email = userData.email;
+        phone = userData.phone;
       }
     } catch (_) { }
   }
 
-  if (!user || !isAdminEmail(email)) {
-    alert("Access denied. Only allowed admin emails can open the Admin Panel.");
+  if (!user || !isAdminPhone(phone)) {
+    alert("Access denied. Only authorized phone numbers can open the Admin Panel.");
     return;
   }
   const mainContent = document.getElementById("mainContent");
@@ -2886,9 +2456,7 @@ function renderCourses() {
     const cleanDur = fullDur.split(/[·\-\|]/)[0].trim();
     const dur = parseInt(cleanDur) || 3;
     
-    // Robust fee harvesting: Look in 'f', 'total_fee', 'total_fees', 'fee', etc.
-    let rawFee = course.f || course.total_fee || course.total_fees || course.fee || ""; 
-
+    let rawFee = course.f || "";
     if ((!rawFee || rawFee === "On Request") && fullDur.includes('₹')) {
        const parts = fullDur.split('·');
        if (parts.length > 1) rawFee = parts[1].replace(/Total Tuition Fees/i, "").trim();
