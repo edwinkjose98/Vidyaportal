@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kvp-cache-v1';
+const CACHE_NAME = 'kvp-cache-v2-dev';
 const ASSETS = [
   './',
   './index.html',
@@ -29,8 +29,6 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });

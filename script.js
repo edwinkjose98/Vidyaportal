@@ -11,37 +11,15 @@ window.showToast = function(msg) {
     setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 
-window.togglePasswordVisibility = function(id, icon) {
-    const input = document.getElementById(id);
-    if (!input) return;
-    if (input.type === "password") {
-        input.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
-    } else {
-        input.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
-    }
-};
+
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut,
   onAuthStateChanged,
   RecaptchaVerifier,
-  signInWithPhoneNumber,
-  EmailAuthProvider,
-  linkWithCredential,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updatePassword,
-  updateEmail
+  signInWithPhoneNumber
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import {
   getFirestore,
@@ -73,14 +51,12 @@ import {
 window.showAllCollegesView = showAllCollegesView;
 window.openAdminPanel = openAdminPanel;
 window.closeAdminPanel = closeAdminPanel;
-window.doLogin = doLogin;
-window.doGoogleLogin = doGoogleLogin;
+
 window.goSlide = goSlide;
 window.nextSlide = nextSlide;
 window.toggleMenu = toggleMenu;
 window.syncNav = syncNav;
-window.openPhoneModal = openPhoneModal;
-window.closePhoneModal = closePhoneModal;
+
 window.openLogin = openLogin;
 window.openSignUp = openSignUp;
 window.openHome = openHome;
@@ -136,54 +112,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ===== PHONE / OTP MODAL =====
-let confirmationResult = null;
-
-let phoneModalMode = "login";
-function openPhoneModal(mode = "login") {
-  phoneModalMode = mode;
-  const modal = document.getElementById("phoneModal");
-  if (modal) modal.style.display = "flex";
-  
-  const step1 = document.getElementById("modalPhoneStep");
-  const step2 = document.getElementById("modalOtpStep");
-  const step3 = document.getElementById("modalResetStep");
-  
-  if (step1) step1.style.display = "block";
-  if (step2) step2.style.display = "none";
-  if (step3) step3.style.display = "none";
-  
-  // Custom Headings
-  const title = document.querySelector("#modalPhoneStep h2");
-  const sub = document.querySelector("#modalPhoneStep p");
-  if (title) title.textContent = (mode === "reset") ? "Password Reset" : "Log in via SMS";
-  if (sub) sub.textContent = (mode === "reset") ? "Enter verified mobile number" : "We'll send a 6-digit OTP to verify";
-
-  const input = document.getElementById("phoneInput");
-  if (input) { input.value = ""; input.focus(); }
-  const err = document.getElementById("phoneError");
-  if (err) err.style.display = "none";
-}
-
-function closePhoneModal() {
-  const modal = document.getElementById("phoneModal");
-  if (modal) modal.style.display = "none";
-  confirmationResult = null;
-  document.querySelectorAll(".otp-box").forEach(b => b.value = "");
-}
-
-// Close modal on backdrop click
-const pModal = document.getElementById("phoneModal");
-if (pModal) {
-  pModal.addEventListener("click", function (e) {
-    if (e.target === this) closePhoneModal();
-  });
-}
-
 const STORAGE_KEY = "unicircle_user";
-const ADMIN_EMAILS = [
-  "edwinkjose98@gmail.com"
-];
 
 // Auth Utilities
 function saveUserToStorage(user, profile = null) {
@@ -210,11 +139,10 @@ function clearUserFromStorage() {
   }
 }
 
-function isAdminEmail(email) {
-  if (!email) return false;
-  const lowerEmail = String(email).trim().toLowerCase();
-  const inList = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === lowerEmail);
-  return inList || lowerEmail.includes("edwinkjose98");
+function isAdminPhone(phoneIdentifier) {
+  if (!phoneIdentifier) return false;
+  const p = String(phoneIdentifier).replace(/\D/g, "");
+  return p.includes("9400137383"); // New admin number requested
 }
 
 function updateAuthUI(loggedIn) {
@@ -239,10 +167,10 @@ function updateAuthUI(loggedIn) {
   }
   
   const currentUser = auth.currentUser;
-  const name = userData ? (userData.displayName || userData.email || "") : (currentUser ? (currentUser.displayName || currentUser.email || "") : "");
-  const email = (userData && userData.email) || (currentUser && currentUser.email) || "";
+  const name = userData ? (userData.displayName || userData.phone || "") : (currentUser ? (currentUser.displayName || currentUser.phoneNumber || "") : "");
+  const phoneVal = (userData && userData.phone) || (currentUser && currentUser.phoneNumber) || "";
   
-  const isUserAdmin = isAdminEmail(email);
+  const isUserAdmin = isAdminPhone(phoneVal);
 
   userNameEls.forEach((el) => { 
     if (el) { 
@@ -311,163 +239,7 @@ function logout() {
 }
 window.logout = logout;
 
-// Phone / OTP Handlers
-async function sendOtp() {
-  const codeEl = document.getElementById("countryCode");
-  const phoneEl = document.getElementById("phoneInput");
-  const errorEl = document.getElementById("phoneError");
-  const btn = document.getElementById("sendOtpBtn");
-  if (!codeEl || !phoneEl || !errorEl || !btn) return;
-
-  const code = codeEl.value;
-  const num = phoneEl.value.trim().replace(/\D/g, "");
-  if (!num || num.length !== 10) {
-    errorEl.textContent = "Enter a valid 10-digit mobile number.";
-    errorEl.style.display = "";
-    return;
-  }
-  // Standardize with +91 for Kerala/India
-  const fullPhone = "+91" + num;
-  errorEl.style.display = "none";
-
-  try {
-    btn.disabled = true;
-    btn.textContent = "Wait…";
-    
-    if (typeof setupRecaptcha === "function") setupRecaptcha();
-    confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
-
-    const step1 = document.getElementById("modalPhoneStep");
-    const step2 = document.getElementById("modalOtpStep");
-    const sentMsg = document.getElementById("otpSentTo");
-    if (step1) step1.style.display = "none";
-    if (step2) step2.style.display = "";
-    if (sentMsg) sentMsg.textContent = `OTP sent to ${fullPhone}`;
-    setTimeout(() => {
-      const firstBox = document.querySelectorAll(".otp-box")[0];
-      if (firstBox) firstBox.focus();
-    }, 100);
-  } catch (err) {
-    console.error(err);
-    errorEl.textContent = err.message || "Failed to send OTP.";
-    errorEl.style.display = "";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Send OTP →";
-  }
-}
-
-async function verifyOtp() {
-  const otp = [...document.querySelectorAll(".otp-box")].map(b => b.value).join("");
-  const errorEl = document.getElementById("otpError");
-  const btn = document.getElementById("verifyOtpBtn");
-  if (!errorEl || !btn) return;
-
-  if (otp.length < 6) {
-    errorEl.textContent = "Enter all 6 digits.";
-    errorEl.style.display = "";
-    return;
-  }
-  if (!confirmationResult) { alert("Please request an OTP first."); return; }
-
-  try {
-    btn.disabled = true;
-    btn.textContent = "Verifying…";
-    errorEl.style.display = "none";
-
-    const result = await confirmationResult.confirm(otp);
-    const user = result.user;
-    const userSnap = await getDoc(doc(db, "users", user.uid));
-
-    if (phoneModalMode === "reset") {
-      // IF RESET MODE: Ensure the account exists before allowing password update
-      if (!userSnap.exists()) {
-          alert("👋 Profile Not Found! It seems you haven't completed your registration yet. Redirecting to Sign Up...");
-          closePhoneModal();
-          openSignUp();
-          const pEl = document.getElementById("signupPhone");
-          if(pEl) pEl.value = user.phoneNumber ? user.phoneNumber.replace("+91", "") : "";
-          return;
-      }
-      // Transition to New Password Input (KEEP MODAL OPEN)
-      const step2 = document.getElementById("modalOtpStep");
-      const step3 = document.getElementById("modalResetStep");
-      if (step2) step2.style.display = "none";
-      if (step3) step3.style.display = "block";
-      const pwIn = document.getElementById("newResetPassword");
-      if (pwIn) { pwIn.value = ""; pwIn.focus(); }
-    } else {
-      closePhoneModal(); // Normal login: close immediately
-      if (!userSnap.exists()) {
-        isRegPhoneVerified = true;
-        const verifiedNum = user.phoneNumber ? user.phoneNumber.replace("+91", "") : "";
-        openSignUp(true, verifiedNum);
-        // Redirected above
-
-
-      } else {
-        isRegPhoneVerified = true; // Pre-verify registration flag just in case
-        saveUserToStorage(user, userSnap.data());
-        updateAuthUI(true);
-        openHome();
-      }
-    }
-  } catch (err) {
-    console.error(err);
-    errorEl.textContent = "Incorrect OTP. Try again.";
-    errorEl.style.display = "";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Verify & Login →";
-  }
-}
-
-async function finalizeReset() {
-    const pw = document.getElementById("newResetPassword").value.trim();
-    const pwConfirm = document.getElementById("newResetPasswordConfirm").value.trim();
-    
-    if (pw.length < 8) {
-        alert("Password must be at least 8 characters.");
-        return;
-    }
-    if (pw !== pwConfirm) {
-        alert("Passwords do not match! Please re-enter carefully.");
-        return;
-    }
-
-    const btn = document.getElementById("finalizeResetBtn");
-    btn.disabled = true;
-    btn.textContent = "Saving...";
-
-    try {
-        const user = auth.currentUser;
-        if (!user) throw new Error("No user context.");
-
-        const userSnap = await getDoc(doc(db, "users", user.uid));
-        if (!userSnap.exists()) throw new Error("Profile lost.");
-
-        await updateDoc(doc(db, "users", user.uid), {
-            password: pw // Updating in firestore (if you store it for re-login)
-        });
-
-        // Also update Firebase Auth password
-        const { updatePassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
-        await updatePassword(user, pw);
-
-        saveUserToStorage(user, userSnap.data());
-        updateAuthUI(true);
-        closePhoneModal();
-        openHome();
-        showToast("✅ Password Updated Successfully!");
-    } catch (err) {
-        console.error("Reset Submit Error:", err);
-        alert("Update failed. Please login normally and change password in profile.");
-    } finally {
-        btn.disabled = false;
-        btn.textContent = "Save & Login";
-    }
-}
-window.finalizeReset = finalizeReset;
+// Old Phone / OTP Handlers Removed
 
 function setupRecaptcha() {
   if (window.recaptchaVerifier) {
@@ -499,7 +271,8 @@ onAuthStateChanged(auth, async (user) => {
   const userSnap = await getDoc(userRef);
   const profileData = userSnap.exists() ? userSnap.data() : null;
   
-  const isUserAdmin = isAdminEmail(user.email || (profileData && profileData.email));
+  const userPhone = user.phoneNumber || (profileData && profileData.phone);
+  const isUserAdmin = isAdminPhone(userPhone);
   
   if (profileData || isUserAdmin) {
     updateAuthUI(true); // SHOW LANDING PAGE NOW
@@ -558,7 +331,7 @@ let regConfirmationResult = null;
 async function sendRegistrationOTP() {
     const phone = document.getElementById("signupPhone").value.trim();
     if(phone.length !== 10 || isNaN(phone)) {
-        alert("Enter a 10-digit mobile number.");
+        showToast("Enter a 10-digit mobile number. 📱");
         return;
     }
     
@@ -621,10 +394,17 @@ async function sendRegistrationOTP() {
         console.error("SMS Registration Error:", err);
         let msg = "SMS failed. Try again soon.";
         if (err.code === "auth/quota-exceeded") msg = "Daily limit of 10 SMS reached! ⚠️";
-        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 10 mins. 🔒";
+        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 5-10 mins. 🔒";
         if (err.code === "auth/invalid-phone-number") msg = "Invalid phone number format.";
         
         showToast(msg);
+        
+        // CLEANUP: Reset reCAPTCHA on error to allow retry
+        if (window.recaptchaRegVerifier) {
+            try { window.recaptchaRegVerifier.clear(); } catch(e){}
+            window.recaptchaRegVerifier = null;
+        }
+    } finally {
         sendBtn.disabled = false;
         sendBtn.textContent = "Get OTP";
     }
@@ -647,24 +427,26 @@ async function verifyRegistrationOTP() {
     try {
         await regConfirmationResult.confirm(code);
         const user = auth.currentUser;
-        const userSnap = await getDoc(doc(db, "users", user.uid));
-        
-        if (userSnap.exists()) {
-            // EXISTING USER: Straight to Home
-            saveUserToStorage(user, userSnap.data());
+        const userPhone = user.phoneNumber || "";
+        const isAdmin = isAdminPhone(userPhone);
+
+        if (userSnap.exists() || isAdmin) {
+            // EXISTING USER OR ADMIN: Straight to Home
+            const profileData = userSnap.exists() ? userSnap.data() : { phone: userPhone.replace("+91", ""), isAdmin: true };
+            saveUserToStorage(user, profileData);
             updateAuthUI(true);
             openHome();
-            showToast("Welcome back! 👋 Logged in successfully.");
+            showToast("Welcome! 👋 Logged in successfully.");
         } else {
             // NEW USER: Show Step 2 (Profile Details)
-            isRegPhoneVerified = true; // SET FLAG NOW
+            isRegPhoneVerified = true; 
             document.getElementById("signup-step-otp").style.display = "none";
-            document.getElementById("signup-step-details").style.display = "grid";
+            document.getElementById("signup-step-details").style.display = "block";
             showToast("Phone verified! ✅ Complete your profile.");
         }
     } catch (err) {
         console.error("OTP Verification Error:", err);
-        alert("Incorrect Code. Please check the SMS and try again.");
+        showToast("Incorrect Code. Try again. ❌");
         verifyBtn.disabled = false;
         verifyBtn.textContent = "Verify";
     }
@@ -686,7 +468,7 @@ function openSignUp(preVerified = false, verifiedNum = "") {
   if (preVerified) {
     isRegPhoneVerified = true;
     if (stepOtp) stepOtp.style.display = "none";
-    if (stepDetails) stepDetails.style.display = "grid";
+    if (stepDetails) stepDetails.style.display = "block";
     
     // Auto-populate the number used during verification
     const phoneEl = document.getElementById("signupPhone");
@@ -715,9 +497,7 @@ function openSignUp(preVerified = false, verifiedNum = "") {
   const user = auth.currentUser;
   if (user) {
     const nameEl = document.getElementById("signupName");
-    const emailEl = document.getElementById("signupEmail");
     if (nameEl && !nameEl.value) nameEl.value = user.displayName || "";
-    if (emailEl && !emailEl.value) emailEl.value = user.email || "";
   }
 }
 
@@ -771,276 +551,241 @@ function openHome() {
 
 }
 
-// doLogin handles phone/email + password sign-in
-async function doLogin(event) {
-  if (event) event.preventDefault();
-  let loginId = (document.getElementById("loginEmail")?.value || "").trim();
-  const password = (document.getElementById("loginPassword")?.value || "").trim();
-  
-  if (!loginId || !password) {
-    alert("Please enter your login ID and password.");
-    return;
-  }
+// ==========================================
+// INLINE PHONE OTP LOGIN FLOW
+// ==========================================
 
-  const loginSubmitBtn = document.getElementById("loginSubmitBtn");
-  if (loginSubmitBtn) {
-    loginSubmitBtn.disabled = true;
-    loginSubmitBtn.textContent = "Verifying...";
-  }
-
-  // Cleanly handle phone vs email
-  let email = loginId;
-  if (/^\d{10}$/.test(loginId)) {
-      email = `${loginId}@keralavidyaportal.com`; // Direct virtual mapping
-  }
-
-  try {
-    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    const user = result.user;
-    const userSnap = await getDoc(doc(db, "users", user.uid));
-    const isUserAdmin = isAdminEmail(user.email);
-
-    if (!userSnap.exists() && !isUserAdmin) {
-      alert("Login successful, but profile record missing. completing registration...");
-      openSignUp();
-    } else {
-      saveUserToStorage(user, userSnap.exists() ? userSnap.data() : null);
-      updateAuthUI(true);
-      openHome();
+window.resetLoginFlow = function() {
+    document.getElementById('loginPhoneStep').style.display = 'block';
+    document.getElementById('loginOtpStep').style.display = 'none';
+    document.getElementById('loginPhoneInput').value = '';
+    const boxes = document.querySelectorAll('.login-otp-box');
+    boxes.forEach(b => b.value = '');
+    if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
     }
-  } catch (err) {
-    console.error("Login Error:", err);
-    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        if (/^\d{10}$/.test(loginId)) {
-            // SILENT REDIRECT: Go straight to Signup
+};
+
+window.sendLoginOTP = async function() {
+    const phoneInput = document.getElementById('loginPhoneInput').value.trim();
+    const errorEl = document.getElementById('loginPhoneError');
+    const btn = document.getElementById('loginSendOtpBtn');
+    
+    if (phoneInput.length !== 10) {
+        errorEl.textContent = "Please enter a valid 10-digit mobile number";
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    const fullPhone = "+91" + phoneInput;
+
+    try {
+        if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
+                'size': 'invisible',
+            });
+        }
+        
+        window.confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
+        
+        // Transition to OTP step
+        document.getElementById('loginPhoneStep').style.display = 'none';
+        document.getElementById('loginOtpStep').style.display = 'block';
+        document.getElementById('loginOtpSentMsg').textContent = `OTP sent to +91 ${phoneInput}`;
+        
+        // Auto-focus first OTP box
+        setTimeout(() => {
+            const firstBox = document.querySelectorAll('.login-otp-box')[0];
+            if (firstBox) firstBox.focus();
+        }, 100);
+
+    } catch (err) {
+        console.error("OTP Send Error:", err);
+        let msg = "Failed to send OTP. Try again.";
+        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Please wait 5-10 minutes. 🔒";
+        if (err.code === "auth/quota-exceeded") msg = "Daily SMS quota reached. ⚠️";
+        
+        errorEl.textContent = msg;
+        errorEl.style.display = 'block';
+        if (window.showToast) window.showToast(msg);
+
+        // CLEANUP: Reset reCAPTCHA to prevent "Already rendered" error on next click
+        if (window.recaptchaVerifier) {
+            try { window.recaptchaVerifier.clear(); } catch(e){}
+            window.recaptchaVerifier = null;
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Get OTP <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+    }
+};
+
+window.verifyLoginOTP = async function() {
+    const otpBoxes = document.querySelectorAll('.login-otp-box');
+    const otp = Array.from(otpBoxes).map(b => b.value).join('');
+    const errorEl = document.getElementById('loginOtpError');
+    const btn = document.getElementById('loginVerifyBtn');
+
+    if (otp.length !== 6) {
+        errorEl.textContent = "Please enter all 6 digits";
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    if (!window.confirmationResult) {
+        errorEl.textContent = "Please request OTP first";
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = "Verifying...";
+
+    try {
+        const result = await window.confirmationResult.confirm(otp);
+        const user = result.user;
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+
+        if (!userSnap.exists()) {
+            // NEW USER flow: Redirect to signup form instantly
+            alert("Welcome! Please complete your profile to continue.");
+            
+            // Populate and show the signup form directly
             openSignUp();
-            const sId = document.getElementById("signupPhone");
-            if (sId) {
-                sId.value = loginId;
-                showToast("Account not found. 📱 Continuing to Sign Up...");
-            }
-            return;
+            
+            // Automatically act as if they verified phone in signup
+            document.getElementById('signup-step-otp').style.display = 'none';
+            document.getElementById('signup-step-details').style.display = 'grid';
+            document.getElementById('signupPhone').value = user.phoneNumber.replace('+91', '');
+            
+        } else {
+            // EXISTING USER: Log them in
+            saveUserToStorage(user, userSnap.data());
+            updateAuthUI(true);
+            openHome();
+            if(window.showToast) window.showToast("Logged in successfully!");
+        }
+
+    } catch (err) {
+        console.error("OTP Verification Error:", err);
+        errorEl.textContent = "Invalid OTP code";
+        errorEl.style.display = 'block';
+        // Clear boxes
+        otpBoxes.forEach(b => b.value = '');
+        otpBoxes[0].focus();
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Verify & Continue <i class="fas fa-check-circle" style="margin-left:6px;"></i>';
+    }
+};
+
+// Next OTP box auto-focus logic
+document.addEventListener('input', function (e) {
+    if (e.target.classList.contains('login-otp-box')) {
+        const target = e.target;
+        const val = target.value;
+        if (isNaN(val)) { target.value = ""; return; }
+        if (val != "") {
+            const next = target.nextElementSibling;
+            if (next) next.focus();
         }
     }
-    alert("Invalid mobile/email or password. Please try again.");
-  } finally {
-    if (loginSubmitBtn) {
-      loginSubmitBtn.disabled = false;
-      loginSubmitBtn.textContent = "Sign In Free";
+});
+document.addEventListener('keyup', function (e) {
+    if (e.target.classList.contains('login-otp-box') && e.key === "Backspace") {
+        const target = e.target;
+        if (target.value === "") {
+            const prev = target.previousElementSibling;
+            if (prev) { prev.focus(); prev.value = ""; }
+        }
     }
-  }
-}
-
-// doGoogleLogin — must be at module scope so window.doGoogleLogin works before DOMContentLoaded
-const _googleProvider = new GoogleAuthProvider();
-
-function isBlockedEnvironment() {
-  const ua = window.navigator.userAgent.toLowerCase();
-  // Detecting common WebViews (in-app browsers) that Google blocks
-  const isWebView = (ua.includes('wv') || (ua.includes('fbav') || ua.includes('instagram')) || (ua.includes('messenger')));
-  return isWebView;
-}
-
-async function doGoogleLogin() {
-  if (isBlockedEnvironment()) {
-    alert("⚠️ Direct Google Sign-In is blocked in this 'In-App' browser. Please click the three dots (⋮) or (⋯) at the top-right and select 'Open in Chrome' or 'Open in Safari' to continue.");
-    return;
-  }
-  
-  try {
-    await signInWithPopup(auth, _googleProvider);
-    // onAuthStateChanged takes it from here
-  } catch (err) {
-    console.error("Google Login Error:", err);
-    if (err.code === "auth/disallowed-user-agent") {
-      alert("⚠️ Access Blocked: Please open our site directly in your phone's main browser (Chrome or Safari). This specific app environment is not supported by Google.");
-    } else if (err.code === "auth/popup-blocked") {
-      try {
-        await signInWithRedirect(auth, _googleProvider);
-      } catch (redirErr) {
-        console.error("Google Redirect Error:", redirErr);
-      }
-    } else if (err.code !== "auth/popup-closed-by-user") {
-      alert("Google login failed: " + (err.message || err.code));
-    }
-  }
-}
-
-async function handleGoogleRedirectResult() {
-  try {
-    await getRedirectResult(auth);
-    // onAuthStateChanged will handle profile check
-  } catch (err) {
-    console.error("Google handleRedirect Error:", err);
-  }
-}
-
-// Call on load to handle after-redirect results
-handleGoogleRedirectResult();
+});
 
 // Initial Setup
 window.addEventListener("DOMContentLoaded", async () => {
-  // Phone OTP Wiring
-  const phoneBtn = document.getElementById("phoneLoginBtn");
-  if (phoneBtn) phoneBtn.onclick = openPhoneModal;
+  // Setup OTP Auto-Submission
+  const setupOtpAutoSubmit = (selector, onComplete) => {
+    const boxes = document.querySelectorAll(selector);
+    boxes.forEach((box, i) => {
+      box.addEventListener("input", (e) => {
+        // Only allow numbers
+        box.value = box.value.replace(/\D/g, "");
+        
+        // Auto-focus next box
+        if (box.value && i < boxes.length - 1) {
+          boxes[i + 1].focus();
+        }
 
-  const resendBtn = document.getElementById("resendOtpBtn");
-  if (resendBtn) resendBtn.onclick = () => {
-    const step1 = document.getElementById("modalPhoneStep");
-    const step2 = document.getElementById("modalOtpStep");
-    if (step1) step1.style.display = "";
-    if (step2) step2.style.display = "none";
-    document.querySelectorAll(".otp-box").forEach(b => b.value = "");
-    confirmationResult = null;
-  };
-
-  const sendOtpBtn = document.getElementById("sendOtpBtn");
-  if (sendOtpBtn) sendOtpBtn.onclick = sendOtp;
-  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
-  if (verifyOtpBtn) verifyOtpBtn.onclick = verifyOtp;
-
-  // Helper to wire multiple OTP box groups (Login/Reset/Signup)
-  const setupOtpBoxes = (selector, onComplete) => {
-      const boxes = document.querySelectorAll(selector);
-      boxes.forEach((box, i) => {
-          box.addEventListener("input", (e) => {
-              box.value = box.value.replace(/\D/g, "");
-              if (box.value && i < boxes.length - 1) boxes[i+1].focus();
-              
-              const code = Array.from(boxes).map(b => b.value).join('');
-              if (code.length === boxes.length && onComplete) onComplete();
-          });
-          box.addEventListener("keydown", (e) => {
-              if (e.key === "Backspace" && !box.value && i > 0) boxes[i-1].focus();
-          });
-          // Allow pasting
-          box.addEventListener("paste", (e) => {
-              e.preventDefault();
-              const data = e.clipboardData.getData("text").replace(/\D/g, "");
-              if (data.length === boxes.length) {
-                  boxes.forEach((b, idx) => b.value = data[idx]);
-                  if (onComplete) onComplete();
-              }
-          });
+        // Auto-submit if all digits are filled
+        const code = Array.from(boxes).map(b => b.value).join('');
+        if (code.length === boxes.length && onComplete) {
+          onComplete();
+        }
       });
+
+      box.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !box.value && i > 0) {
+          boxes[i - 1].focus();
+        }
+      });
+
+      // Handle pasting
+      box.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const data = e.clipboardData.getData("text").replace(/\D/g, "");
+        if (data.length === boxes.length) {
+          boxes.forEach((b, idx) => b.value = data[idx]);
+          if (onComplete) onComplete();
+        }
+      });
+    });
   };
 
-  // Setup specialized groups
-  setupOtpBoxes(".otp-box", verifyOtp);
-  setupOtpBoxes(".otp-box-reg", verifyRegistrationOTP);
-
-  // Wire Google login buttons
-  const gLoginBtn = document.getElementById("googleLogin");
-  if (gLoginBtn) gLoginBtn.onclick = doGoogleLogin;
-
-  const gSignupBtn = document.getElementById("googleLoginSignup");
-  if (gSignupBtn) gSignupBtn.onclick = doGoogleLogin;
-
-  const resetSave = document.getElementById("finalizeResetBtn");
-  if (resetSave) resetSave.onclick = finalizeReset;
+  // Wire up the groups
+  setupOtpAutoSubmit(".login-otp-box", window.verifyLoginOTP);
+  setupOtpAutoSubmit(".otp-box-reg", window.verifyRegistrationOTP);
 
   // Signup Submit
   const sSubmit = document.getElementById("signupSubmit");
   if (sSubmit) {
     sSubmit.onclick = async () => {
-      if (!isRegPhoneVerified) {
-          alert("Please verify your phone number with OTP first.");
+      let user = auth.currentUser;
+      if (!user) {
+          alert("Session expired. Please verify your phone number again.");
+          openLogin();
           return;
       }
 
       const getVal = (id) => (document.getElementById(id) && document.getElementById(id).value) || "";
-      const emailInput = getVal("signupEmail").trim();
-      const passwordVal = getVal("signupPassword").trim();
       const nameVal = getVal("signupName").trim();
+      const districtVal = getVal("signupDistrict").trim();
+      const courseVal = getVal("signupPreference").trim();
       const phoneVal = getVal("signupPhone").trim().replace(/\D/g, "");
-      const emailVal = emailInput || (phoneVal ? `${phoneVal}@keralavidyaportal.com` : "");
       
       // Strict Validation
-      if (!nameVal || !emailVal || !passwordVal || !phoneVal) {
-          alert("Please fill in all required fields (Name, Phone, and Password).");
-          return;
-      }
-      
-      // Password Policy Enforcement
-      const passwordConfirmVal = getVal("signupPasswordConfirm").trim();
-      if (passwordVal.length < 8) {
-          alert("🔐 Security Check: Your password is too short! Please create a password with at least 8 characters (alphabets, numbers, or symbols) to keep your account safe.");
-          return;
-      }
-      if (passwordVal !== passwordConfirmVal) {
-          alert("Passwords do not match! Please ensure both password fields are identical.");
-          return;
-      }
-      
-      // Better Phone Validation (Exactly 10 digits, no fake patterns)
-      if (phoneVal.length !== 10 || isNaN(phoneVal)) {
-          alert("Please enter a valid 10-digit mobile number.");
-          return;
-      }
-      if (phoneVal.startsWith("0")) {
-          alert("Mobile numbers cannot start with 0. Please enter a valid Indian mobile number.");
-          return;
-      }
-      // Check for repetitive sequences (e.g. 000..., 111..., 999...)
-      if (/^(\d)\1{9}$/.test(phoneVal)) {
-          alert("Repetitive digit patterns are not allowed. Please enter a genuine phone number.");
-          return;
-      }
-      // Check for obvious sequential patterns
-      if ("0123456789".includes(phoneVal) || "9876543210".includes(phoneVal)) {
-          alert("Sequential digit patterns are not allowed. Please enter a genuine phone number.");
+      if (!nameVal || !districtVal || !courseVal) {
+          showToast("Please fill in all details! ⚠️");
           return;
       }
 
       const btn = document.getElementById("signupSubmit");
       if (btn) {
           btn.disabled = true;
-          btn.textContent = "Creating Account...";
-      }
-
-      let user = auth.currentUser;
-      const virtualEmail = `${phoneVal}@keralavidyaportal.com`;
-      const authEmail = emailInput || (user && user.email) || virtualEmail;
-
-      try {
-        if (!user) {
-          // Case A: Fresh Signup (Email/Password)
-          const result = await createUserWithEmailAndPassword(auth, authEmail, passwordVal);
-          user = result.user;
-        } else {
-          // Case B: Google User finalize (Link Password Credential)
-          const credential = EmailAuthProvider.credential(authEmail, passwordVal);
-          try {
-            await linkWithCredential(user, credential);
-          } catch (le) {
-            if (le.code !== 'auth/credential-already-in-use' && le.code !== 'auth/provider-already-linked') {
-               throw le;
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Finalization error:", err);
-        if (err.code === 'auth/email-already-in-use') {
-            alert("This Mobile Number or Email is already registered! 👋 Please Sign In to continue.");
-            openLogin();
-            const logId = document.getElementById("loginEmail");
-            if (logId) logId.value = phoneVal;
-            return;
-        }
-        alert("Registration failed: " + (err.message || "Please try again later."));
-        if (btn) { btn.disabled = false; btn.textContent = "Submit Registration →"; }
-        return;
+          btn.textContent = "Creating Profile...";
       }
 
       const userData = {
         uid: user.uid,
-        displayName: nameVal || user.displayName || "",
-        email: authEmail,
-        phone: phoneVal,
-        district: getVal("signupDistrict"),
-        userType: getVal("signupUserType"),
-        coursePreference: getVal("signupPreference"),
+        displayName: nameVal,
+        phone: phoneVal || user.phoneNumber, // Use auth phone if available
+        district: districtVal,
+        coursePreference: courseVal,
         createdAt: new Date().toISOString()
       };
 
@@ -1053,11 +798,12 @@ window.addEventListener("DOMContentLoaded", async () => {
         
         updateAuthUI(true);
         openHome();
+        if(window.showToast) window.showToast("Registration Complete! ✅");
       } catch (err) {
         console.error("Firestore save error:", err);
         alert("Account created but profile error. Try logging in again.");
       } finally {
-        if (btn) { btn.disabled = false; btn.textContent = "Submit Registration →"; }
+        if (btn) { btn.disabled = false; btn.innerHTML = 'Complete Registration <i class="fas fa-arrow-right" style="margin-left:6px;"></i>'; }
       }
     };
   }
@@ -1101,15 +847,6 @@ async function syncToExternalSheet(userData) {
 
 // Default colleges used only for seeding Firebase (Admin panel → Seed default colleges)
 // image: college photo URL (you can update links in Admin → Colleges → Edit)
-const DEFAULT_COLLEGES = [
-  { priority: 1, name: "Mookambigai College of Nursing", loc: "Mysore Road, Bangalore", icon: "🏥", image: "https://www.rajarajeswarimedicalcollege.in/wp-content/uploads/2018/11/mcon-building-1024x683.jpg", bg: "linear-gradient(135deg,#e0f2fe,#7dd3fc)", about: "Mookambigai College of Nursing is a premier institution in Bangalore, affiliated with RGUHS and approved by INC and KNC. Part of the prestigious RajaRajeswari group, it offers excellence in nursing education with a focus on clinical competence and compassion.", campus: "Integrated with the 1350-bedded RajaRajeswari Medical College & Hospital, the campus provides extensive clinical training, smart classrooms, advanced skill labs, and comfortable hostel facilities.", place: "Boasts a 100% placement track record with graduates placed in top hospitals across India and globally (UK, USA, Canada, Middle East). Comprehensive pre-placement training is provided starting from the first year.", courses: [{ n: "B.Sc Nursing", d: "4 Years", f: "Yr 1: ₹2.5L | Yr 2-4: ₹1.25L" }], info: [{ l: "Total Fees", v: "₹6.25 Lakhs" }, { l: "Hostel Fee", v: "₹75,000/yr" }, { l: "Affiliation", v: "RGUHS" }, { l: "Approval", v: "INC, KNC" }] },
-  { priority: 2, name: "IIT Delhi", loc: "New Delhi, Delhi", icon: "🏛️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/IIT_Delhi_entrance_gate.jpg/1280px-IIT_Delhi_entrance_gate.jpg", bg: "linear-gradient(135deg,#EEF2FF,#C7D2FE)", about: "IIT Delhi is one of the leading public technical and research universities in India.", campus: "Vibrant campus in Hauz Khas.", place: "Highest placements in India.", courses: [{ n: "B.Tech Computer Science", d: "4 Yrs · ₹8.5L/yr" }], info: [{ l: "Established", v: "1961" }] },
-  { priority: 3, name: "IIM Ahmedabad", loc: "Ahmedabad, Gujarat", icon: "💼", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/IIM_Ahmedabad_New_Campus.jpg/1280px-IIM_Ahmedabad_New_Campus.jpg", bg: "linear-gradient(135deg,#FDF4FF,#E9D5FF)", about: "The top management school in India.", campus: "Iconic red-brick campus.", place: "100% placement in global firms.", courses: [{ n: "MBA", d: "2 Yrs" }], info: [{ l: "Established", v: "1961" }] },
-  { priority: 4, name: "BITS Pilani", loc: "Pilani, Rajasthan", icon: "🔬", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BITS_Pilani.jpg/1280px-BITS_Pilani.jpg", bg: "linear-gradient(135deg,#EFF6FF,#BFDBFE)", about: "Deemed university known for engineering excellence.", campus: "Sprawling heritage campus.", place: "0% unemployment for graduates.", courses: [{ n: "B.E. CS", d: "4 Yrs" }], info: [{ l: "Established", v: "1964" }] },
-  { priority: 5, name: "AIIMS New Delhi", loc: "New Delhi, Delhi", icon: "⚗️", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/AIIMS_New_Delhi_Overview.jpg/1280px-AIIMS_New_Delhi_Overview.jpg", bg: "linear-gradient(135deg,#ECFDF5,#A7F3D0)", about: "AIIMS New Delhi is the premier hospital and medical university.", campus: "Central Delhi location.", place: "Global medical leaders.", courses: [{ n: "MBBS", d: "5.5 Yrs" }], info: [{ l: "Established", v: "1956" }] },
-  { priority: 6, name: "Acharya Bangalore B-School", loc: "Bangalore, Karnataka", icon: "🏫", image: "https://abbs.edu.in/wp-content/uploads/2023/11/abbs-campus.jpg", bg: "linear-gradient(135deg,#FFF0F8,#FBCFE8)", about: "One of the top business schools in Bangalore.", campus: "Modern campus.", place: "Top recruiters: IBM, Amazon.", courses: [{ n: "MBA", d: "2 Yrs" }, { n: "B.Sc Nursing", d: "4 Yrs" }], info: [{ l: "Established", v: "2008" }, { l: "Location", v: "Bangalore" }] }
-];
-
 let collegesData = [];
 let currentDisplayList = [];
 let showAllColleges = false;
@@ -1956,20 +1693,20 @@ window.addEventListener('load', () => {
 
 async function openAdminPanel() {
   const user = auth.currentUser;
-  let email = user ? user.email : "";
+  let phone = user ? user.phoneNumber : "";
   
-  if (!email) {
+  if (!phone) {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const userData = JSON.parse(raw);
-        email = userData.email;
+        phone = userData.phone;
       }
     } catch (_) { }
   }
 
-  if (!user || !isAdminEmail(email)) {
-    alert("Access denied. Only allowed admin emails can open the Admin Panel.");
+  if (!user || !isAdminPhone(phone)) {
+    alert("Access denied. Only registered admins can open the Admin Panel.");
     return;
   }
   const mainContent = document.getElementById("mainContent");
@@ -2033,22 +1770,34 @@ async function loadAdminUsers() {
       const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—";
       tr.innerHTML = `
           <td>${escapeHtml(u.displayName || "—")}</td>
-          <td>${escapeHtml(u.email || "—")}</td>
           <td>${escapeHtml(u.phone || "—")}</td>
-          <td>${escapeHtml(u.userType || "—")}</td>
           <td style="font-weight:700; color:var(--pink);">${escapeHtml(u.coursePreference || "—")}</td>
           <td>${escapeHtml(u.district || "—")}</td>
-          <td>${escapeHtml(u.place || "—")}</td>
           <td>${date}</td>
           <td><button type="button" class="btn-nav btn-logout" onclick="deleteUser('${u.id}')" style="padding: .2rem .5rem; font-size: .75rem;">Delete</button></td>
         `;
       tbody.appendChild(tr);
     });
   } catch (err) {
-    console.error(err);
-    msgEl.textContent = "Error loading users. Check console.";
-    msgEl.className = "admin-message admin-message-err";
+    handleAdminLoadError(err, msgEl, "Users");
   }
+}
+
+function handleAdminLoadError(err, msgEl, type) {
+    console.error(`Load ${type} error:`, err);
+    if (!msgEl) return;
+    
+    if (err.code === 'permission-denied') {
+        msgEl.innerHTML = `<div style="background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:1rem; border-radius:12px; font-size:0.85rem; line-height:1.5;">
+            <i class="fas fa-shield-alt" style="margin-right:8px;"></i> 
+            <strong>Security Rules Blocked Access</strong><br>
+            Your phone +919400137383 is identified as Admin, but your Firebase Console rules need to be updated to allow this number.<br>
+            <a href="https://console.firebase.google.com/" target="_blank" style="color:#c2410c; text-decoration:underline; font-weight:700;">Open Firebase Console →</a>
+        </div>`;
+    } else {
+        msgEl.textContent = `Error loading ${type}. Check console for details.`;
+        msgEl.className = "admin-message admin-message-err";
+    }
 }
 
 window.deleteUser = async function (userId) {
@@ -2094,7 +1843,6 @@ async function loadAdminLeads() {
                 <tr style="border-bottom: 1px solid #F3F4F6;">
                     <td style="padding:1rem; font-weight:700; color:#111827;">${escapeHtml(d.name || "Unknown")}</td>
                     <td style="padding:1rem; color:#4B5563;">${escapeHtml(d.phone || "")}${(d.status==="OTP SENT" ? ' <span style="font-size:0.7rem; color:#e91e63;">(In Progress)</span>':'')}</td>
-                    <td style="padding:1rem; color:#4B5563;">${escapeHtml(d.email || "—")}</td>
                     <td style="padding:1rem; color:#6B7280; font-size:0.85rem;">${escapeHtml(d.joined || "")}</td>
                     <td style="padding:1rem;"><span style="background:#FFF0F8; color:#D81B60; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">${escapeHtml(d.status || "SENT")}</span></td>
                     <td style="padding:1rem;">
@@ -2104,7 +1852,7 @@ async function loadAdminLeads() {
             `;
         }).join("");
     } catch (err) {
-        console.error("Load Leads error:", err);
+        handleAdminLoadError(err, document.getElementById("adminLeadsMessage"), "Leads");
     }
 }
 
@@ -2139,49 +1887,7 @@ function switchAdminTab(tab) {
 }
 window.switchAdminTab = switchAdminTab;
 
-async function seedDefaultColleges() {
-  const input = prompt("How many items would you like to seed? (Enter a number)\nType 'F' after the number (e.g. '5F') to seed BLANK FORMATS instead of real details.", "5");
-  if (!input) return;
 
-  const isFormat = input.toLowerCase().includes("f");
-  const count = parseInt(input) || 1;
-  const msgEl = document.getElementById("adminCollegesMessage");
-  
-  if (msgEl) msgEl.textContent = "Seeding " + (isFormat ? "blank formats" : "real data") + "...";
-  
-  try {
-    const toSeed = [];
-    if (isFormat) {
-      for (let i = 1; i <= count; i++) {
-        toSeed.push({
-          name: "New College #" + i,
-          loc: "City, State",
-          image: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1000",
-          icon: "🏫",
-          bg: "linear-gradient(135deg,#f3f4f6,#e5e7eb)",
-          about: "Description goes here...",
-          campus: "Campus details...",
-          place: "Placement info...",
-          courses: [{ n: "B.Sc Nursing", d: "4 Years", f: "₹0" }],
-          info: [{ l: "Established", v: "2024" }],
-          priority: 99
-        });
-      }
-    } else {
-      toSeed.push(...DEFAULT_COLLEGES.slice(0, count));
-    }
-
-    for (const c of toSeed) {
-      await addDoc(collection(db, "colleges"), c);
-    }
-    if (msgEl) msgEl.textContent = "Seeded " + toSeed.length + " items.";
-    await loadAdminColleges();
-    await loadColleges();
-  } catch (err) {
-    console.error(err);
-    if (msgEl) msgEl.textContent = "Seed error.";
-  }
-}
 
 let adminCollegesList = [];
 
@@ -2215,8 +1921,7 @@ async function loadAdminColleges() {
       tbody.appendChild(tr);
     });
   } catch (err) {
-    console.error(err);
-    if (msgEl) msgEl.textContent = "Error loading colleges.";
+    handleAdminLoadError(err, msgEl, "Colleges");
   }
 }
 
@@ -2327,8 +2032,7 @@ async function loadAdminApplications() {
     });
     if (!apps.length && msgEl) msgEl.textContent = "No applications yet.";
   } catch (err) {
-    console.error(err);
-    if (msgEl) msgEl.textContent = "Error loading applications.";
+    handleAdminLoadError(err, msgEl, "Applications");
   }
 }
 window.loadAdminApplications = loadAdminApplications;
@@ -2489,7 +2193,7 @@ async function adminUploadCollegeImage(el) {
 }
 window.adminUploadCollegeImage = adminUploadCollegeImage;
 window.switchAdminTab = switchAdminTab;
-window.seedDefaultColleges = seedDefaultColleges;
+
 window.openCollegeEdit = openCollegeEdit;
 window.cancelCollegeEdit = cancelCollegeEdit;
 window.saveCollegeEdit = saveCollegeEdit;
