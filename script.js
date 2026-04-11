@@ -37,6 +37,7 @@ import {
   orderBy,
   onSnapshot,
   increment,
+  arrayUnion,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import {
@@ -281,6 +282,21 @@ onAuthStateChanged(auth, async (user) => {
     // If the list is empty (potentially blocked by security rules before login), load now
     if (!collegesData || collegesData.length === 0) {
         if (typeof loadColleges === "function") loadColleges();
+    }
+
+    // --- VISIT TRACKING ---
+    if (!sessionStorage.getItem('kvp_session_tracked')) {
+        sessionStorage.setItem('kvp_session_tracked', 'true');
+        const now = new Date().toISOString();
+        try {
+            await updateDoc(userDocRef, {
+                visitCount: increment(1),
+                lastActive: now,
+                visitHistory: arrayUnion(now)
+            });
+        } catch (e) {
+            console.error("Error tracking visit:", e);
+        }
     }
     
     const lastView = localStorage.getItem("kvp_last_view"); // Preferred key
@@ -1024,13 +1040,13 @@ function showCollegesByCategory(category) {
 
   const keywordMap = {
     engineering: ['b.tech', 'btech', 'b.e', 'engineering', 'cse', 'mechanical', 'electrical', 'civil', 'ece'],
-    management:  ['mba', 'bba', 'management', 'business', 'commerce', 'finance', 'marketing', 'b.com', 'bcom'],
+    management:  ['mba', 'bba', 'management', 'business', 'commerce', 'finance', 'marketing', 'b.com', 'bcom', 'bva'],
     medical:     ['mbbs', 'nursing', 'pharmacy', 'bpharma', 'b.pharm', 'medical', 'bsc nursing', 'ayurveda', 'dental', 'bpt', 'physio', 'physiotherapy'],
-    design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'visual'],
-    arts:        ['ba', 'b.a', 'arts', 'humanities', 'social', 'literature', 'psychology', 'sociology']
+    design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'visual', 'bva', 'visual arts'],
+    arts:        ['ba', 'b.a', 'arts', 'humanities', 'social', 'literature', 'psychology', 'sociology', 'bva', 'fine arts']
   };
 
-  const keywords = keywordMap[category] || [category];
+  const keywords = keywordMap[category.toLowerCase()] || [category];
   if (searchInput) {
     searchInput.value = keywords[0];
   }
@@ -1280,6 +1296,10 @@ function generateAIComparison() {
 }
 
 function syncNav(activeKey) {
+  // Clear the bootstrap style that prevents flicker - let JS take over
+  const bootstrapStyle = document.getElementById("bootstrap-ui-style");
+  if (bootstrapStyle) bootstrapStyle.remove();
+
   // Query desktop tabs, mobile hamburger menu links, AND mobile pills
   const allNavLinks = document.querySelectorAll(".nav-desktop a[data-nav], .mob-menu a[data-nav], .nav-pills-container a[data-nav]");
   allNavLinks.forEach(link => {
@@ -1715,6 +1735,9 @@ async function openAdminPanel() {
   if (adminPanel) adminPanel.style.display = "block";
   switchAdminTab("users");
   await loadAdminUsers();
+  
+  if (typeof syncNav === "function") syncNav("admin");
+  localStorage.setItem("kvp_last_view", "admin");
 }
 window.openAdminPanel = openAdminPanel;
 
@@ -1745,10 +1768,7 @@ async function syncAllUsersToSheet() {
 window.syncAllUsersToSheet = syncAllUsersToSheet;
 
 function closeAdminPanel() {
-  const mainContent = document.getElementById("mainContent");
-  const adminPanel = document.getElementById("adminPanel");
-  if (adminPanel) adminPanel.style.display = "none";
-  if (mainContent) mainContent.style.display = "";
+  showHome();
 }
 window.closeAdminPanel = closeAdminPanel;
 
@@ -1773,6 +1793,15 @@ async function loadAdminUsers() {
           <td>${escapeHtml(u.phone || "—")}</td>
           <td style="font-weight:700; color:var(--pink);">${escapeHtml(u.coursePreference || "—")}</td>
           <td>${escapeHtml(u.district || "—")}</td>
+          <td style="font-weight:700; color:#4B5563;">${u.visitCount || 1}</td>
+          <td style="font-size:0.72rem; color:var(--gray); line-height:1.2;">
+            <div style="font-weight:700; color:var(--pink); margin-bottom:2px;">${u.lastActive ? new Date(u.lastActive).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : 'First Visit'}</div>
+            ${u.visitHistory && u.visitHistory.length > 1 ? `
+              <div style="font-size:0.6rem; opacity:0.6; height: 32px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 2px;">
+                ${u.visitHistory.slice(-4, -1).reverse().map(vt => `<div>${new Date(vt).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</div>`).join('')}
+              </div>
+            ` : ''}
+          </td>
           <td>${date}</td>
           <td><button type="button" class="btn-nav btn-logout" onclick="deleteUser('${u.id}')" style="padding: .2rem .5rem; font-size: .75rem;">Delete</button></td>
         `;
@@ -2259,7 +2288,7 @@ const COURSE_CATEGORIES = [
   {
     name: "Management & Arts",
     icon: "💼",
-    keywords: ["BCA", "MCA", "MBA", "BBA", "B.COM", "M.COM", "BCOM", "MCOM", " B.A", " M.A", "BA ", "MA ", "MANAGEMENT", "BUSINESS"]
+    keywords: ["BCA", "MCA", "MBA", "BBA", "B.COM", "M.COM", "BCOM", "MCOM", " B.A", " M.A", "BA ", "MA ", "MANAGEMENT", "BUSINESS", "BVA", "FINE ARTS", "VISUAL ARTS"]
   },
   {
     name: "Diploma Programs",
@@ -2522,10 +2551,14 @@ function filterBySpecificCourse(courseName) {
 window.filterBySpecificCourse = filterBySpecificCourse;
 
 window.selectCourseCategory = selectCourseCategory;
-
 function showHome() {
+  const adminPanel = document.getElementById("adminPanel");
+  const mainContent = document.getElementById("mainContent");
+  if (adminPanel) adminPanel.style.display = "none";
+  if (mainContent) mainContent.style.display = "";
+
   const showIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
-  showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ""; });
+  showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "block"; });
   
   const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });

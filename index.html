@@ -163,12 +163,14 @@
         if (hasProfile) {
             // VIEW-AWARE ROUTING: Snap instantly to the last page to prevent Home flicker
             if (lastView === "colleges") {
-                document.write('<style>#mainPage { display: block !important; } #colleges { display: block !important; } #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #collageDetailsText, #collageTopDetailsText, #courses-section, #aboutSection, #testimonialsSection, #compare-section { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
+                document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #colleges { display: block !important; } #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #courses-section, #aboutSection, #testimonialsSection, #compare-section, #adminPanel { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
             } else if (lastView === "compare") {
-                document.write('<style>#mainPage { display: block !important; } #compare-section { display: block !important; } #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #colleges, #courses-section, #aboutSection, #testimonialsSection { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
+                document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #compare-section { display: block !important; } #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #colleges, #courses-section, #aboutSection, #testimonialsSection, #adminPanel { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
+            } else if (lastView === "admin") {
+                document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #adminPanel { display: block !important; } #mainContent, #login-div, #signup-div { display: none !important; }</style>');
             } else {
                 // Default Home
-                document.write('<style>#mainPage { display: block !important; } #login-div { display: none !important; } #signup-div { display: none !important; }</style>');
+                document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #mainContent, #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #aboutSection, #testimonialsSection { display: block !important; } #colleges, #courses-section, #compare-section, #adminPanel { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
             }
         } else {
             document.write('<style>#mainPage { display: none !important; } #login-div { display: flex !important; } #signup-div { display: none; }</style>');
@@ -1184,6 +1186,8 @@
                                     <th>Phone</th>
                                     <th>Preference</th>
                                     <th>District</th>
+                                    <th>Visits</th>
+                                    <th>Active</th>
                                     <th>Joined</th>
                                     <th>Actions</th>
                                 </tr>
