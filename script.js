@@ -140,6 +140,24 @@ function clearUserFromStorage() {
   }
 }
 
+async function logUserActivity(action) {
+  const user = auth.currentUser;
+  if (!user) return;
+  const userRef = doc(db, "users", user.uid);
+  try {
+    await updateDoc(userRef, {
+      activityLog: arrayUnion({
+        action: action,
+        time: new Date().toISOString()
+      }),
+      lastActive: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Activity log failed:", e);
+  }
+}
+window.logUserActivity = logUserActivity;
+
 function isAdminPhone(phoneIdentifier) {
   if (!phoneIdentifier) return false;
   const p = String(phoneIdentifier).replace(/\D/g, "");
@@ -224,6 +242,7 @@ function logout() {
     clearUserFromStorage();
     localStorage.removeItem("kvp_last_view");
     localStorage.removeItem("kvp_last_college");
+    sessionStorage.removeItem("kvp_session_tracked");
     updateAuthUI(false);
     const m = document.getElementById("mobMenu");
     if (m && m.classList.contains("open")) toggleMenu();
@@ -1051,6 +1070,7 @@ function showCollegesByCategory(category) {
     searchInput.value = keywords[0];
   }
 
+  if (typeof logUserActivity === 'function') logUserActivity(`Filtered by: ${category}`);
   showAllCollegesView();
 
   // After rendering, apply the search filter
@@ -1635,6 +1655,7 @@ function openCollegeByName(name) {
   const idx = collegesData.findIndex(c => c.name === name);
   if (idx !== -1) {
     openCollege(idx, collegesData);
+    if (typeof logUserActivity === 'function') logUserActivity(`Viewed College: ${name}`);
     localStorage.setItem("kvp_last_college", name);
     localStorage.removeItem("kvp_last_category");
   }
@@ -1772,19 +1793,31 @@ function closeAdminPanel() {
 }
 window.closeAdminPanel = closeAdminPanel;
 
+let adminUsersUnsubscribe = null;
+
 async function loadAdminUsers() {
   const tbody = document.getElementById("adminTableBody");
   const msgEl = document.getElementById("adminPanelMessage");
   if (!tbody || !msgEl) return;
+
+  // Unsubscribe from previous listener if it exists to avoid memory leaks
+  if (adminUsersUnsubscribe) adminUsersUnsubscribe();
+
   tbody.innerHTML = "";
-  msgEl.textContent = "Loading...";
+  msgEl.textContent = "Connecting to live feed...";
   msgEl.className = "admin-message";
-  try {
-    const snapshot = await getDocs(collection(db, "users"));
+
+  adminUsersUnsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+    tbody.innerHTML = "";
     const users = [];
     snapshot.forEach((d) => users.push({ id: d.id, ...d.data() }));
+
     msgEl.textContent = users.length ? "" : "No users yet.";
     if (users.length) msgEl.classList.add("admin-message-ok");
+
+    // Sort by most recently active first
+    users.sort((a,b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0));
+
     users.forEach((u) => {
       const tr = document.createElement("tr");
       const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—";
@@ -1802,14 +1835,22 @@ async function loadAdminUsers() {
               </div>
             ` : ''}
           </td>
+          <td style="font-size:0.65rem; max-width:150px;">
+            <div style="height:55px; overflow-y:auto; color:var(--dark); opacity:0.8;">
+              ${u.activityLog && u.activityLog.length > 0 ? 
+                u.activityLog.slice(-10).reverse().map(a => `<div style="margin-bottom:4px; padding-bottom:2px; border-bottom:1px solid #f0f0f0;">
+                  <span style="font-weight:700; color:var(--pink);">${new Date(a.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>: ${escapeHtml(a.action)}
+                </div>`).join('') : '<span style="opacity:0.5;">No activity yet</span>'}
+            </div>
+          </td>
           <td>${date}</td>
           <td><button type="button" class="btn-nav btn-logout" onclick="deleteUser('${u.id}')" style="padding: .2rem .5rem; font-size: .75rem;">Delete</button></td>
         `;
       tbody.appendChild(tr);
     });
-  } catch (err) {
+  }, (err) => {
     handleAdminLoadError(err, msgEl, "Users");
-  }
+  });
 }
 
 function handleAdminLoadError(err, msgEl, type) {
