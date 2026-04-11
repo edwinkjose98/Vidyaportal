@@ -161,7 +161,9 @@ window.logUserActivity = logUserActivity;
 function isAdminPhone(phoneIdentifier) {
   if (!phoneIdentifier) return false;
   const p = String(phoneIdentifier).replace(/\D/g, "");
-  return p.includes("9400137383"); // New admin number requested
+  // Verified Admin Numbers
+  const admins = ["9400137383"]; 
+  return admins.some(a => p.includes(a));
 }
 
 function updateAuthUI(loggedIn) {
@@ -269,9 +271,12 @@ function setupRecaptcha() {
   const container = document.getElementById('recaptcha-container');
   if (container) {
     container.style.display = "none";
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      size: 'invisible', callback: () => { }
-    });
+    try {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            size: 'invisible', 
+            callback: () => { }
+        });
+    } catch (e) { console.warn("Recaptcha init failed", e); }
   }
 }
 
@@ -388,25 +393,21 @@ async function sendRegistrationOTP() {
 
     try {
         const fullPhone = "+91" + phone;
-        if (!window.recaptchaRegVerifier) {
-            const container = document.getElementById('recaptcha-reg-container');
-            if (container) container.style.display = 'none';
-            window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
-                size: 'invisible',
-                callback: () => { }
-            });
+        
+        // Robust cleanup before new reg attempt
+        if (window.recaptchaRegVerifier) {
+            try { window.recaptchaRegVerifier.clear(); } catch(e){}
+            window.recaptchaRegVerifier = null;
         }
+
+        window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
+            size: 'invisible',
+            callback: () => { }
+        });
         
-        // Auto-reset if needed
-        if (typeof window.recaptchaRegVerifier.reset === "function") {
-            window.recaptchaRegVerifier.reset();
-        }
+        regConfirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaRegVerifier);
         
-        // Format to +91 (assuming India for Kerala Vidya Portal)
-        const formattedPhone = "+91" + phone;
-        regConfirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaRegVerifier);
-        
-        // LEAD CAPTURE: Save as "Attempted Signup" so admin can track phone numbers even if OTP is not verified
+        // LEAD CAPTURE
         try {
             await setDoc(doc(db, "leads", phone), {
                 phone: phone,
@@ -434,7 +435,6 @@ async function sendRegistrationOTP() {
         
         showToast(msg);
         
-        // CLEANUP: Reset reCAPTCHA on error to allow retry
         if (window.recaptchaRegVerifier) {
             try { window.recaptchaRegVerifier.clear(); } catch(e){}
             window.recaptchaRegVerifier = null;
@@ -620,11 +620,15 @@ window.sendLoginOTP = async function() {
     const fullPhone = "+91" + phoneInput;
 
     try {
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
-                'size': 'invisible',
-            });
+        // CLEANUP: Reset reCAPTCHA to prevent "Already rendered" error
+        if (window.recaptchaVerifier) {
+            try { window.recaptchaVerifier.clear(); } catch(e){}
+            window.recaptchaVerifier = null;
         }
+
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
+            'size': 'invisible',
+        });
         
         window.confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
         
@@ -947,7 +951,11 @@ async function loadColleges() {
     renderCollegesSection();
     return collegesData;
   } catch (err) {
-    console.error("Load colleges error:", err);
+    if (err.code === 'permission-denied') {
+        console.warn("Colleges restricted to registered users only. Skipping guest load.");
+    } else {
+        console.error("Load colleges error:", err);
+    }
     collegesData = [];
     currentDisplayList = [];
     renderCollegesSection();
@@ -1401,6 +1409,7 @@ function renderCollegesSection() {
   if (window.refreshAnimations) window.refreshAnimations();
 }
 
+// ===== COURSE CLASSIFICATION ENGINE (Top Level — Single Source of Truth) =====
 // ===== SPA ROUTING =====
 function openCollege(idx, specificList) {
   const listToUse = specificList || currentDisplayList;
@@ -1446,206 +1455,139 @@ function openCollege(idx, specificList) {
   const dPlace = document.getElementById('d-place');
   if (dPlace) dPlace.textContent = c.place || '';
 
-  // Handle Accordion Reset and Default Open
   document.querySelectorAll('.det-accordion-item').forEach(item => item.classList.remove('active'));
-  const firstAcc = document.querySelector('.det-accordion-item');
-  if (firstAcc) { /* No auto-open */ }
   
   const dCourses = document.getElementById('d-courses');
   const courses = Array.isArray(c.courses) ? c.courses : [];
   
-  // Reusable function to render a single category's courses with the new fee breakdown
-  window._renderCategoryDetail = (catTitle) => {
-    localStorage.setItem("kvp_last_category", catTitle);
-    const c = window._currentColData;
-    if (!c || !c.courses) return;
-
-    const dExtra = document.getElementById('d-details-extra');
-    if (dExtra) dExtra.style.display = 'none';
+  window.renderCourseItem = function(cr, collegeName) {
+    const rawFee = cr.f || "";
+    const dur = parseInt(cr.d) || 3;
+    const cleanDur = dur + " Years";
     
-    // Filter the courses based on the same logic used to group them
-    const list = c.courses.filter(cr => {
-      const n = (cr.n || "").toLowerCase();
-      if (catTitle === "Management & Arts") return (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business"));
-      if (catTitle === "B.Sc & M.Sc Programs") return (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) && !n.includes("bpt") && !n.includes("physio") && !n.includes("pharmacy");
-      if (catTitle === "Engineering & B.Tech") return (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e "));
-      if (catTitle === "Other Courses") return (n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma"));
-      if (catTitle === "Diploma Programs") return (n.includes("diploma") || (n.startsWith("d") && n.includes("-")));
-      return false;
-    });
+    const parseFee = (str) => {
+       if (!str) return 0;
+       const val = parseFloat(str.replace(/[^0-9\.]/g, ""));
+       if (isNaN(val)) return 0;
+       if (str.toLowerCase().includes('l')) return val * 100000;
+       if (str.toLowerCase().includes('k')) return val * 1000;
+       return val;
+    };
 
-    let html = `<div style="grid-column: 1/-1; animation: fadeIn 0.3s ease both;">
-                  <button onclick="openCollege(window._currentColIdx)" class="back-btn-small" style="margin-bottom:1.5rem;">
-                     <i class="fa-solid fa-arrow-left"></i> Categories
-                  </button>
-                  <div style="margin-bottom:2rem;">
-                    <h3 style="font-size:1.8rem; font-weight:850; color:var(--dark); margin:0;">${catTitle}</h3>
-                    <p style="color:var(--gray); margin-top:0.4rem;">Explore specialized programs and detailed fee structures.</p>
-                  </div>
-                </div>`;
-    
-    html += list.map(cr => {
-      const fullDur = cr.d || "N/A";
-      const cleanDur = fullDur.split(/[·\-\|]/)[0].trim();
-      const dur = parseInt(cleanDur) || 3;
-      
-      let rawFee = cr.f || "";
-      if ((!rawFee || rawFee === "On Request") && fullDur.includes('₹')) {
-         const parts = fullDur.split('·');
-         if (parts.length > 1) rawFee = parts[1].replace(/Total Tuition Fees/i, "").trim();
-      }
+    let totalNum = 0;
+    let yearMap = {};
+    if (rawFee && rawFee.includes("Yr")) {
+       const blocks = rawFee.split('|');
+       blocks.forEach(blk => {
+          const matches = blk.match(/Yr(\d+)(?:-(\d+))?:\s*₹?([\d\.]+)(\w?)/i);
+          if (matches) {
+             const start = parseInt(matches[1]);
+             const end = matches[2] ? parseInt(matches[2]) : start;
+             const realVal = parseFee(matches[3] + (matches[4] || ""));
+             for(let i=start; i<=end; i++) {
+               yearMap[i] = realVal;
+               totalNum += realVal;
+             }
+          }
+       });
+    } else {
+       totalNum = parseFee(rawFee);
+       for (let i = 1; i <= dur; i++) {
+         const yVal = cr[`year_${i}`];
+         yearMap[i] = yVal ? parseFee(yVal) : (totalNum ? Math.floor(totalNum / dur) : 0);
+       }
+    }
 
-      // Helper for L/K parsing
-      const parseFee = (str) => {
-         const val = parseFloat(str.replace(/[^0-9\.]/g, ""));
-         if (isNaN(val)) return 0;
-         if (str.toLowerCase().includes('l')) return val * 100000;
-         if (str.toLowerCase().includes('k')) return val * 1000;
-         return val;
-      };
+    const indianFmt = (num) => (!num) ? "On Request" : "₹" + Math.round(num).toLocaleString('en-IN');
+    const totalFmt = totalNum ? indianFmt(totalNum) : "On Request";
 
-      let totalNum = 0;
-      let yearMap = {};
-      if (rawFee && rawFee.includes("Yr")) {
-         const blocks = rawFee.split('|');
-         blocks.forEach(blk => {
-            const matches = blk.match(/Yr(\d+)(?:-(\d+))?:\s*₹?([\d\.]+)(\w?)/i);
-            if (matches) {
-               const start = parseInt(matches[1]);
-               const end = matches[2] ? parseInt(matches[2]) : start;
-               const realVal = parseFee(matches[3] + (matches[4] || ""));
-               for(let i=start; i<=end; i++) {
-                 yearMap[i] = realVal;
-                 totalNum += realVal;
-               }
-            }
-         });
-      } else {
-         totalNum = parseFee(rawFee);
-         // Check for specific year_X keys in the JSON (e.g. year_1, year_2)
-         for (let i = 1; i <= dur; i++) {
-           const yVal = cr[`year_${i}`];
-           if (yVal) {
-             yearMap[i] = parseFee(yVal);
-           } else {
-             // Fallback to average if individual year keys are missing
-             yearMap[i] = totalNum ? Math.floor(totalNum / dur) : 0;
-           }
-         }
-      }
-
-      // Helper for Indian Currency Formatting (e.g. ₹1,50,000 instead of 1.5L)
-      const indianFmt = (num) => {
-         if (!num) return "On Request";
-         return "₹" + Math.round(num).toLocaleString('en-IN');
-      };
-
-      const totalFmt = totalNum ? indianFmt(totalNum) : "On Request";
-
-      let yearHtml = '';
-      for (let i = 1; i <= dur; i++) {
-        const label = i === 1 ? "1st" : i === 2 ? "2nd" : i === 3 ? "3rd" : "4th";
-        const val = (yearMap[i] === "INTERNSHIP" || (cr[`year_${i}`] || "").toLowerCase().includes("internship")) ? "Internship" : (yearMap[i] ? indianFmt(yearMap[i]) : "On Request");
-        yearHtml += `
-          <div class="year-box" style="padding:0.6rem; background:#fff; border:1px solid #F3F4F6; border-radius:12px; text-align:center;">
-             <div style="font-size:0.55rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">${label} Year</div>
-             <div class="year-val" style="font-size:0.8rem; font-weight:800; color:var(--dark);">${val}</div>
-          </div>
-        `;
-      }
-
-      // Always show Admission Fee box per user request
-      const admFeeRaw = (cr.admission_fee || cr.af || '₹0').toString();
-
-      return `
-      <div class="crs-item-premium" style="background:#fff; border:1.8px solid #F3F4F6; border-radius:24px; padding:1.5rem; display:flex; flex-direction:column; gap:1.2rem; transition:0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease both; min-height:100%;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; min-height:95px;">
-            <div style="flex:1;">
-               <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${escapeHtml(cr.n)}</h4>
-               <div style="font-size:0.75rem; color:var(--gray); margin-top:6px; font-weight:700;">Duration: ${escapeHtml(cleanDur)}</div>
-            </div>
-            <div style="width:40px; height:40px; border-radius:12px; background:var(--pink-light); display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:1rem; flex-shrink:0;"><i class="fa-solid fa-graduation-cap"></i></div>
-        </div>
-        
-        <div class="fee-box-wrap" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; padding:1rem; background:rgba(233,30,140,0.02); border:1px solid rgba(233,30,140,0.05); border-radius:16px;">
-            <div style="text-align:center;">
-               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px; white-space:nowrap;">TOTAL FEES</div>
-               <div class="fee-val" style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(totalFmt)}</div>
-            </div>
-            <div style="text-align:center;">
-               <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px; white-space:nowrap;">ADMISSION FEE</div>
-               <div class="fee-val" style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(admFeeRaw)}</div>
-            </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: repeat(${dur > 2 ? 2 : dur}, 1fr); gap:0.6rem; flex: 1;">
-            ${yearHtml}
-        </div>
-
-        <button class="btn-apply-course" onclick="openApplyModal(document.getElementById('d-name').textContent, '${escapeQuote(cr.n)}', '')" style="width:100%; border-radius:16px; padding:1.1rem; font-size:0.92rem; font-weight:900; margin-top:1.25rem; background:var(--pink); color:white; border:none; box-shadow: 0 10px 25px -8px rgba(233,30,140,0.45); cursor:pointer; transition:0.3s; letter-spacing:-0.01em; display:flex; align-items:center; justify-content:center; gap:8px;">Apply Now <i class="fa-solid fa-arrow-right" style="font-size:0.8em;"></i></button>
+    let yearHtml = '';
+    for (let i = 1; i <= dur; i++) {
+      const label = i === 1 ? "1st" : i === 2 ? "2nd" : i === 3 ? "3rd" : "4th";
+      const val = (yearMap[i] === "INTERNSHIP" || (cr[`year_${i}`] || "").toLowerCase().includes("internship")) ? "Internship" : (yearMap[i] ? indianFmt(yearMap[i]) : "On Request");
+      yearHtml += `<div class="year-box">
+          <div class="year-label">${label} Year</div>
+          <div class="year-val">${val}</div>
       </div>`;
-    }).join('');
-    
-    document.getElementById('d-courses').innerHTML = html;
-    document.getElementById('d-courses').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    const admFeeRaw = (cr.admission_fee || cr.af || '₹0').toString();
+
+    return `
+    <div class="crs-item-premium">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; min-height:95px;">
+          <div style="flex:1;">
+             <h4 style="font-size:1.15rem; font-weight:850; color:var(--dark); margin:0; line-height:1.2;">${escapeHtml(cr.n)}</h4>
+             <div style="font-size:0.75rem; color:var(--gray); margin-top:6px; font-weight:700;">Duration: ${escapeHtml(cleanDur)}</div>
+          </div>
+          <div class="crs-icon-badge"><i class="fa-solid fa-graduation-cap"></i></div>
+      </div>
+      
+      <div class="fee-box-wrap">
+          <div style="text-align:center;">
+             <div class="fee-label">TOTAL FEES</div>
+             <div class="fee-val">${escapeHtml(totalFmt)}</div>
+          </div>
+          <div style="text-align:center;">
+             <div class="fee-label">ADMISSION FEE</div>
+             <div class="fee-val">${escapeHtml(admFeeRaw)}</div>
+          </div>
+      </div>
+
+      <div class="year-grid" style="display:grid; grid-template-columns: repeat(${dur > 2 ? 2 : dur}, 1fr); gap:0.6rem; flex: 1;">
+          ${yearHtml}
+      </div>
+
+      <button class="btn-apply-course" onclick="openApplyModal('${escapeQuote(collegeName)}', '${escapeQuote(cr.n)}', '')">
+          Apply Now <i class="fa-solid fa-arrow-right" style="font-size:0.8em;"></i>
+      </button>
+    </div>`;
   };
 
   if (dCourses) {
     if (courses.length === 0) {
       dCourses.innerHTML = '<p style="color:#9CA3AF; text-align:center; padding:2rem;">No programs available.</p>';
     } else {
-      window._currentColIdx = idx; // Store for back navigation
-      window._currentColData = c;   // Store for re-filtering
+      window._currentColIdx = idx; 
+      window._currentColData = c;   
       
-      const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Other Courses", "Diploma Programs"];
-      const groups = {
-        "B.Sc & M.Sc Programs": { icon: "🔬", img: "nursing_college_category_1774427669008.png", list: [] },
-        "Management & Arts": { icon: "💼", img: "management_college_category_1774427684353.png", list: [] },
-        "Engineering & B.Tech": { icon: "⚙️", img: "engineering_college_category_1774427701464.png", list: [] },
-        "Other Courses": { icon: "🏥", img: "paramedical_college_category_1774427719498.png", list: [] },
-        "Diploma Programs": { icon: "📜", img: "assets/paramedical.png", list: [] }
-      };
-
-      courses.forEach(cr => {
-        const n = (cr.n || "").toLowerCase();
-        // Check Diploma FIRST in Logic (to avoid misgrouping) but Order it last in UI
-        if (n.includes("diploma") || (n.startsWith("d") && n.includes("-"))) groups["Diploma Programs"].list.push(cr);
-        else if (n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma")) groups["Other Courses"].list.push(cr);
-        else if (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business") || n.includes("bva") || n.includes("visual communication") || n.includes("vizcom")) groups["Management & Arts"].list.push(cr);
-        else if (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) groups["B.Sc & M.Sc Programs"].list.push(cr);
-        else if (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e ")) groups["Engineering & B.Tech"].list.push(cr);
-        else groups["Other Courses"].list.push(cr);
+      const searchInput = document.getElementById('courseInnerSearch');
+      
+      // Sort courses: Nursing first, then BCA, then others
+      const sortedCourses = [...(courses || [])].sort((a, b) => {
+        const nA = (a.n || "").toLowerCase();
+        const nB = (b.n || "").toLowerCase();
+        
+        const getPriority = (n) => {
+          if ((n.includes("bsc nursing") || n.includes("b.sc nursing") || n.includes("b sc nursing")) && !n.includes("post basic") && !n.includes("p.b") && !n.includes("pb")) return 1;
+          if (n.includes("bca")) return 2;
+          if (n.includes("post basic") || n.includes("p.b") || n.includes("pb")) return 4;
+          return 3;
+        };
+        
+        return getPriority(nA) - getPriority(nB);
       });
 
-      let html = "";
-      
-      order.forEach(title => {
-        const data = groups[title];
-        if (data.list.length > 0) {
-           html += `
-             <div class="hover-lift" onclick="_renderCategoryDetail('${title}')" style="position:relative; height:180px; border-radius:24px; overflow:hidden; cursor:pointer;">
-                <img src="${data.img}" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.25)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                    <div style="font-size:0.6rem; font-weight:850; color:rgba(255,255,255,0.8); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">${data.list.length} PROGRAMS AVAILABLE</div>
-                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2; letter-spacing:-0.01em;">${title}</h4>
-                </div>
-             </div>
-           `;
-        }
-      });
+      // Directly render all courses as requested, skipping the bundle/categorization step
+      let html = sortedCourses.map(cr => renderCourseItem(cr, c.name)).join('');
       dCourses.innerHTML = html;
-      dCourses.className = "cat-discovery-grid";
+      dCourses.className = "crs-list-detail"; 
+
+      // Apply any existing search query immediately for persistence
+      if (searchInput && searchInput.value) {
+        window.filterDetailCourses(searchInput.value);
+      }
     }
   }
 
   const dInfo = document.getElementById('d-info');
   let info = Array.isArray(c.info) ? c.info : [];
   
-  // Filter out redundant fee info from the top stats strip
-  const forbidden = ["fee", "fees", "tuition", "admission"];
+  // Simplified view: Only show specific requested fields in the top information strip
+  const allowed = ["established", "recognition", "affiliation", "location"];
   info = info.filter(i => {
     const label = (i.l || "").toLowerCase();
-    return !forbidden.some(f => label.includes(f));
+    return allowed.some(a => label.includes(a));
   });
 
   if (dInfo) {
@@ -1661,6 +1603,38 @@ function openCollege(idx, specificList) {
   localStorage.removeItem("kvp_last_category");
 }
 window.openCollege = openCollege;
+
+window.filterDetailCourses = function(query) {
+  const c = window._currentColData;
+  const dCourses = document.getElementById('d-courses');
+  if (!c || !dCourses) return;
+
+  const q = query.toLowerCase().trim();
+  let filtered = (c.courses || []).filter(cr => 
+    (cr.n || "").toLowerCase().includes(q)
+  );
+
+  // Apply the same priority sorting to filtered results
+  filtered.sort((a, b) => {
+    const nA = (a.n || "").toLowerCase();
+    const nB = (b.n || "").toLowerCase();
+    
+    const getPriority = (n) => {
+      if ((n.includes("bsc nursing") || n.includes("b.sc nursing") || n.includes("b sc nursing")) && !n.includes("post basic") && !n.includes("p.b") && !n.includes("pb")) return 1;
+      if (n.includes("bca")) return 2;
+      if (n.includes("post basic") || n.includes("p.b") || n.includes("pb")) return 4;
+      return 3;
+    };
+    
+    return getPriority(nA) - getPriority(nB);
+  });
+
+  if (filtered.length === 0) {
+    dCourses.innerHTML = `<p style="color:#9CA3AF; text-align:center; padding:3rem; grid-column: 1/-1; font-weight:600;">No programs matching "${query}" found.</p>`;
+  } else {
+    dCourses.innerHTML = filtered.map(cr => renderCourseItem(cr, c.name)).join('');
+  }
+};
 
 // New: Robust lookup by name for cards in any context
 function openCollegeByName(name) {
@@ -2291,63 +2265,20 @@ window.closeDetail = closeDetail;
 window.goto = goto;
 window.toggleMenu = toggleMenu;
 
-function populateCollegeDropdown() {
-  const dropdown = document.getElementById("collegeSuggestions");
-  if (!dropdown) return;
-  dropdown.innerHTML = collegesData
-    .map((c, idx) => ({ ...c, idx }))
-    .filter(c => !c.hidden)
-    .map((c) => {
-    return `
-        <div class="suggestion-item" onclick="selectCollege(${c.idx})">
-          <div class="suggestion-name">${c.name}</div>
-          <div class="suggestion-loc">${c.loc || ""}</div>
-        </div>
-      `;
-  }).join("");
-}
 
-function showCollegeDropdown() {
-  const dropdown = document.getElementById("collegeSuggestions");
-  dropdown.style.display = "block";
-}
-
-function selectCollege(idx) {
-  const college = collegesData[idx];
-  document.getElementById("filterCollegeName").value = college.name;
-
-  const dropdown = document.getElementById("collegeSuggestions");
-  if (dropdown) dropdown.style.display = "none"; // ← add null check
-
-  applyFilters();
-}
-window.populateCollegeDropdown = populateCollegeDropdown;
-window.showCollegeDropdown = showCollegeDropdown;
-window.selectCollege = selectCollege;
 
 // ===== COURSES VIEW =====
 
 const COURSE_CATEGORIES = [
-  {
-    name: "Engineering & B.Tech",
-    icon: "⚙️",
-    keywords: ["B.TECH", "M.TECH", "B.E", "M.E", "BE ", "ENGINEERING"]
-  },
-  {
-    name: "B.Sc & M.Sc Programs",
-    icon: "🔬",
-    keywords: ["B.SC", "M.SC", "BSC", "MSC", "NURSING", "PHYSIOTHERAPY", "ALLIED", "PARAMEDICAL"]
-  },
-  {
-    name: "Management & Arts",
-    icon: "💼",
-    keywords: ["BCA", "MCA", "MBA", "BBA", "B.COM", "M.COM", "BCOM", "MCOM", " B.A", " M.A", "BA ", "MA ", "MANAGEMENT", "BUSINESS", "BVA", "FINE ARTS", "VISUAL ARTS", "VISUAL COMMUNICATION", "VIZCOM"]
-  },
-  {
-    name: "Diploma Programs",
-    icon: "📜",
-    keywords: ["DIPLOMA", "LATERAL ENTRY", "ITI", "D-PHARM", "D-NURSING"]
-  }
+  { name: "Engineering & Technology", icon: "⚙️" },
+  { name: "Medical & Healthcare", icon: "⚕️" },
+  { name: "Commerce, Finance & Management", icon: "💼" },
+  { name: "Arts, Humanities & Social Sciences", icon: "🏛️" },
+  { name: "Law & Legal Studies", icon: "⚖️" },
+  { name: "Design, Media & Creative Arts", icon: "🎨" },
+  { name: "Science & Research", icon: "🔬" },
+  { name: "Vocational & Skill-Based (B.Voc)", icon: "⚒️" },
+  { name: "Other Courses", icon: "🏥" }
 ];
 
 let activeCourseCategory = null;
@@ -2413,22 +2344,34 @@ function renderCourseCategories() {
   if (subText) subText.textContent = "Choose a category to explore colleges and programs.";
 
   grid.className = "crs-list-all";
-  // ENFORCE ORDER: BSC -> MANAGEMENT -> ENGINEERING -> DIPLOMA
-  const order = ["B.Sc & M.Sc Programs", "Management & Arts", "Engineering & B.Tech", "Diploma Programs"];
+  const order = [
+    "Engineering & Technology",
+    "Medical & Healthcare",
+    "Commerce, Finance & Management",
+    "Arts, Humanities & Social Sciences",
+    "Law & Legal Studies",
+    "Design, Media & Creative Arts",
+    "Science & Research",
+    "Vocational & Skill-Based (B.Voc)"
+  ];
   const imgMap = {
-    "Engineering & B.Tech": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600",
-    "B.Sc & M.Sc Programs": "https://images.unsplash.com/photo-1579154235602-44373db99a23?q=80&w=600",
-    "Management & Arts": "https://images.unsplash.com/photo-1454165833756-9a28622bde80?q=80&w=600",
-    "Diploma Programs": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=600"
+    "Engineering & Technology": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600",
+    "Medical & Healthcare": "https://images.unsplash.com/photo-1584992236310-6ed134d475ec?q=80&w=600",
+    "Commerce, Finance & Management": "https://images.unsplash.com/photo-1454165833756-9a28622bde80?q=80&w=600",
+    "Arts, Humanities & Social Sciences": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=600",
+    "Law & Legal Studies": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=600",
+    "Design, Media & Creative Arts": "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=600",
+    "Science & Research": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=600",
+    "Vocational & Skill-Based (B.Voc)": "https://images.unsplash.com/photo-1520694478166-daaaaec95b69?q=80&w=600"
   };
 
-  html += `<div class="cat-discovery-grid">`;
+  let html = `<div class="cat-discovery-grid">`;
   order.forEach(title => {
     const catIdx = COURSE_CATEGORIES.findIndex(c => c.name === title);
     if (catIdx !== -1) {
       const cat = COURSE_CATEGORIES[catIdx];
       html += `
-          <div class="cat-discovery-box" onclick="selectCourseCategory(${catIdx})" style="background-image:url('${imgMap[title]}'); height:220px;">
+          <div class="cat-discovery-box hover-lift" onclick="selectCourseCategory(${catIdx})" style="background-image:url('${imgMap[title]}'); height:220px;">
              <div class="cat-discovery-content">
                 <div class="cat-discovery-icon">${cat.icon}</div>
                 <h3 class="cat-discovery-title" style="font-size:1.1rem;">${title}</h3>
@@ -2444,6 +2387,62 @@ function renderCourseCategories() {
   grid.innerHTML = html;
 }
 window.renderCourseCategories = renderCourseCategories;
+
+function initScrollReveal() {
+  const observerOptions = {
+    threshold: 0.15,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.reveal').forEach(el => {
+    observer.observe(el);
+  });
+}
+window.refreshAnimations = () => {
+  initScrollReveal();
+};
+
+window.showCollegesByCategory = function(category) {
+  const searchInput = document.getElementById('collegeSearchInput');
+  const viewSection = document.getElementById('colleges');
+  if (searchInput) {
+    searchInput.value = category;
+    showAllCollegesView(); 
+    if (typeof applyCollegeSearch === 'function') applyCollegeSearch();
+    if (viewSection) viewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
+
+window.showCollegesByLocation = function(location) {
+  const locInput = document.getElementById('locationSearchInput');
+  const locText = document.getElementById('selectedLocationText');
+  if (locInput) {
+    locInput.value = location;
+    if (locText) locText.textContent = location;
+    showAllCollegesView();
+    if (typeof applyCollegeSearch === 'function') applyCollegeSearch();
+  }
+};
+
+function toggleDetAccordion(id, btn) {
+    const wrap = document.getElementById(id);
+    if (!wrap) return;
+    const item = wrap.closest('.det-accordion-item');
+    if (!item) return;
+    const wasActive = item.classList.contains('active');
+    document.querySelectorAll('.det-accordion-item').forEach(i => i.classList.remove('active'));
+    if (!wasActive) item.classList.add('active');
+}
+window.toggleDetAccordion = toggleDetAccordion;
+
 
 function selectCourseCategory(idx) {
   const cat = COURSE_CATEGORIES[idx];
@@ -2992,142 +2991,72 @@ function nextSlide() {
 }
 window.nextSlide = nextSlide;
 
-// Start carousel on load
+
+// ===== INITIALIZATION & SPLASH =====
 window.addEventListener('DOMContentLoaded', () => {
-  const slides = document.querySelectorAll('.bg-slide');
-  if (slides.length) {
-    carouselTimer = setInterval(nextSlide, 4800);
-  }
+    // 1. Scroll Reveal
+    initScrollReveal();
+
+    // 2. Carousel
+    const slides = document.querySelectorAll('.bg-slide');
+    if (slides.length) {
+        carouselTimer = setInterval(nextSlide, 4800);
+    }
 });
 
-/* ------------------------------------------
-   PREMIUM SCROLL REVEAL ENGINE
-   ------------------------------------------ */
-function initScrollReveal() {
-  const observerOptions = {
-    threshold: 0.15,
-    rootMargin: '0px 0px -50px 0px'
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('active');
-        // Optional: stop observing after reveal
-        // observer.unobserve(entry.target);
-      }
-    });
-  }, observerOptions);
-
-  document.querySelectorAll('.reveal').forEach(el => {
-    observer.observe(el);
-  });
-}
-
-// --- Domain-Specific Gateway Functions ---
-window.showCollegesByCategory = function(category) {
-  const searchInput = document.getElementById('collegeSearchInput');
-  const viewSection = document.getElementById('colleges');
-  
-  if (searchInput) {
-    searchInput.value = category;
-    showAllCollegesView(); 
-    if (typeof applyCollegeSearch === 'function') applyCollegeSearch();
-    
-    // Smooth scroll to results
-    if (viewSection) {
-        viewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-};
-
-window.showCollegesByLocation = function(location) {
-  const locInput = document.getElementById('locationSearchInput');
-  const locText = document.getElementById('selectedLocationText');
-  
-  if (locInput) {
-    locInput.value = location;
-    if (locText) locText.textContent = location;
-    
-    showAllCollegesView();
-    if (typeof applyCollegeSearch === 'function') applyCollegeSearch();
-  }
-};
-
-// Initialize on load
-window.addEventListener('DOMContentLoaded', () => {
-  initScrollReveal();
-});
-
-// Re-run for dynamic content
-window.refreshAnimations = () => {
-  initScrollReveal();
-};
-
-
-
-function toggleDetAccordion(id, btn) {
-    const wrap = document.getElementById(id);
-    if (!wrap) return;
-    const item = wrap.closest('.det-accordion-item');
-    if (!item) return;
-    
-    // Check if it's already active
-    const wasActive = item.classList.contains('active');
-    
-    // EXCLUSIVE BEHAVIOR: Close ALL other open sections
-    document.querySelectorAll('.det-accordion-item').forEach(i => {
-        i.classList.remove('active');
-    });
-    
-    // If it WAS active, it's now closed. If it WASN'T active, we open it!
-    if (!wasActive) {
-        item.classList.add('active');
-    }
-}
-window.toggleDetAccordion = toggleDetAccordion;
-
-// PWA Service Worker Registration
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then((reg) => console.log('Service Worker registered', reg))
-      .catch((err) => console.log('Service Worker registration failed', err));
-  });
-}
-// Initial Branding Reveal
 window.addEventListener('load', () => {
+    // 1. Hero Entrance Animations
+    const items = ['.hero-badge', '.hero-tag', '.hero-h1', '.hero-sub', '.hero-btns', '.hero-cards', '.stats-row', '.app-download'];
+    items.forEach((sel, i) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        Object.assign(el.style, { opacity: '0', transform: 'translateY(20px)', transition: 'opacity .65s ease, transform .65s ease' });
+        setTimeout(() => { el.style.opacity = ''; el.style.transform = ''; }, 200 + i * 120);
+    });
+
+    // 2. Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then((reg) => console.log('Service Worker registered', reg))
+            .catch((err) => console.log('Service Worker registration failed', err));
+    }
+
+    // 3. Splash Screen Logic
     const splash = document.getElementById('splash-screen');
     const typingEl = document.getElementById('splash-typing');
     const missionText = "One voice, one mission — scam‑free education for our children.";
 
     if (splash) {
-        // Audio Greeting IMMEDIATELY on land
-        try {
-            const msg = new SpeechSynthesisUtterance("നമസ്കാരം, കേരള വിദ്യാ പോർട്ടലിലേക്ക് സ്വാഗതം");
-            msg.lang = 'ml-IN';
-            msg.rate = 0.9;
-            window.speechSynthesis.speak(msg);
-        } catch(e) {}
-
-        // Start typing after logo entrance (1.2s delay)
+        // Start 1.2s after load (to match logo entrance animation)
         setTimeout(() => {
+            // A. Audio Greeting (Malayalam) 
+            // Rate 1.1 to finish well before typing ends
+            try {
+                const msg = new SpeechSynthesisUtterance("നമസ്കാരം, കേരള വിദ്യാ പോർട്ടലിലേക്ക് സ്വാഗതം");
+                msg.lang = 'ml-IN';
+                msg.rate = 1.1; 
+                window.speechSynthesis.speak(msg);
+            } catch(e) {}
+
+            // B. Typing Effect
             if (typingEl) {
                 let i = 0;
-// ... rest of logic
-                const speed = 50; // ms per char
+                typingEl.textContent = "";
+                const speed = 55;
                 const interval = setInterval(() => {
                     typingEl.textContent += missionText[i];
                     i++;
-                    if (i === missionText.length) clearInterval(interval);
+                    if (i === missionText.length) {
+                        clearInterval(interval);
+                        // Exit Splash after small pause
+                        setTimeout(() => {
+                            splash.classList.add('vanish');
+                            setTimeout(() => splash.remove(), 800);
+                        }, 1200);
+                    }
                 }, speed);
             }
         }, 1200);
-
-        // Vanish after typing is done (approx 5.5s total)
-        setTimeout(() => {
-            splash.classList.add('vanish');
-            setTimeout(() => splash.remove(), 800);
-        }, 5500);
     }
 });
+

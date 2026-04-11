@@ -177,12 +177,11 @@
         }
     })();
     </script>
-    <!-- Initial Splash Screen -->
     <div id="splash-screen">
         <div class="splash-logo-wrap">
             <img src="kerala-logo.png" class="splash-logo" alt="Logo">
             <div class="splash-text">Kerala Vidya Portal</div>
-            <div id="splash-typing" style="color:rgba(255,255,255,0.9); font-size:0.9rem; font-weight:600; margin-top:15px; min-height:1.2em; font-style:italic; letter-spacing:0.02em;"></div>
+            <div id="splash-typing" style="color:rgba(255,255,255,0.9); font-size:1.0rem; font-weight:600; margin-top:15px; min-height:1.2em; font-style:italic; letter-spacing:0.02em;"></div>
         </div>
     </div>
 
@@ -1107,8 +1106,22 @@
                              </div>
                         </div>
 
-                        <!-- Programs (Moved to Last) -->
-                        <h3 class="det-sec-h">Available Programs</h3>
+                        <!-- Programs Section Header -->
+                        <div style="margin-bottom: 2rem; display: flex; flex-direction: column; gap: 1.2rem;">
+                            <!-- Header Layer -->
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 0.5rem 0;">
+                                <div style="width: 12px; height: 32px; background: var(--pink); border-radius: 10px; box-shadow: 0 4px 10px rgba(233,30,140,0.2);"></div>
+                                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--dark); margin: 0; letter-spacing: -0.02em;">Available Programs</h3>
+                            </div>
+                            
+                            <!-- Search Layer (Long & Separate) -->
+                            <div class="course-search-wrap" style="width: 100%;">
+                                <div style="background: #fff; border: 2px solid rgba(233,30,140,0.2); border-radius: 50px; padding: 0.85rem 1.6rem; display: flex; align-items: center; gap: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.03); transition: all 0.3s ease; border-color: rgba(233,30,140,0.4);">
+                                    <i class="fa-solid fa-magnifying-glass" style="color: var(--pink); font-size: 1.1rem;"></i>
+                                    <input type="text" id="courseInnerSearch" placeholder="Begin typing to filter by program name (e.g. Nursing, BVA, Bachelor)..." oninput="filterDetailCourses(this.value)" style="flex: 1; background: transparent; border: none; outline: none; font-size: 1rem; font-weight: 700; color: var(--dark);">
+                                </div>
+                            </div>
+                        </div>
                         <div class="crs-list" id="d-courses"></div>
 
                         <div style="height:80px"></div>
