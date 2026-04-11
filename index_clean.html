@@ -139,25 +139,9 @@
             .mob-only-banner, .header-quote-mobile {
                 display: none !important;
             }
-            #heroSection {
-                padding-top: 5.5rem !important;
-            }
-        }
-
-        /* Mobile Order Customization */
+        /* Mobile Polishing */
         @media (max-width: 768px) {
-            #home-page {
-                display: flex;
-                flex-direction: column;
-            }
-            #heroSection { order: 1; }
-            #workflowSection { order: 2; margin-top: 2rem; margin-bottom: 2rem; }
-            #partners-badge-wrap { order: 3; }
-            #ticker-wrap { order: 4; }
-            #categoryGateway { order: 5; }
-            #processSection1 { order: 6; }
-            #testimonialsSection { order: 7; }
-            #aboutSection { order: 8; }
+            #workflowSection { margin-top: 1.5rem; margin-bottom: 1.5rem; }
         }
     </style>
 </head>
@@ -178,7 +162,7 @@
         
         if (hasProfile) {
             // Default to Home for every login/open as requested
-            document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #mainContent, #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #aboutSection, #testimonialsSection { display: block !important; } #colleges, #courses-section, #compare-section, #adminPanel { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
+            document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #mainContent, #heroSection, #categoryGateway, #ticker-wrap, #partners-badge-wrap, #processSection1, #workflowSection, #aboutSection, #testimonialsSection { display: block !important; } #colleges, #courses-section, #compare-section, #adminPanel { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
         } else {
             document.write('<style>#mainPage { display: none !important; } #login-div { display: flex !important; } #signup-div { display: none; }</style>');
         }
@@ -506,65 +490,22 @@
 
 
                     </div>
-                    <!-- Domain Gateway Section (Fits 4 columns) -->
-                    <div id="categoryGateway" style="padding: 1rem 1.5rem 3rem; max-width: 1200px; margin: 0 auto; width: 100%;">
-                        <div class="section-badge" style="margin-bottom: 1.5rem;">
-                            <i class="fa-solid fa-sparkles"></i> PREMIERE INSTITUTIONS
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; width: 100%;">
-                            
-                            <!-- Nursing -->
-                            <div onclick="showCollegesByCategory('Nursing')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
-                                <img src="nursing_college_category_1774427669008.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Nursing Colleges in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
-                                </div>
-                            </div>
-
-                            <!-- Management -->
-                            <div onclick="showCollegesByCategory('Management')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
-                                <img src="management_college_category_1774427684353.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Management Colleges in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
-                                </div>
-                            </div>
-
-                            <!-- Engineering -->
-                            <div onclick="showCollegesByCategory('Engineering')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
-                                <img src="engineering_college_category_1774427701464.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Engineering Colleges in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
-                                </div>
-                            </div>
-
-                            <!-- Para Medical -->
-                            <div onclick="showCollegesByCategory('Medical')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
-                                <img src="paramedical_college_category_1774427719498.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Para-Medical & Other Courses in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
-                                </div>
-                            </div>
-
-                        </div>
                     </div>
                 </section>
 
-
-                <!-- FULL STRETCH IMAGE SECTION (Hidden in Colleges/Courses views) -->
-                <section class="full-stretch-img-sec reveal" id="workflowSection">
+                <!-- FULL STRETCH IMAGE SECTION -->
+                <section class="full-stretch-img-sec" id="workflowSection">
                     <img src="workflow.png" alt="Process Workflow: Old Way vs New Way" class="full-stretch-img"
                         loading="lazy">
                 </section>
 
-                <!-- TICKER -->
-                <!-- TICKER -->
-                <!-- TICKER PRE-WRAP FOR ORDERING -->
+                <!-- TICKER PRE-WRAP FOR TRUSTED PARTNERS -->
                 <div id="partners-badge-wrap" style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
                    <div class="section-badge" style="margin-bottom: 2rem;">
                        <i class="fa-solid fa-handshake"></i> TRUSTED PARTNERS
                    </div>
                 </div>
-                <div class="ticker-wrap reveal" id="ticker-wrap">
+                <div class="ticker-wrap" id="ticker-wrap">
                     <div class="mq-wrap" style="margin-bottom:.7rem">
                         <div class="mq-track">
                             <div class="chip">
@@ -607,149 +548,107 @@
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRR8nZuzNndLu7X3rykjib0kjgxwvr-bsIMg&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://www.mallige.ac.in/nursing/assetes/images/nursing.png" alt=""></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Domain Gateway Section (Fits 4 columns) -->
+                <div id="categoryGateway" style="padding: 1rem 1.5rem 3rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+                    <div class="section-badge" style="margin-bottom: 1.5rem;">
+                        <i class="fa-solid fa-sparkles"></i> PREMIERE INSTITUTIONS
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; width: 100%;">
+                        
+                        <!-- Nursing -->
+                        <div onclick="showCollegesByCategory('Nursing')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
+                            <img src="nursing_college_category_1774427669008.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
+                            <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
+                                <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Nursing Colleges in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgCu7oGyO7X_keaPW7E79BmKn9prtEYdAUCw&s"
-                                        alt=""></div>
+                        </div>
+
+                        <!-- Management -->
+                        <div onclick="showCollegesByCategory('Management')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
+                            <img src="management_college_category_1774427684353.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
+                            <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
+                                <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Management Colleges in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSW6bDaYhjTc82tdIm6aaeI5OSPZt9Aq7-_DQ&s"
-                                        alt=""></div>
+                        </div>
+
+                        <!-- Engineering -->
+                        <div onclick="showCollegesByCategory('Engineering')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
+                            <img src="engineering_college_category_1774427701464.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
+                            <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
+                                <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Engineering Colleges in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7gth2pMutU4DmDXUppdydtUZ7W19JNHB8lw&s"
-                                        alt=""></div>
+                        </div>
+
+                        <!-- Para Medical -->
+                        <div onclick="showCollegesByCategory('Medical')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
+                            <img src="paramedical_college_category_1774427719498.png" style="width:100%; height:100%; object-fit:cover; position:absolute;">
+                            <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
+                                <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Para-Medical & Other Courses in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">with job guarantee</span></h4>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgImLeoAUknoNflaSfXN8Wj4QELnSAsRWDkg&s"
-                                        alt=""></div>
-                            </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://i0.wp.com/ewgi.edu.in/wp-content/uploads/2022/09/logo-1.png?resize=383%2C400&ssl=1"
-                                        alt=""></div>
-                            </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img src="https://www.tjohncollege.com/assets/tjohn.jpg" alt="">
-                                </div>
-                            </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxvm_2z6ac5K6bIXS4kPo-bwPNIeG-VSYfAg&s"
-                                        alt=""></div>
-                            </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtkknY5KW7dHThm2aUnhyEu8902GzRNxLvtg&s"
-                                        alt=""></div>
-                            </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7-q8OxZ_ZACVyYapQMVaQTRMCsUG5vtfziQ&s"
-                                        alt=""></div>
-                            </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
-                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw59d_0b5ZfgB51uZNjYrLjsBLrckxkRnX3g&s"
-                                        alt=""></div>
-                            </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
+                        </div>
+
+                    </div>
+                </div>
+
+
+
+
+
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1wdnp6K_gQlyvH-vMxZ6W3phEPZ0lllh30g&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://jssaherstoragenew.blob.core.windows.net/jssuudstorage/sdimages/jssnewlogo.jpg"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://mynursingadmission.com/uploads/college/logo/032023/e3e8cfdd29313247bff6b67176315735.gif"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://mynursingadmission.com/uploads/college/logo/032023/92f61ec8a681d3ad87e4c1cd3d1cb27c.jpg"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://mynursingadmission.com/uploads/college/122024/2446607cde82a6f5606a35cf18d95cfd.jpg"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvLSR2AdzuMBVuYg_0jmHu6NlBS3cMTnUDQA&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSej98UKXv8SnwKUgDVhhQU8cqUSaSi_4vmGA&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRR8nZuzNndLu7X3rykjib0kjgxwvr-bsIMg&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://www.mallige.ac.in/nursing/assetes/images/nursing.png" alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgCu7oGyO7X_keaPW7E79BmKn9prtEYdAUCw&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSW6bDaYhjTc82tdIm6aaeI5OSPZt9Aq7-_DQ&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7gth2pMutU4DmDXUppdydtUZ7W19JNHB8lw&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgImLeoAUknoNflaSfXN8Wj4QELnSAsRWDkg&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://i0.wp.com/ewgi.edu.in/wp-content/uploads/2022/09/logo-1.png?resize=383%2C400&ssl=1"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img src="https://www.tjohncollege.com/assets/tjohn.jpg" alt="">
                                 </div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxvm_2z6ac5K6bIXS4kPo-bwPNIeG-VSYfAg&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtkknY5KW7dHThm2aUnhyEu8902GzRNxLvtg&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7-q8OxZ_ZACVyYapQMVaQTRMCsUG5vtfziQ&s"
                                         alt=""></div>
                             </div>
-                            <div class="chip">
-                                <div class="chip-ico"><img
                                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw59d_0b5ZfgB51uZNjYrLjsBLrckxkRnX3g&s"
                                         alt=""></div>
                             </div>

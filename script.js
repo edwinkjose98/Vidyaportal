@@ -323,26 +323,8 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
     
-    const lastView = localStorage.getItem("kvp_last_view"); // Preferred key
-    const lastCol  = localStorage.getItem("kvp_last_college");
-    const lastCat  = localStorage.getItem("kvp_last_category");
-
-    if (lastView === "colleges" || lastView === "courses") {
-        showAllCollegesView();
-        if (lastCol) {
-            setTimeout(() => {
-                openCollegeByName(lastCol);
-                if (lastCat && typeof window._renderCategoryDetail === "function") {
-                    setTimeout(() => window._renderCategoryDetail(lastCat), 450);
-                }
-            }, 350);
-        }
-    } else if (lastView === "compare") {
-        showCompareView();
-    } else {
-        openHome();
-    }
-
+    // Default all logins/opens to Home as requested
+    openHome();
   } else {
     // NEW / PARTIAL USER detected by Firebase
     // We stay on the Login page until they act (e.g. they click Continue with Google)
