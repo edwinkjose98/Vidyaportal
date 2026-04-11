@@ -3011,15 +3011,6 @@ window.addEventListener('load', () => {
     if (splash) {
         // Start 1.2s after load (to match logo entrance animation)
         setTimeout(() => {
-            // A. Audio Greeting (Malayalam) 
-            // Rate 1.1 to finish well before typing ends
-            try {
-                const msg = new SpeechSynthesisUtterance("നമസ്കാരം, കേരള വിദ്യാ പോർട്ടലിലേക്ക് സ്വാഗതം");
-                msg.lang = 'ml-IN';
-                msg.rate = 1.1; 
-                window.speechSynthesis.speak(msg);
-            } catch(e) {}
-
             // B. Typing Effect
             if (typingEl) {
                 let i = 0;

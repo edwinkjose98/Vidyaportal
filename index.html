@@ -74,7 +74,7 @@
             border: none !important;
             box-shadow: none !important;
             background: transparent !important;
-            padding: 5rem 1.5rem 3rem !important;
+            padding: 1.5rem 1.5rem 0.5rem !important;
         }
 
         /* --- Mobile Overrides (Max Width 768px) --- */
@@ -140,7 +140,7 @@
                 display: none !important;
             }
             #heroSection {
-                padding-top: 5.5rem !important;
+                padding-top: 20px !important;
             }
         }
 
@@ -149,15 +149,78 @@
             #home-page {
                 display: flex;
                 flex-direction: column;
+                margin-top: 175px !important;
+            }
+            #heroSection { 
+                padding-top: 25px !important; 
             }
             #heroSection { order: 1; }
-            #workflowSection { order: 2; margin-top: 2rem; margin-bottom: 2rem; }
+            #workflowSection { order: 2; margin-top: 0.1rem; margin-bottom: 0.5rem; }
             #partners-badge-wrap { order: 3; }
             #ticker-wrap { order: 4; }
             #categoryGateway { order: 5; }
             #processSection1 { order: 6; }
             #testimonialsSection { order: 7; }
             #aboutSection { order: 8; }
+        }
+
+        /* Fluid Typography for Hero */
+        .hero-tag {
+            font-size: clamp(0.68rem, 2.5vw, 0.88rem) !important;
+            white-space: nowrap;
+            margin-bottom: 0.5rem;
+        }
+        .hero-h1 {
+            font-size: clamp(1.4rem, 8vw, 3.2rem) !important;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+        }
+        .hero-h1 span {
+            font-size: clamp(2.2rem, 12vw, 4.2rem) !important;
+        }
+        @media (max-width: 480px) {
+            .hero-h1 br { display: none; }
+        }
+
+        /* Nav Pills Styling */
+        .nav-pills-container {
+            display: flex;
+            background: #fff;
+            padding: 4px 4px 12px 4px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(233,30,140,0.1);
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 5px;
+            overflow: visible !important;
+        }
+        .nav-pill {
+            flex: 1;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 750;
+            color: #4B5563;
+            text-decoration: none;
+            transition: 0.3s;
+            position: relative;
+        }
+        .nav-pill.active {
+            background: rgba(233,30,140,0.06);
+            color: var(--pink);
+        }
+        .nav-pill.active::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 3px;
+            background: var(--pink);
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -407,7 +470,7 @@
                         </a>
 
                         <!-- Centered Quote for Mobile -->
-                        <div id="mobile-quote-wrap" class="mobile-only" style="display:flex; flex: 1; justify-content:center; align-items:center; overflow:hidden; padding: 0 4px;">
+                        <div id="mobile-quote-wrap" class="mobile-only" style="display:flex; flex: 1; justify-content:center; align-items:center; overflow:hidden; padding: 0 4px; margin-bottom: 4px;">
                            <p style="font-size: clamp(0.58rem, 2.8vw, 0.72rem); font-weight: 850; color: #b13f64; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; text-align:center; line-height:1.1;">Study without stress — your future is secure.</p>
                         </div>
 
@@ -419,7 +482,7 @@
                         </div>
 
                         <!-- Precisely Styled Pill Navigation (Mobile) -->
-                        <div class="header-nav-wrap mobile-only" style="width:100% !important; flex: none !important; margin-top: 4px;">
+                        <div class="header-nav-wrap mobile-only" style="width:100% !important; flex: none !important; margin-top: 8px; padding-bottom: 12px;">
                             <div class="nav-pills-container">
                                 <a href="javascript:void(0)" data-nav="home" onclick="showHome();" class="nav-pill active">Home</a>
                                 <a href="javascript:void(0)" data-nav="colleges" onclick="showAllCollegesView();" class="nav-pill">Colleges & Courses</a>
@@ -475,22 +538,22 @@
                 </div>
 
                 <!-- HERO -->
-                <section class="hero reveal active" id="heroSection" style="padding-top:7.0rem">
+                <section class="hero reveal active" id="heroSection" style="padding-top:25px;">
                     <!-- <video autoplay muted loop playsinline class="hero-video">
                     <source src="https://res.cloudinary.com/dxjdraawa/video/upload/v1753268236/videoplayback_kdxk91.mp4" type="video/mp4">
                 </video>
-
+3
                 <div class="hero-overlay"></div> -->
                     <div class="homeBG"
-                        style="display:flex; flex-direction:column; align-items:center; text-align:center; max-width:800px; margin:0 auto;">
+                        style="display:flex; flex-direction:column; align-items:center; text-align:center; max-width:800px; margin:0 auto; padding: 1.5rem 1.5rem 0.2rem !important;">
                         <div class="hero-badge">
                             <div class="dot"></div>Trusted by 1.2 Lakh+ Students
                         </div>
                         <span class="hero-tag">#1 Admission portal with job Guarantee</span>
-                        <h1 class="hero-h1" style="text-align:center; font-family:'Plus Jakarta Sans',sans-serif;">
-                            Kerala Vidya Portal Makes<br><span
-                                style="background: linear-gradient(135deg, var(--pink), #e91e63); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-size: 4.2rem; display:inline-block; margin-top:5px;">It
-                                Possible.</span></h1>
+                        <h1 class="hero-h1" style="text-align:center; font-family:'Plus Jakarta Sans',sans-serif; margin-top: 10px;">
+                            Kerala Vidya Portal Makes<br>
+                            <span style="background: linear-gradient(135deg, var(--pink), #e91e63); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display:inline-block;">It Possible.</span>
+                        </h1>
                         <div style="background: rgba(199, 40, 90, 0.08); border: 1.5px dashed var(--pink); color: #000; border-radius: 30px; padding: 0.8rem 1.8rem; margin-top: 1rem; margin-bottom: 2rem; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;">
                             <div style="font-size: 0.95rem; font-weight: 850; letter-spacing: 0.02em; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
                                 <i class="fa-solid fa-shield-halved" style="color:var(--pink);"></i> If not placed, you get the fees back
@@ -507,7 +570,7 @@
 
                     </div>
                     <!-- Domain Gateway Section (Fits 4 columns) -->
-                    <div id="categoryGateway" style="padding: 1rem 1.5rem 3rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+                    <div id="categoryGateway" style="padding: 0 1.5rem 1.5rem; max-width: 1200px; margin: 0 auto; width: 100%;">
                         <div class="section-badge" style="margin-bottom: 1.5rem;">
                             <i class="fa-solid fa-sparkles"></i> PREMIERE INSTITUTIONS
                         </div>
@@ -551,7 +614,7 @@
 
 
                 <!-- FULL STRETCH IMAGE SECTION (Hidden in Colleges/Courses views) -->
-                <section class="full-stretch-img-sec reveal" id="workflowSection">
+                <section class="full-stretch-img-sec reveal" id="workflowSection" style="margin-top: 0; padding-top: 0;">
                     <img src="workflow.png" alt="Process Workflow: Old Way vs New Way" class="full-stretch-img"
                         loading="lazy">
                 </section>
