@@ -910,15 +910,24 @@ function getFilteredColleges() {
       matchesLoc = synonyms.some(s => lowerLoc.includes(s));
     }
 
-    // 2. Simple Matching (Name, About, Courses, Fees)
+    // 2. Multi-Keyword Matching (Name, About, Courses, Fees)
     if (nameQ) {
-      const nameMatch = (c.name || "").toLowerCase().includes(nameQ);
-      const aboutMatch = (c.about || "").toLowerCase().includes(nameQ);
-      const coursesMatch = (c.courses || []).some(cr => (cr.n || "").toLowerCase().includes(nameQ));
-      const infoStr = JSON.stringify(c.info || "").toLowerCase();
-      const infoMatch = infoStr.includes(nameQ);
+      const q = nameQ.toLowerCase();
+      // If the current search exactly matches a category we just clicked, search for ALL related keywords
+      let searchTerms = [q];
+      if (window.activeCategoryKeywords && window.activeCategoryKeywords.some(sw => sw.toLowerCase() === q)) {
+          searchTerms = window.activeCategoryKeywords;
+      }
 
-      matchesName = nameMatch || aboutMatch || coursesMatch || infoMatch;
+      matchesName = searchTerms.some(term => {
+          const t = term.toLowerCase();
+          const nameMatch = (c.name || "").toLowerCase().includes(t);
+          const aboutMatch = (c.about || "").toLowerCase().includes(t);
+          const coursesMatch = (c.courses || []).some(cr => (cr.n || "").toLowerCase().includes(t));
+          const infoStr = JSON.stringify(c.info || "").toLowerCase();
+          const infoMatch = infoStr.includes(t);
+          return nameMatch || aboutMatch || coursesMatch || infoMatch;
+      });
     }
 
     return matchesLoc && matchesName;
@@ -1059,15 +1068,17 @@ function showCollegesByCategory(category) {
 
   const keywordMap = {
     engineering: ['b.tech', 'btech', 'b.e', 'engineering', 'cse', 'mechanical', 'electrical', 'civil', 'ece'],
-    management:  ['mba', 'bba', 'management', 'business', 'commerce', 'finance', 'marketing', 'b.com', 'bcom', 'bva'],
+    management:  ['management', 'mba', 'bba', 'bva', 'visual communication', 'vizcom'],
     medical:     ['mbbs', 'nursing', 'pharmacy', 'bpharma', 'b.pharm', 'medical', 'bsc nursing', 'ayurveda', 'dental', 'bpt', 'physio', 'physiotherapy'],
-    design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'visual', 'bva', 'visual arts'],
-    arts:        ['ba', 'b.a', 'arts', 'humanities', 'social', 'literature', 'psychology', 'sociology', 'bva', 'fine arts']
+    design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'visual', 'bva', 'visual arts', 'visual communication', 'vizcom'],
+    arts:        ['arts', 'ba', 'b.a', 'humanities', 'social', 'literature', 'psychology', 'sociology', 'bva', 'fine arts', 'visual communication', 'vizcom']
   };
 
   const keywords = keywordMap[category.toLowerCase()] || [category];
+  window.activeCategoryKeywords = keywords; // STASH FOR FILTERING
+  
   if (searchInput) {
-    searchInput.value = keywords[0];
+    searchInput.value = keywords[0]; // For visual feedback
   }
 
   if (typeof logUserActivity === 'function') logUserActivity(`Filtered by: ${category}`);
@@ -1600,9 +1611,10 @@ function openCollege(idx, specificList) {
         // Check Diploma FIRST in Logic (to avoid misgrouping) but Order it last in UI
         if (n.includes("diploma") || (n.startsWith("d") && n.includes("-"))) groups["Diploma Programs"].list.push(cr);
         else if (n.includes("bpt") || n.includes("physio") || n.includes("pharmacy") || n.includes("b.pharm") || n.includes("bpharma")) groups["Other Courses"].list.push(cr);
-        else if (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business")) groups["Management & Arts"].list.push(cr);
+        else if (n.includes("bca") || n.includes("mca") || n.includes("mba") || n.includes("bba") || n.includes("b.com") || n.includes("bcom") || n.includes("m.com") || n.includes("mcom") || n.includes("ba ") || n.includes("ma ") || n.includes("management") || n.includes("business") || n.includes("bva") || n.includes("visual communication") || n.includes("vizcom")) groups["Management & Arts"].list.push(cr);
         else if (n.includes("b.sc") || n.includes("bsc") || n.includes("m.sc") || n.includes("msc") || n.includes("nursing") || n.includes("allied") || n.includes("para")) groups["B.Sc & M.Sc Programs"].list.push(cr);
         else if (n.includes("engineering") || n.includes("b.tech") || n.includes("m.tech") || n.includes("be ") || n.includes("b.e ")) groups["Engineering & B.Tech"].list.push(cr);
+        else groups["Other Courses"].list.push(cr);
       });
 
       let html = "";
@@ -2329,7 +2341,7 @@ const COURSE_CATEGORIES = [
   {
     name: "Management & Arts",
     icon: "💼",
-    keywords: ["BCA", "MCA", "MBA", "BBA", "B.COM", "M.COM", "BCOM", "MCOM", " B.A", " M.A", "BA ", "MA ", "MANAGEMENT", "BUSINESS", "BVA", "FINE ARTS", "VISUAL ARTS"]
+    keywords: ["BCA", "MCA", "MBA", "BBA", "B.COM", "M.COM", "BCOM", "MCOM", " B.A", " M.A", "BA ", "MA ", "MANAGEMENT", "BUSINESS", "BVA", "FINE ARTS", "VISUAL ARTS", "VISUAL COMMUNICATION", "VIZCOM"]
   },
   {
     name: "Diploma Programs",
@@ -3083,3 +3095,39 @@ if ('serviceWorker' in navigator) {
       .catch((err) => console.log('Service Worker registration failed', err));
   });
 }
+// Initial Branding Reveal
+window.addEventListener('load', () => {
+    const splash = document.getElementById('splash-screen');
+    const typingEl = document.getElementById('splash-typing');
+    const missionText = "One voice, one mission — scam‑free education for our children.";
+
+    if (splash) {
+        // Audio Greeting IMMEDIATELY on land
+        try {
+            const msg = new SpeechSynthesisUtterance("നമസ്കാരം, കേരള വിദ്യാ പോർട്ടലിലേക്ക് സ്വാഗതം");
+            msg.lang = 'ml-IN';
+            msg.rate = 0.9;
+            window.speechSynthesis.speak(msg);
+        } catch(e) {}
+
+        // Start typing after logo entrance (1.2s delay)
+        setTimeout(() => {
+            if (typingEl) {
+                let i = 0;
+// ... rest of logic
+                const speed = 50; // ms per char
+                const interval = setInterval(() => {
+                    typingEl.textContent += missionText[i];
+                    i++;
+                    if (i === missionText.length) clearInterval(interval);
+                }, speed);
+            }
+        }, 1200);
+
+        // Vanish after typing is done (approx 5.5s total)
+        setTimeout(() => {
+            splash.classList.add('vanish');
+            setTimeout(() => splash.remove(), 800);
+        }, 5500);
+    }
+});
