@@ -361,49 +361,27 @@ async function sendRegistrationOTP() {
     sendBtn.disabled = true;
     sendBtn.textContent = "Wait...";
 
-    // 1. SILENT EXISTENCE CHECK (Removed Alert to allow Universal Entry)
-    let userExists = false;
-    try {
-        const q = query(collection(db, "users"), where("phone", "==", phone));
-        const qSnap = await getDocs(q);
-        if (!qSnap.empty) {
-            userExists = true;
-        }
-    } catch (e) {
-        console.warn("Silent existence check error", e);
-    }
+    // Trigger SMS and background tasks in PARALLEL for Zero Lag
+    const smsPromise = signInWithPhoneNumber(auth, "+91" + phone, window.recaptchaRegVerifier);
+    
+    // Auxiliary tasks (Non-blocking)
+    getDocs(query(collection(db, "users"), where("phone", "==", phone))).catch(() => {});
+    setDoc(doc(db, "leads", phone), {
+        phone: phone,
+        status: "OTP SENT",
+        joined: new Date().toLocaleDateString(),
+        timestamp: new Date()
+    }).catch(() => {});
 
     try {
-        const fullPhone = "+91" + phone;
+        regConfirmationResult = await smsPromise;
         
-        // Robust cleanup before new reg attempt
-        if (window.recaptchaRegVerifier) {
-            try { window.recaptchaRegVerifier.clear(); } catch(e){}
-            window.recaptchaRegVerifier = null;
-        }
-
-        window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', {
-            size: 'invisible',
-            callback: () => { }
-        });
-        
-        regConfirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaRegVerifier);
-        
-        // LEAD CAPTURE
-        try {
-            await setDoc(doc(db, "leads", phone), {
-                phone: phone,
-                status: "OTP SENT",
-                joined: new Date().toLocaleDateString(),
-                timestamp: new Date()
-            });
-        } catch (leadErr) { console.warn("Lead record skipped:", leadErr); }
-
         document.getElementById("regOtpInputWrap").style.display = "block";
         document.getElementById("signupPhone").disabled = true;
-        sendBtn.textContent = "Resend";
-        sendBtn.disabled = false;
+        
+        startOtpTimer("regSendOtp", 60);
         showToast("OTP sent successfully! 📱");
+        
         setTimeout(() => {
             const firstBox = document.querySelector(".otp-box-reg");
             if (firstBox) firstBox.focus();
@@ -411,20 +389,39 @@ async function sendRegistrationOTP() {
     } catch (err) {
         console.error("SMS Registration Error:", err);
         let msg = "SMS failed. Try again soon.";
-        if (err.code === "auth/quota-exceeded") msg = "Daily limit of 10 SMS reached! ⚠️";
-        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 5-10 mins. 🔒";
-        if (err.code === "auth/invalid-phone-number") msg = "Invalid phone number format.";
+        if (err.code === "auth/quota-exceeded") msg = "Daily limit reached! ⚠️";
+        if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 5 mins. 🔒";
         
         showToast(msg);
-        
-        if (window.recaptchaRegVerifier) {
-            try { window.recaptchaRegVerifier.clear(); } catch(e){}
-            window.recaptchaRegVerifier = null;
-        }
     } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Get OTP";
+        if (!regConfirmationResult) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = "Get OTP";
+        }
     }
+}
+
+function startOtpTimer(btnId, duration = 60) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    
+    btn.disabled = true;
+    let timeLeft = duration;
+    
+    const timer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            if (btnId === "loginSendOtpBtn") {
+                btn.innerHTML = 'Get OTP <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+            } else {
+                btn.textContent = "Resend OTP";
+            }
+        } else {
+            btn.textContent = `Resend in ${timeLeft}s`;
+        }
+    }, 1000);
 }
 
 async function verifyRegistrationOTP() {
@@ -533,12 +530,14 @@ function openHome() {
   if (adminPanel) adminPanel.style.display = "none";
   if (mainPage) mainPage.style.setProperty("display", "block", "important");
 
-  // Restore Home elements
-  const showIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection", "colleges"];
+  // Restore Home elements (HIDE colleges here as requested)
+  const showIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
   showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "block"; });
 
-  const hideIds = ["courses-section", "crsResultHeader", "compare-section"];
+  const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
+
+  window.scrollTo({ top: 0, behavior: 'instant' });
 
   // Update memory so refresh doesn't jump back to others
   localStorage.setItem("kvp_last_view", "home");
@@ -546,7 +545,7 @@ function openHome() {
 
   const collegesSec = document.getElementById("colleges");
   if (collegesSec) {
-      collegesSec.style.display = "block";
+      collegesSec.style.display = "none";
       // Clear filters when going home
       const searchInput = document.getElementById('collegeSearchInput');
       const locInput = document.getElementById('locationSearchInput');
@@ -604,24 +603,16 @@ window.sendLoginOTP = async function() {
     const fullPhone = "+91" + phoneInput;
 
     try {
-        // CLEANUP: Reset reCAPTCHA to prevent "Already rendered" error
-        if (window.recaptchaVerifier) {
-            try { window.recaptchaVerifier.clear(); } catch(e){}
-            window.recaptchaVerifier = null;
-        }
-
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
-            'size': 'invisible',
-        });
-        
+        // SMS request starts immediately
         window.confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
         
+        startOtpTimer("loginSendOtpBtn", 60);
+
         // Transition to OTP step
         document.getElementById('loginPhoneStep').style.display = 'none';
         document.getElementById('loginOtpStep').style.display = 'block';
         document.getElementById('loginOtpSentMsg').textContent = `OTP sent to +91 ${phoneInput}`;
         
-        // Auto-focus first OTP box
         setTimeout(() => {
             const firstBox = document.querySelectorAll('.login-otp-box')[0];
             if (firstBox) firstBox.focus();
@@ -643,8 +634,10 @@ window.sendLoginOTP = async function() {
             window.recaptchaVerifier = null;
         }
     } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Get OTP <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+        if (!window.confirmationResult) {
+            btn.disabled = false;
+            btn.innerHTML = 'Get OTP <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+        }
     }
 };
 
@@ -779,6 +772,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Wire up the groups
   setupOtpAutoSubmit(".login-otp-box", window.verifyLoginOTP);
   setupOtpAutoSubmit(".otp-box-reg", window.verifyRegistrationOTP);
+
+  // Parallel reCAPTCHA warm-up for zero lag
+  if (!window.recaptchaRegVerifier && document.getElementById('recaptcha-reg-container')) {
+    window.recaptchaRegVerifier = new RecaptchaVerifier(auth, 'recaptcha-reg-container', { size: 'invisible' });
+  }
+  if (!window.recaptchaVerifier && document.getElementById('login-recaptcha-container')) {
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', { size: 'invisible' });
+  }
 
   // Signup Submit
   const sSubmit = document.getElementById("signupSubmit");
@@ -3079,27 +3080,26 @@ window.addEventListener('load', () => {
     const missionText = "ഒരു ദൗത്യം, ഒരു ലക്ഷ്യം — നമ്മുടെ കുട്ടികൾക്കായി സുരക്ഷിതമായ വിദ്യാഭ്യാസം.";
 
     if (splash) {
-        // Start 1.2s after load (to match logo entrance animation)
+        // Start 0.8s after load
         setTimeout(() => {
-            // B. Typing Effect
             if (typingEl) {
                 let i = 0;
                 typingEl.textContent = "";
-                const speed = 55;
+                const speed = 25; // Faster typing
                 const interval = setInterval(() => {
                     typingEl.textContent += missionText[i];
                     i++;
                     if (i === missionText.length) {
                         clearInterval(interval);
-                        // Exit Splash after small pause
+                        // Exit Splash faster
                         setTimeout(() => {
                             splash.classList.add('vanish');
-                            setTimeout(() => splash.remove(), 800);
-                        }, 1200);
+                            setTimeout(() => splash.remove(), 600);
+                        }, 600);
                     }
                 }, speed);
             }
-        }, 1200);
+        }, 800);
     }
 });
 
