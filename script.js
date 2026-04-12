@@ -3006,7 +3006,7 @@ window.addEventListener('load', () => {
     // 3. Splash Screen Logic
     const splash = document.getElementById('splash-screen');
     const typingEl = document.getElementById('splash-typing');
-    const missionText = "One voice, one mission — scam‑free education for our children.";
+    const missionText = "ഒരു ദൗത്യം, ഒരു ലക്ഷ്യം — നമ്മുടെ കുട്ടികൾക്കായി സുരക്ഷിതമായ വിദ്യാഭ്യാസം.";
 
     if (splash) {
         // Start 1.2s after load (to match logo entrance animation)
