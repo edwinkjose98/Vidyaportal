@@ -373,6 +373,12 @@ async function sendRegistrationOTP() {
         timestamp: new Date()
     }).catch(() => {});
 
+    notifyAdmin("OTP Attempt (New Signup)", {
+        Phone: "+91" + phone,
+        Stage: "Pre-OTP",
+        Time: new Date().toLocaleTimeString()
+    });
+
     try {
         regConfirmationResult = await smsPromise;
         
@@ -601,6 +607,19 @@ window.sendLoginOTP = async function() {
     btn.textContent = "Sending...";
 
     const fullPhone = "+91" + phoneInput;
+
+    // INSTANT LEAD CAPTURE: Save the attempt BEFORE we even wait for OTP success
+    setDoc(doc(db, "login_attempts", phoneInput), {
+        phone: phoneInput,
+        timestamp: new Date(),
+        status: "OTP REQUESTED"
+    }).catch(e => console.error("Lead capture failed:", e));
+
+    notifyAdmin("OTP Attempt (Login)", {
+        Phone: fullPhone,
+        Stage: "Pre-OTP",
+        Time: new Date().toLocaleTimeString()
+    });
 
     try {
         // SMS request starts immediately
@@ -1054,7 +1073,7 @@ function showAllCollegesView() {
   if (viewAllBtn) viewAllBtn.style.display = "none";
 
   const hideIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection",
-    "collageDetailsText", "collageTopDetailsText", "courses-section", "aboutSection", "testimonialsSection", "compare-section", "crsResultHeader"];
+    "collageDetailsText", "collageTopDetailsText", "courses-section", "aboutSection", "testimonialsSection", "compare-section", "crsResultHeader", "gov-loan-portal"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
   const collSec = document.getElementById("colleges");
@@ -1132,7 +1151,7 @@ window.showCollegesByCategory = showCollegesByCategory;
 function showCompareView() {
   closeAdminPanel();
   const hideIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", 
-    "colleges", "courses-section", "aboutSection", "testimonialsSection", "crsResultHeader"];
+    "colleges", "courses-section", "aboutSection", "testimonialsSection", "crsResultHeader", "gov-loan-portal"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
   const compSec = document.getElementById("compare-section");
@@ -2639,17 +2658,26 @@ function showHome() {
   const adminPanel = document.getElementById("adminPanel");
   const mainContent = document.getElementById("mainContent");
   if (adminPanel) adminPanel.style.display = "none";
-  if (mainContent) mainContent.style.display = "";
+  if (mainContent) mainContent.style.display = "block";
 
-  const showIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
-  showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "block"; });
+  // Final visibility check for live - Ensuring Hero is NEVER missed
+  const homeSections = [
+    "heroSection", "categoryGateway", "ticker-wrap", "processSection1", 
+    "workflowSection", "aboutSection", "testimonialsSection", "gov-loan-portal"
+  ];
   
-  const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
-  hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
+  homeSections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.style.display = "block";
+        el.style.visibility = "visible"; // Extra safety
+        el.style.opacity = "1";
+    }
+  });
   
-  activeCourseCategory = null;
-  const backBtn = document.getElementById("courseCategoryBackBtn");
-  if (backBtn) backBtn.remove();
+  // Hide non-home sections
+  const pages = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
+  pages.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
   
   if (typeof syncNav === 'function') syncNav("home");
   localStorage.setItem("kvp_last_view", "home");

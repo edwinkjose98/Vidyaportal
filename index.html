@@ -294,7 +294,7 @@
         
         if (hasProfile) {
             // Default to Home for every login/open as requested
-            document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #mainContent, #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #aboutSection, #testimonialsSection { display: block !important; } #colleges, #courses-section, #compare-section, #adminPanel { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
+            document.write('<style id="bootstrap-ui-style">#mainPage { display: block !important; } #mainContent, #heroSection, #categoryGateway, #ticker-wrap, #processSection1, #workflowSection, #aboutSection, #testimonialsSection, #gov-loan-portal { display: block !important; } #colleges, #courses-section, #compare-section, #adminPanel { display: none !important; } #login-div, #signup-div { display: none !important; }</style>');
         } else {
             document.write('<style>#mainPage { display: none !important; } #login-div { display: flex !important; } #signup-div { display: none; }</style>');
         }
@@ -539,7 +539,7 @@
                     <div class="nav-inner" style="flex-wrap: wrap !important; padding: 0.5rem 0.8rem !important; gap: 4px; display:flex; align-items:center; justify-content:space-between;">
                         <a class="brand" href="#" onclick="showHome(); return false;"
                             style="padding:0; gap:.5rem; display:flex; align-items:center; flex: 0 0 50px;">
-                            <img src="logo.jpg"
+                            <img src="logo.jpg" loading="lazy"
                                 style="height:55px; width:55px; min-width:55px; border-radius:10px; object-fit:contain; margin:0;"
                                 alt="Kerala Vidya Portal Logo">
                             <span class="logo-text desktop-only"
@@ -616,16 +616,8 @@
 
                 <!-- HERO -->
                 <section class="hero reveal active" id="heroSection" style="padding-top: 3.5rem !important;">
-                    <!-- <video autoplay muted loop playsinline class="hero-video">
-                    <source src="https://res.cloudinary.com/dxjdraawa/video/upload/v1753268236/videoplayback_kdxk91.mp4" type="video/mp4">
-                </video>
-3
-                <div class="hero-overlay"></div> -->
                     <div class="homeBG"
                         style="display:flex; flex-direction:column; align-items:center; text-align:center; max-width:800px; margin:0 auto; padding: 1.5rem 1.5rem 0.2rem !important;">
-                        <div class="hero-badge">
-                            <div class="dot"></div>Trusted by 1.2 Lakh+ Students
-                        </div>
                         <span class="hero-tag">#1 Admission portal with job Guarantee</span>
                         <h1 class="hero-h1" style="text-align:center; font-family:'Plus Jakarta Sans',sans-serif; margin-top: 10px;">
                             Kerala Vidya Portal Makes<br>
@@ -899,7 +891,7 @@
                     </div>
                 </div>
                 <!-- COLLEGES (loaded from Firebase: first 9 by priority on home, then View all + filters) -->
-                <section class="section reveal" id="colleges" style="display: none; padding-top: 1.5rem;">
+                <section class="section reveal" id="colleges" style="display: none;">
                 <div style="text-align:center; margin-bottom: 2.5rem;">
                     <div style="font-size:0.8rem; font-weight:800; color:var(--pink); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:1rem;" class="reveal">❖ Premiere Institutions</div>
                     <h2 style="font-size:clamp(1.8rem, 5vw, 2.8rem); font-weight:850; color:var(--dark); letter-spacing:-0.04em; margin-bottom:1.2rem; line-height:1.1;" class="reveal">World-Class <span style="color:var(--pink)-600; background: linear-gradient(120deg, var(--pink), #D4187F); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Academic Excellence</span></h2>
