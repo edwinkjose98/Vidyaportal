@@ -5329,15 +5329,15 @@ body:has(#signup-div[style*="display: flex"]) {
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #compare-section {
-        padding-top: 10rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #heroSection {
-        padding-top: 10rem !important;
+        padding-top: 4rem !important; /* Increased to ensure #1 admission is visible */
         padding-bottom: calc(3rem + env(safe-area-inset-bottom, 24px)) !important;
     }
     #courses-section {
-        padding-top: 10rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: calc(5rem + env(safe-area-inset-bottom, 24px)) !important;
     }
 
