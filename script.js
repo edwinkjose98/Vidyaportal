@@ -684,10 +684,9 @@ window.verifyLoginOTP = async function() {
 
         if (!userSnap.exists()) {
             // NEW USER flow: Redirect to signup form instantly
-            alert("Welcome! Please complete your profile to continue.");
             
             // Populate and show the signup form directly
-            openSignUp();
+            openSignUp(true, user.phoneNumber ? user.phoneNumber.replace("+91", "") : "");
             
             // Automatically act as if they verified phone in signup
             document.getElementById('signup-step-otp').style.display = 'none';
