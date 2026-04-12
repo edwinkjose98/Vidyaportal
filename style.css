@@ -4241,18 +4241,21 @@ video {
   /* On mobile keep the dropdown absolutely positioned so it overlays */
   .custom-dropdown {
     position: absolute !important;
-    top: calc(100% + 8px) !important;
-    left: 0 !important;
+    top: calc(100% + 12px) !important;
+    left: auto !important;
     right: 0 !important;
+    width: 280px !important;
+    max-width: calc(100vw - 32px) !important;
     transform: none !important;
     display: none !important;
     opacity: 1 !important;
     visibility: visible !important;
     z-index: 9999 !important;
     background: #fff !important;
-    border-radius: 16px !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
-    border: 1px solid rgba(233,30,140,0.1) !important;
+    border-radius: 20px !important;
+    padding: 0.8rem !important;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
+    border: 1px solid rgba(233,30,140,0.15) !important;
   }
 
   .custom-dropdown.active,
