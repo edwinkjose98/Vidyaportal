@@ -22,7 +22,7 @@
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="Kerala Vidya Portal helps students in Kerala find and apply to top Colleges in other states like Karnataka, Tamil Nadu, and more. Secure admission in Nursing, Engineering, and BCA with ₹0 donation and placement guarantees.">
-    <meta name="keywords" content="Kerala Vidya Portal, admission help for Kerala students, Nursing in Bangalore for Keralites, Engineering admission other states, BCA colleges Tamil Nadu, best colleges in Karnataka for Kerala students, paramedical admission outside Kerala, admission guidance Kerala, education consultancy for other state colleges, study in Bangalore help Kerala, fee-back guarantee admissions India">
+    <meta name="keywords" content="Kerala Vidya Portal, admission help for Kerala students, Nursing in Bangalore for Keralites, Engineering admission other states, BCA colleges Tamil Nadu, best colleges in Karnataka for Kerala students, paramedical admission outside Kerala, admission guidance Kerala, education platform for other state colleges, study in Bangalore help Kerala, fee-back guarantee admissions India">
     <meta name="author" content="Kerala Vidya Portal">
     <meta name="geo.region" content="IN-KL">
     <meta name="geo.placename" content="Kerala">
@@ -464,6 +464,15 @@
                     <span style="color:#15803d; font-size:0.85rem; font-weight:700;">Phone verified! Fill in your details below.</span>
                 </div>
 
+                <!-- Verified Mobile (Non-editable) -->
+                <div style="margin-bottom:1rem;">
+                    <label for="signupPhoneDisplay" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">
+                        <i class="fas fa-phone-alt" style="margin-right:4px; opacity:0.7;"></i> Verified Mobile Number
+                    </label>
+                    <input type="text" id="signupPhoneDisplay" readonly
+                        style="width:100%; padding:0.85rem 1rem; border:1.5px solid #f3d2df; border-radius:12px; font-size:1rem; outline:none; background:#f9fafb; color:#6b7280; cursor:not-allowed; box-sizing:border-box;">
+                </div>
+
                 <!-- Full Name -->
                 <div style="margin-bottom:1rem;">
                     <label for="signupName" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">
@@ -495,8 +504,23 @@
                     <label for="signupDistrict" style="display:block; font-size:0.8rem; font-weight:700; color:#822f4e; margin-bottom:0.4rem;">
                         <i class="fas fa-map-marker-alt" style="margin-right:4px; opacity:0.7;"></i> Your Place / District <span style="color:#EF4444;">*</span>
                     </label>
-                    <input type="text" id="signupDistrict" placeholder="e.g. Kozhikode, Thrissur..."
-                        style="width:100%; padding:0.85rem 1rem; border:1.5px solid #f3d2df; border-radius:12px; font-size:1rem; outline:none; background:#fff; box-sizing:border-box;">
+                    <select id="signupDistrict" style="width:100%; padding:0.85rem 1rem; border:1.5px solid #f3d2df; border-radius:12px; font-size:1rem; outline:none; background:#fff; appearance:none; cursor:pointer;">
+                        <option value="">Select your district...</option>
+                        <option value="Alappuzha">Alappuzha</option>
+                        <option value="Ernakulam">Ernakulam</option>
+                        <option value="Idukki">Idukki</option>
+                        <option value="Kannur">Kannur</option>
+                        <option value="Kasaragod">Kasaragod</option>
+                        <option value="Kollam">Kollam</option>
+                        <option value="Kottayam">Kottayam</option>
+                        <option value="Kozhikode">Kozhikode</option>
+                        <option value="Malappuram">Malappuram</option>
+                        <option value="Palakkad">Palakkad</option>
+                        <option value="Pathanamthitta">Pathanamthitta</option>
+                        <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                        <option value="Thrissur">Thrissur</option>
+                        <option value="Wayanad">Wayanad</option>
+                    </select>
                 </div>
 
                 <!-- Hidden phone field for data transfer -->
@@ -639,32 +663,36 @@
                             <!-- Nursing -->
                             <div onclick="showCollegesByCategory('Nursing')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
                                 <img src="nursing_college_category_1774427669008.png" alt="Best Nursing Colleges in India for Kerala Students - Admission Help" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Nursing Colleges in India <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">for Kerala students</span></h4>
+                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; align-items:center; text-align:center; padding:1.25rem;">
+                                    <h4 style="color:white; font-size:1.0rem; font-weight:850; margin:0; line-height:1.2; letter-spacing:-0.01em;">Top Nursing Colleges in India</h4>
+                                    <span style="color:#fecdd3; font-size:0.75rem; font-weight:700; margin-top:4px; display:block;">for Kerala students</span>
                                 </div>
                             </div>
 
                             <!-- Management -->
                             <div onclick="showCollegesByCategory('Management')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
                                 <img src="management_college_category_1774427684353.png" alt="Top Management MBA BBA Colleges in India for Kerala Students" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Management Institutions <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">for Kerala students</span></h4>
+                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; align-items:center; text-align:center; padding:1.25rem;">
+                                    <h4 style="color:white; font-size:1.0rem; font-weight:850; margin:0; line-height:1.2; letter-spacing:-0.01em;">Top Management Colleges in India</h4>
+                                    <span style="color:#fecdd3; font-size:0.75rem; font-weight:700; margin-top:4px; display:block;">for Kerala students</span>
                                 </div>
                             </div>
 
                             <!-- Engineering -->
                             <div onclick="showCollegesByCategory('Engineering')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
                                 <img src="engineering_college_category_1774427701464.png" alt="Engineering Colleges in Bangalore and Other States for Keralites" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Engineering Colleges <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">outside Kerala</span></h4>
+                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; align-items:center; text-align:center; padding:1.25rem;">
+                                    <h4 style="color:white; font-size:1.0rem; font-weight:850; margin:0; line-height:1.2; letter-spacing:-0.01em;">Top Engineering Colleges in India</h4>
+                                    <span style="color:#fecdd3; font-size:0.75rem; font-weight:700; margin-top:4px; display:block;">for Kerala students</span>
                                 </div>
                             </div>
 
                             <!-- Para Medical -->
                             <div onclick="showCollegesByCategory('Medical')" class="domain-card hover-lift" style="position:relative; height:200px; border-radius:24px; overflow:hidden; cursor:pointer;">
                                 <img src="paramedical_college_category_1774427719498.png" alt="Best Paramedical and Health Science Courses for Kerala Students" style="width:100%; height:100%; object-fit:cover; position:absolute;">
-                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; padding:1.25rem;">
-                                    <h4 style="color:white; font-size:1.1rem; font-weight:850; margin:0; line-height:1.2;">Top Paramedical Courses <br><span style="color:#fecdd3; font-size:0.8rem; font-weight:700;">in other states</span></h4>
+                                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3)); display:flex; flex-direction:column; justify-content:flex-end; align-items:center; text-align:center; padding:1.25rem;">
+                                    <h4 style="color:white; font-size:1.0rem; font-weight:850; margin:0; line-height:1.2; letter-spacing:-0.01em;">Top Paramedical Colleges in India</h4>
+                                    <span style="color:#fecdd3; font-size:0.75rem; font-weight:700; margin-top:4px; display:block;">for Kerala students</span>
                                 </div>
                             </div>
 
@@ -1533,18 +1561,11 @@
                     </div>
                 </div>
 
-                <div style="margin-bottom:.75rem;">
-                    <label
-                        style="display:block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#374151;margin-bottom:.3rem;">Email
-                        Address</label>
-                    <input id="applyEmail" type="email" placeholder="you@example.com"
-                        style="width:100%;padding:.7rem 1rem!important;border:1.5px solid #E5E7EB!important;border-radius:10px!important;font-size:.88rem;font-family:inherit;outline:none;background:#F9FAFB;"
-                        onfocus="this.style.borderColor='#E91E8C'" onblur="this.style.borderColor='#E5E7EB'" />
-                </div>
+
 
                 <div style="margin-bottom:.75rem;">
                     <label
-                        style="display:block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#374151;margin-bottom:.3rem;">District</label>
+                        style="display:block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#374151;margin-bottom:.3rem;">District *</label>
                     <input id="applyDistrict" type="text" placeholder="e.g. Ernakulam"
                         style="width:100%;padding:.7rem 1rem!important;border:1.5px solid #E5E7EB!important;border-radius:10px!important;font-size:.88rem;font-family:inherit;outline:none;background:#F9FAFB;"
                         onfocus="this.style.borderColor='#E91E8C'" onblur="this.style.borderColor='#E5E7EB'" />
@@ -1668,7 +1689,7 @@
         <ul>
             <li>Best admission portal for Kerala students in Karnataka and Tamil Nadu</li>
             <li>Direct admission help for Nursing and Engineering in Bangalore & Coimbatore</li>
-            <li>Reliable consultancy for other state colleges in Kerala</li>
+            <li>Reliable platform for other state colleges in Kerala</li>
             <li>Kerala Vidya Portal - Study in Karnataka & Tamil Nadu with confidence</li>
             <li>Admission help for students from Ernakulam, Trivandrum, Kozhikode to Bangalore, Mangalore, Chennai</li>
         </ul>

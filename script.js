@@ -313,7 +313,7 @@ onAuthStateChanged(auth, async (user) => {
         sessionStorage.setItem('kvp_session_tracked', 'true');
         const now = new Date().toISOString();
         try {
-            await updateDoc(userDocRef, {
+            await updateDoc(userRef, {
                 visitCount: increment(1),
                 lastActive: now,
                 visitHistory: arrayUnion(now)
@@ -455,8 +455,10 @@ async function verifyRegistrationOTP() {
             openHome();
             showToast("Welcome! 👋 Logged in successfully.");
         } else {
-            // NEW USER: Show Step 2 (Profile Details)
             isRegPhoneVerified = true; 
+            const displayEl = document.getElementById("signupPhoneDisplay");
+            if (displayEl) displayEl.value = userPhone.replace("+91", "");
+            
             document.getElementById("signup-step-otp").style.display = "none";
             document.getElementById("signup-step-details").style.display = "block";
             showToast("Phone verified! ✅ Complete your profile.");
@@ -531,11 +533,11 @@ function openHome() {
   if (adminPanel) adminPanel.style.display = "none";
   if (mainPage) mainPage.style.setProperty("display", "block", "important");
 
-  // Restore Home elements (HIDE colleges so it only shows in dedicated views)
-  const showIds = ["heroSection", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection"];
+  // Restore Home elements
+  const showIds = ["heroSection", "categoryGateway", "ticker-wrap", "processSection1", "workflowSection", "aboutSection", "testimonialsSection", "colleges"];
   showIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "block"; });
 
-  const hideIds = ["colleges", "courses-section", "crsResultHeader", "compare-section"];
+  const hideIds = ["courses-section", "crsResultHeader", "compare-section"];
   hideIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
 
   // Update memory so refresh doesn't jump back to others
@@ -544,14 +546,14 @@ function openHome() {
 
   const collegesSec = document.getElementById("colleges");
   if (collegesSec) {
-      collegesSec.style.display = "none";
+      collegesSec.style.display = "block";
       // Clear filters when going home
       const searchInput = document.getElementById('collegeSearchInput');
       const locInput = document.getElementById('locationSearchInput');
       const locText = document.getElementById('selectedLocationText');
       if (searchInput) searchInput.value = "";
       if (locInput) locInput.value = "";
-      if (locText) locText.textContent = "Locations";
+      if (locText) locText.textContent = "All Locations";
   }
 
   const cs = document.getElementById("courses-section");
@@ -672,6 +674,13 @@ window.verifyLoginOTP = async function() {
         const result = await window.confirmationResult.confirm(otp);
         const user = result.user;
         const userSnap = await getDoc(doc(db, "users", user.uid));
+
+        // MOBILE NOTIFICATION FOR LOGIN
+        notifyAdmin("New Student Login", {
+            Phone: user.phoneNumber,
+            Status: userSnap.exists() ? "Returning User" : "New Registration Started",
+            Device: navigator.userAgent.includes("Mobile") ? "Mobile" : "Desktop"
+        });
 
         if (!userSnap.exists()) {
             // NEW USER flow: Redirect to signup form instantly
@@ -847,23 +856,52 @@ async function syncToExternalSheet(userData) {
   }
 
   try {
-    // Send data as URL-encoded parameters (Reliable for Google Sheet doGet)
     const params = new URLSearchParams();
     for (const key in userData) {
         params.append(key, userData[key]);
     }
-    
-    // Append a unique callback to bypass CORS/Caching
     const finalUrl = `${SHEET_SYNC_URL}?${params.toString()}&callback=jsonp_callback_${Date.now()}`;
+    await fetch(finalUrl, { method: "GET", mode: "no-cors" });
+  } catch (err) { console.warn("Sheet sync failed silently:", err); }
+}
 
-    await fetch(finalUrl, {
-      method: "GET",
-      mode: "no-cors"
-    });
-    console.log("Sheet sync attempt sent successfully.");
-  } catch (err) {
-    console.warn("Sheet sync failed silently:", err);
-  }
+// ADMIN MOBILE NOTIFICATION CONFIG
+const ADMIN_NOTIFICATION_CONFIG = {
+    telegramBotToken: "8527346083:AAHs7gRmwT_BcXTRoiTBVjLwjxayZeVt8tc", 
+    telegramChatId: "8739648344",
+    enableSheetNotification: true
+};
+
+async function notifyAdmin(title, data) {
+    console.log(`[ALERT] ${title}`, data);
+    
+    // 1. Notify via existing Google Sheet Bridge
+    if (ADMIN_NOTIFICATION_CONFIG.enableSheetNotification) {
+        syncToExternalSheet({
+            TYPE: "NOTIFICATION",
+            TITLE: title,
+            TIMESTAMP: new Date().toISOString(),
+            ...data
+        });
+    }
+
+    // 2. Notify via Telegram (Direct to Mobile)
+    if (ADMIN_NOTIFICATION_CONFIG.telegramBotToken && ADMIN_NOTIFICATION_CONFIG.telegramChatId) {
+        const message = `🔔 *${title}*\n\n` + 
+                      Object.entries(data).map(([k, v]) => `*${k}:* ${v}`).join("\n");
+        const url = `https://api.telegram.org/bot${ADMIN_NOTIFICATION_CONFIG.telegramBotToken}/sendMessage`;
+        try {
+            await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: ADMIN_NOTIFICATION_CONFIG.telegramChatId,
+                    text: message,
+                    parse_mode: "Markdown"
+                })
+            });
+        } catch (e) { console.error("Telegram Notification Failed:", e); }
+    }
 }
 
 // Default colleges used only for seeding Firebase (Admin panel → Seed default colleges)
@@ -907,12 +945,17 @@ function getFilteredColleges() {
 
       matchesName = searchTerms.some(term => {
           const t = term.toLowerCase();
+          
+          // CRITICAL: When searching by category keywords, we must check for COURSE matches first
+          const coursesMatch = (c.courses || []).some(cr => (cr.n || "").toLowerCase().includes(t));
+          if (coursesMatch) return true;
+
+          // Fallback matches (only if not a specific course search)
           const nameMatch = (c.name || "").toLowerCase().includes(t);
           const aboutMatch = (c.about || "").toLowerCase().includes(t);
-          const coursesMatch = (c.courses || []).some(cr => (cr.n || "").toLowerCase().includes(t));
           const infoStr = JSON.stringify(c.info || "").toLowerCase();
           const infoMatch = infoStr.includes(t);
-          return nameMatch || aboutMatch || coursesMatch || infoMatch;
+          return nameMatch || aboutMatch || infoMatch;
       });
     }
 
@@ -1058,10 +1101,10 @@ function showCollegesByCategory(category) {
 
   const keywordMap = {
     engineering: ['b.tech', 'btech', 'b.e', 'engineering', 'cse', 'mechanical', 'electrical', 'civil', 'ece'],
-    management:  ['management', 'mba', 'bba', 'bva', 'visual communication', 'vizcom'],
-    medical:     ['mbbs', 'nursing', 'pharmacy', 'bpharma', 'b.pharm', 'medical', 'bsc nursing', 'ayurveda', 'dental', 'bpt', 'physio', 'physiotherapy'],
-    design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'visual', 'bva', 'visual arts', 'visual communication', 'vizcom'],
-    arts:        ['arts', 'ba', 'b.a', 'humanities', 'social', 'literature', 'psychology', 'sociology', 'bva', 'fine arts', 'visual communication', 'vizcom']
+    management:  ['mba', 'bba', 'pgdm', 'bms', 'business administration'],
+    medical:     ['mbbs', 'nursing', 'pharmacy', 'bpharma', 'b.pharm', 'medical', 'bsc nursing', 'ayurveda', 'dental', 'bpt', 'physiotherapy', 'paramedical', 'allied health'],
+    design:      ['design', 'b.des', 'bdes', 'architecture', 'fashion', 'interior', 'visual arts', 'bva', 'visual communication'],
+    arts:        ['arts', 'ba', 'b.a', 'humanities', 'social', 'literature', 'psychology', 'sociology', 'fine arts']
   };
 
   const keywords = keywordMap[category.toLowerCase()] || [category];
@@ -1339,7 +1382,14 @@ function renderCollegesSection() {
   if (!grid) return;
 
   if (!collegesData.length) {
-    grid.innerHTML = '<p class="colleges-empty">No colleges yet.</p>';
+    const userAuth = auth.currentUser;
+    const infoMsg = userAuth ? "No colleges accessible. Verification complete, but data access is restricted." : "Please log in to browse colleges.";
+    grid.innerHTML = `<div class="colleges-empty" style="text-align:center; padding:3.5rem 1.5rem; background:rgba(233,30,140,0.02); border-radius:24px; border:1px dashed rgba(233,30,140,0.15); margin: 1rem;">
+        <i class="fa-solid fa-lock" style="font-size:2.5rem; color:var(--pink); margin-bottom:1.2rem; opacity:0.4;"></i>
+        <h4 style="font-weight:850; color:var(--dark); margin-bottom:0.6rem;">${infoMsg}</h4>
+        <p style="font-size:0.85rem; color:var(--gray); max-width:320px; margin:0 auto 1.5rem; line-height:1.5;">This usually happens if your Firebase Security Rules are set to Admin-only.</p>
+        <button onclick="loadColleges()" style="background:var(--pink); color:white; border:none; padding:0.75rem 1.8rem; border-radius:12px; font-weight:800; font-size:0.9rem; cursor:pointer; box-shadow:0 8px 20px rgba(233,30,140,0.2);">Retry Connection</button>
+    </div>`;
     return;
   }
   let list = getFilteredColleges();
@@ -2848,14 +2898,25 @@ function openApplyModal(collegeName, courseName, collegeId) {
   // Pre-fill from logged-in user
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+    const nameEl = document.getElementById("applyName");
+    const phoneEl = document.getElementById("applyPhone");
+    
+    // Always start as editable
+    if (nameEl) { nameEl.readOnly = false; nameEl.style.background = "#F9FAFB"; }
+    if (phoneEl) { phoneEl.readOnly = false; phoneEl.style.background = "#F9FAFB"; }
+
     if (raw) {
       const u = JSON.parse(raw);
-      const nameEl = document.getElementById("applyName");
-      const emailEl = document.getElementById("applyEmail");
-      const phoneEl = document.getElementById("applyPhone");
-      if (nameEl && u.displayName) nameEl.value = u.displayName;
-      if (emailEl && u.email) emailEl.value = u.email;
-      if (phoneEl && u.phone) phoneEl.value = u.phone;
+      if (nameEl && u.displayName) {
+          nameEl.value = u.displayName;
+          nameEl.readOnly = true;
+          nameEl.style.background = "#F3F4F6"; // Visual cue for non-editable
+      }
+      if (phoneEl && u.phone) {
+          phoneEl.value = u.phone;
+          phoneEl.readOnly = true;
+          phoneEl.style.background = "#F3F4F6"; // Visual cue for non-editable
+      }
     }
   } catch (_) { }
 
@@ -2883,26 +2944,27 @@ document.getElementById("applyModal").addEventListener("click", function (e) {
 });
 
 async function submitApplication() {
-  const name = document.getElementById("applyName").value.trim();
-  const phone = document.getElementById("applyPhone").value.trim();
-  const email = document.getElementById("applyEmail").value.trim();
+  const getV = (id) => (document.getElementById(id) && document.getElementById(id).value.trim()) || "";
+  
+  const name = getV("applyName");
+  const phone = getV("applyPhone");
+  const district = getV("applyDistrict");
+  const tenth = getV("applyTenth");
+  const twelfth = getV("applyTwelfth");
   const errEl = document.getElementById("applyError");
 
-  if (!name || !phone) {
-    errEl.textContent = "Please fill in Your Name and Phone Number.";
+  if (!name || !phone || !district || !tenth) {
+    errEl.textContent = "Please fill in all mandatory fields (*).";
     errEl.style.display = "";
     return;
   }
 
-  const getV = (id) => (document.getElementById(id) && document.getElementById(id).value.trim()) || "";
-
   const applicationData = {
     name,
     phone,
-    email,
-    district: getV("applyDistrict"),
-    tenth: getV("applyTenth"),
-    twelfth: getV("applyTwelfth"),
+    district,
+    tenth,
+    twelfth,
     collegeId: currentApplyData.collegeId || "",
     collegeName: currentApplyData.collegeName || "",
     courseName: currentApplyData.courseName || "",
@@ -2918,6 +2980,15 @@ async function submitApplication() {
 
   try {
     await addDoc(collection(db, "applications"), applicationData);
+
+    // MOBILE NOTIFICATION FOR APPLICATION
+    notifyAdmin("New College Application", {
+        Name: applicationData.name,
+        Phone: applicationData.phone,
+        College: applicationData.collegeName,
+        Course: applicationData.courseName,
+        Applied_At: applicationData.appliedAt
+    });
 
     // Clear form
     ["applyName", "applyPhone", "applyEmail", "applyDistrict", "applyTenth", "applyTwelfth"].forEach(id => {
@@ -3033,3 +3104,5 @@ window.addEventListener('load', () => {
     }
 });
 
+// INITIAL LOAD FOR ALL USERS (GUESTS & LOGGED IN)
+if (typeof loadColleges === "function") loadColleges();
