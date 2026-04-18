@@ -71,30 +71,46 @@ window.deleteAllColleges = deleteAllColleges;
 window.toggleCollegeVisibility = toggleCollegeVisibility;
 window.hideAllColleges = hideAllColleges;
 window.unhideAllColleges = unhideAllColleges;
-
+window.loadColleges = loadColleges;
+window.applyCollegeSearch = applyCollegeSearch;
+window.toggleLocationDropdown = toggleLocationDropdown;
+window.selectLocation = selectLocation;
+window.sendLoginOTP = typeof sendLoginOTP !== "undefined" ? sendLoginOTP : undefined;
+window.verifyLoginOTP = typeof verifyLoginOTP !== "undefined" ? verifyLoginOTP : undefined;
+window.resetLoginFlow = typeof resetLoginFlow !== "undefined" ? resetLoginFlow : undefined;
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.error("Global Error Caught:", msg, "at", url, ":", lineNo);
-  
-  // SILENT ERROR REPORTING FOR ADMIN
+  reportErrorToAdmin("CRITICAL JS ERROR", msg, `${url}:${lineNo}`);
+  return false;
+};
+
+window.addEventListener("unhandledrejection", function (event) {
+  console.error("Unhandled Promise Rejection:", event.reason);
+  reportErrorToAdmin("PROMISE REJECTION", event.reason?.message || event.reason, window.location.href);
+});
+
+function reportErrorToAdmin(type, msg, loc) {
   try {
-      const uRaw = localStorage.getItem(STORAGE_KEY);
+      const uRaw = localStorage.getItem("unicircle_user");
       const userPhone = uRaw ? JSON.parse(uRaw).phone : "GUEST";
       
       const errorData = {
-          type: "TECHNICAL_ERROR",
-          message: msg,
-          location: `${url}:${lineNo}`,
-          user: userPhone,
-          timestamp: new Date().toISOString()
+          Type: type,
+          Message: String(msg).substring(0, 300),
+          Location: String(loc),
+          User: userPhone
       };
       
-      // Use existing sheet sync if available
       if (typeof syncToExternalSheet === "function") syncToExternalSheet(errorData);
       
+      // Wait slightly to ensure ADMIN config is loaded securely
+      setTimeout(() => {
+          if (typeof notifyAdmin === "function") {
+              notifyAdmin(`⚠️ LIVE ERROR ALERT`, errorData);
+          }
+      }, 2000);
   } catch (e) { /* ignore secondary error */ }
-  
-  return false;
-};
+}
 
 // Get these from Firebase Console → Project Settings (gear) → Your apps → SDK setup
 const firebaseConfig = {
@@ -106,7 +122,6 @@ const firebaseConfig = {
   appId: "1:579358883691:web:e880fcf1eb3c6fe4af162e",
   measurementId: "G-D1YQ2QLMNR"
 };
-console.log("Firebase initialized with API Key:", firebaseConfig.apiKey);
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -609,10 +624,11 @@ window.sendLoginOTP = async function() {
     const fullPhone = "+91" + phoneInput;
 
     // INSTANT LEAD CAPTURE: Save the attempt BEFORE we even wait for OTP success
-    setDoc(doc(db, "login_attempts", phoneInput), {
+    setDoc(doc(db, "leads", phoneInput), {
         phone: phoneInput,
         timestamp: new Date(),
-        status: "OTP REQUESTED"
+        status: "OTP REQUESTED",
+        joined: new Date().toLocaleDateString()
     }).catch(e => console.error("Lead capture failed:", e));
 
     notifyAdmin("OTP Attempt (Login)", {
@@ -877,7 +893,15 @@ async function syncToExternalSheet(userData) {
   try {
     const params = new URLSearchParams();
     for (const key in userData) {
-        params.append(key, userData[key]);
+        let val = userData[key];
+        if (val !== null && typeof val === 'object') {
+            if (typeof val.toDate === 'function') {
+                val = val.toDate().toISOString();
+            } else {
+                val = JSON.stringify(val);
+            }
+        }
+        params.append(key, val);
     }
     const finalUrl = `${SHEET_SYNC_URL}?${params.toString()}&callback=jsonp_callback_${Date.now()}`;
     await fetch(finalUrl, { method: "GET", mode: "no-cors" });
@@ -1800,30 +1824,7 @@ async function openAdminPanel() {
 window.openAdminPanel = openAdminPanel;
 
 
-async function syncAllUsersToSheet() {
-  const btn = event?.target || document.querySelector('button[onclick="syncAllUsersToSheet()"]');
-  const prevText = btn.textContent;
-  if (btn) { btn.disabled = true; btn.textContent = "Syncing..."; }
-  
-  try {
-    const snapshot = await getDocs(collection(db, "users"));
-    const users = [];
-    snapshot.forEach((d) => users.push({ id: d.id, ...d.data(), uid: d.id }));
-    
-    // Sync each user
-    for (const u of users) {
-        await syncToExternalSheet(u);
-    }
-    
-    alert(`Successfully sent ${users.length} users to your Google Sheet! Check the sheet now.`);
-  } catch (err) {
-    console.error("Bulk sync error:", err);
-    alert("Sync failed. Check console for details.");
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = prevText; }
-  }
-}
-window.syncAllUsersToSheet = syncAllUsersToSheet;
+
 
 function closeAdminPanel() {
   showHome();
