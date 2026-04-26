@@ -1014,6 +1014,11 @@ async function loadColleges() {
     // Sort by priority (lower number = higher importance)
     collegesData.sort((a, b) => (a.priority || 999) - (b.priority || 999));
 
+    // Save to offline cache
+    try {
+        localStorage.setItem('kvp_offline_colleges', JSON.stringify(collegesData));
+    } catch(e) {}
+
     const countEl = document.getElementById("collegesCountText");
     if (countEl) countEl.textContent = collegesData.length > 0 ? collegesData.length + "+" : "0";
     renderCollegesSection();
@@ -1024,6 +1029,20 @@ async function loadColleges() {
     } else {
         console.error("Load colleges error:", err);
     }
+    
+    // Attempt offline fallback
+    try {
+        const cached = localStorage.getItem('kvp_offline_colleges');
+        if (cached) {
+            collegesData = JSON.parse(cached);
+            if (window.showToast) window.showToast("Offline Mode: Showing cached colleges 📶");
+            const countEl = document.getElementById("collegesCountText");
+            if (countEl) countEl.textContent = collegesData.length > 0 ? collegesData.length + "+" : "0";
+            renderCollegesSection();
+            return collegesData;
+        }
+    } catch(e) {}
+
     collegesData = [];
     currentDisplayList = [];
     renderCollegesSection();
