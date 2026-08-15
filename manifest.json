@@ -1,27 +1,28 @@
 {
-  "name": "Kerala Vidya Portal",
-  "short_name": "KVP",
+  "name": "BVerified",
+  "short_name": "BVerified",
   "description": "India's #1 Admission portal with job Guarantee",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#fffafb",
-  "theme_color": "#c7285a",
+  "background_color": "#F0F7E8",
+  "theme_color": "#3E8B1A",
   "icons": [
     {
-      "src": "kerala-logo.png",
+      "src": "bverified-logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "kerala-logo.png",
+      "src": "bverified-logo.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "kerala-logo.png",
+      "src": "bverified-logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     }
   ]
 }
+

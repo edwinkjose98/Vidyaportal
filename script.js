@@ -6,7 +6,7 @@ window.showToast = function(msg) {
         t.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;z-index:10000;display:none;";
         document.body.appendChild(t);
     }
-    t.innerHTML = '<span style="color:#e91e63">✦</span> ' + msg;
+    t.innerHTML = '<span style="color:#0284c7">✦</span> ' + msg;
     t.style.display = 'block';
     setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
@@ -268,9 +268,9 @@ function updateAuthUI(loggedIn) {
 function logout() {
   signOut(auth).then(() => {
     clearUserFromStorage();
-    localStorage.removeItem("kvp_last_view");
-    localStorage.removeItem("kvp_last_college");
-    sessionStorage.removeItem("kvp_session_tracked");
+    localStorage.removeItem("bvf_last_view");
+    localStorage.removeItem("bvf_last_college");
+    sessionStorage.removeItem("bvf_session_tracked");
     updateAuthUI(false);
     const m = document.getElementById("mobMenu");
     if (m && m.classList.contains("open")) toggleMenu();
@@ -279,8 +279,8 @@ function logout() {
   }).catch((err) => {
     console.error("Logout error:", err);
     clearUserFromStorage();
-    localStorage.removeItem("kvp_last_view");
-    localStorage.removeItem("kvp_last_college");
+    localStorage.removeItem("bvf_last_view");
+    localStorage.removeItem("bvf_last_college");
     updateAuthUI(false);
     window.location.reload();
   });
@@ -335,8 +335,8 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     // --- VISIT TRACKING ---
-    if (!sessionStorage.getItem('kvp_session_tracked')) {
-        sessionStorage.setItem('kvp_session_tracked', 'true');
+    if (!sessionStorage.getItem('bvf_session_tracked')) {
+        sessionStorage.setItem('bvf_session_tracked', 'true');
         const now = new Date().toISOString();
         try {
             await updateDoc(userRef, {
@@ -579,7 +579,7 @@ function openHome() {
   window.scrollTo({ top: 0, behavior: 'instant' });
 
   // Update memory so refresh doesn't jump back to others
-  localStorage.setItem("kvp_last_view", "home");
+  localStorage.setItem("bvf_last_view", "home");
   if (typeof syncNav === "function") syncNav("home");
 
   const collegesSec = document.getElementById("colleges");
@@ -603,8 +603,8 @@ function openHome() {
   renderCollegesSection();
 
   if (typeof syncNav === "function") syncNav("home");
-  localStorage.setItem("kvp_last_view", "home");
-  localStorage.removeItem("kvp_last_college");
+  localStorage.setItem("bvf_last_view", "home");
+  localStorage.removeItem("bvf_last_college");
 
 }
 
@@ -724,38 +724,58 @@ window.verifyLoginOTP = async function() {
     const btn = document.getElementById('loginVerifyBtn');
 
     // ── DEMO BYPASS: verify locally without Firebase ──
-    if (window._demoPhone && DEMO_BYPASS[window._demoPhone]) {
-        const expected = DEMO_BYPASS[window._demoPhone];
-        // Accept if first N digits match the expected code
-        if (!otp.startsWith(expected)) {
-            if (errorEl) { errorEl.textContent = 'Incorrect OTP code. ❌'; errorEl.style.display = 'block'; }
+    const currentPhone = window._demoPhone || (document.getElementById('loginPhoneInput') ? document.getElementById('loginPhoneInput').value.trim() : '');
+    if (currentPhone && DEMO_BYPASS[currentPhone]) {
+        const expected = DEMO_BYPASS[currentPhone];
+        if (otp !== expected && !otp.startsWith(expected)) {
+            if (errorEl) { 
+                errorEl.textContent = 'Incorrect OTP code. ❌'; 
+                errorEl.style.display = 'block'; 
+            }
+            if (window.showToast) window.showToast('Incorrect OTP code. ❌');
             return;
         }
-        // Load user profile from Firestore by phone
+
         btn.disabled = true;
         btn.textContent = 'Verifying...';
-        try {
-            const snap = await getDocs(query(collection(db, 'users'), where('phone', '==', window._demoPhone)));
-            if (!snap.empty) {
-                const profile = snap.docs[0].data();
-                // Build a minimal user-like object for saveUserToStorage
-                saveUserToStorage({ uid: profile.uid || snap.docs[0].id, displayName: profile.displayName, email: profile.email || '', phoneNumber: '+91' + window._demoPhone }, profile);
-                updateAuthUI(true);
-                openHome();
-                window._demoPhone = null;
-                if (window.showToast) window.showToast('Logged in successfully! 🎉');
-            } else {
-                // Demo number not registered yet — open signup
-                openSignUp(true, window._demoPhone);
-                window._demoPhone = null;
-            }
-        } catch(e) {
-            console.error('Demo login Firestore error:', e);
-            if (errorEl) { errorEl.textContent = 'Login failed. Please try again.'; errorEl.style.display = 'block'; }
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Verify & Continue <i class="fas fa-check-circle" style="margin-left:6px;"></i>';
-        }
+
+        // Prepare verified demo user profile
+        const profile = {
+            uid: "demo_" + currentPhone,
+            displayName: "Verified Student",
+            phone: currentPhone,
+            email: "student@bverifiedportal.in",
+            preference: "Nursing",
+            district: "Ernakulam"
+        };
+
+        // Try reading real user data in background if exists (non-blocking)
+        getDocs(query(collection(db, 'users'), where('phone', '==', currentPhone)))
+            .then(snap => {
+                if (!snap.empty) {
+                    const existingData = snap.docs[0].data();
+                    saveUserToStorage({ uid: snap.docs[0].id, displayName: existingData.displayName || profile.displayName, phone: currentPhone }, existingData);
+                    updateAuthUI(true);
+                }
+            })
+            .catch(() => {});
+
+        // Save session locally and launch portal immediately
+        saveUserToStorage({
+            uid: profile.uid,
+            displayName: profile.displayName,
+            email: profile.email,
+            phoneNumber: '+91' + currentPhone
+        }, profile);
+
+        window._demoPhone = null;
+        updateAuthUI(true);
+        openHome();
+
+        if (window.showToast) window.showToast('Logged in successfully! 🎉');
+        
+        btn.disabled = false;
+        btn.innerHTML = 'Verify & Continue <i class="fas fa-check-circle" style="margin-left:6px;"></i>';
         return;
     }
 
@@ -835,7 +855,7 @@ window.switchAuthTab = function(tab) {
     const tabEmail    = document.getElementById('authTabEmail');
     const tabPhone    = document.getElementById('authTabPhone');
 
-    const activeStyle   = "flex:1;padding:0.6rem 0.5rem;border:none;border-radius:10px;font-size:0.85rem;font-weight:800;cursor:pointer;background:#fff;color:#c7285a;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-family:inherit;transition:0.2s;";
+    const activeStyle   = "flex:1;padding:0.6rem 0.5rem;border:none;border-radius:10px;font-size:0.85rem;font-weight:800;cursor:pointer;background:#fff;color:#0284c7;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-family:inherit;transition:0.2s;";
     const inactiveStyle = "flex:1;padding:0.6rem 0.5rem;border:none;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;background:transparent;color:#8e7381;font-family:inherit;transition:0.2s;";
 
     if (tab === 'email') {
@@ -1008,7 +1028,7 @@ window.registerWithEmail = async function() {
         saveUserToStorage(user, profile);
         updateAuthUI(true);
         openHome();
-        if (window.showToast) window.showToast('Welcome to Kerala Vidya Portal! 🎉');
+        if (window.showToast) window.showToast('Welcome to BVerified! 🎉');
 
     } catch (err) {
         console.error('Registration Error:', err);
@@ -1372,7 +1392,7 @@ async function loadColleges() {
 
     // Save to offline cache
     try {
-        localStorage.setItem('kvp_offline_colleges', JSON.stringify(collegesData));
+        localStorage.setItem('bvf_offline_colleges', JSON.stringify(collegesData));
     } catch(e) {}
 
     const countEl = document.getElementById("collegesCountText");
@@ -1388,7 +1408,7 @@ async function loadColleges() {
     
     // Attempt offline fallback
     try {
-        const cached = localStorage.getItem('kvp_offline_colleges');
+        const cached = localStorage.getItem('bvf_offline_colleges');
         if (cached) {
             collegesData = JSON.parse(cached);
             if (window.showToast) window.showToast("Offline Mode: Showing cached colleges 📶");
@@ -1492,8 +1512,8 @@ function showAllCollegesView() {
   }
 
   syncNav("colleges");
-  localStorage.setItem("kvp_last_view", "colleges");
-  localStorage.removeItem("kvp_last_college");
+  localStorage.setItem("bvf_last_view", "colleges");
+  localStorage.removeItem("bvf_last_college");
 
   renderCollegesSection();
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1566,8 +1586,8 @@ function showCompareView() {
   }
 
   syncNav("compare");
-  localStorage.setItem("kvp_last_view", "compare");
-  localStorage.removeItem("kvp_last_college");
+  localStorage.setItem("bvf_last_view", "compare");
+  localStorage.removeItem("bvf_last_college");
 
   populateCompareDropdowns();
   if (window.refreshAnimations) window.refreshAnimations();
@@ -2050,7 +2070,7 @@ function openCollege(idx, specificList) {
   const sc = document.querySelector('.search-container');
   if (sc) sc.style.display = 'none';
   window.scrollTo(0, 0);
-  localStorage.removeItem("kvp_last_category");
+  localStorage.removeItem("bvf_last_category");
 }
 window.openCollege = openCollege;
 
@@ -2092,8 +2112,8 @@ function openCollegeByName(name) {
   if (idx !== -1) {
     openCollege(idx, collegesData);
     if (typeof logUserActivity === 'function') logUserActivity(`Viewed College: ${name}`);
-    localStorage.setItem("kvp_last_college", name);
-    localStorage.removeItem("kvp_last_category");
+    localStorage.setItem("bvf_last_college", name);
+    localStorage.removeItem("bvf_last_category");
   }
 }
 window.openCollegeByName = openCollegeByName;
@@ -2194,7 +2214,7 @@ async function openAdminPanel() {
   await loadAdminUsers();
   
   if (typeof syncNav === "function") syncNav("admin");
-  localStorage.setItem("kvp_last_view", "admin");
+  localStorage.setItem("bvf_last_view", "admin");
 }
 window.openAdminPanel = openAdminPanel;
 
@@ -2325,7 +2345,7 @@ async function loadAdminLeads() {
             return `
                 <tr style="border-bottom: 1px solid #F3F4F6;">
                     <td style="padding:1rem; font-weight:700; color:#111827;">${escapeHtml(d.name || "Unknown")}</td>
-                    <td style="padding:1rem; color:#4B5563;">${escapeHtml(d.phone || "")}${(d.status==="OTP SENT" ? ' <span style="font-size:0.7rem; color:#e91e63;">(In Progress)</span>':'')}</td>
+                    <td style="padding:1rem; color:#4B5563;">${escapeHtml(d.phone || "")}${(d.status==="OTP SENT" ? ' <span style="font-size:0.7rem; color:#0284c7;">(In Progress)</span>':'')}</td>
                     <td style="padding:1rem; color:#6B7280; font-size:0.85rem;">${escapeHtml(d.joined || "")}</td>
                     <td style="padding:1rem;"><span style="background:#FFF0F8; color:#D81B60; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">${escapeHtml(d.status || "SENT")}</span></td>
                     <td style="padding:1rem;">
@@ -2733,7 +2753,7 @@ function showAllCoursesView(e) {
   }
 
   syncNav("colleges"); // Match the data-nav="colleges" in index.html
-  localStorage.setItem("kvp_last_view", "colleges");
+  localStorage.setItem("bvf_last_view", "colleges");
 
   renderCourseCategories();
   if (cs) cs.scrollIntoView({ behavior: "smooth" });
@@ -2748,7 +2768,7 @@ const CAT_COLORS = [
   { bg: "#EFF6FF", color: "#3B82F6" },
   { bg: "#FFFBEB", color: "#F59E0B" },
   { bg: "#FEF2F2", color: "#EF4444" },
-  { bg: "#FFF0F8", color: "#E91E8C" },
+  { bg: "#FFF0F8", color: "#0284c7" },
 ];
 
 function renderCourseCategories() {
@@ -3056,7 +3076,7 @@ function showHome() {
   pages.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
   
   if (typeof syncNav === 'function') syncNav("home");
-  localStorage.setItem("kvp_last_view", "home");
+  localStorage.setItem("bvf_last_view", "home");
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.showHome = showHome;
@@ -3481,31 +3501,33 @@ window.addEventListener('load', () => {
     // 3. Splash Screen Logic
     const splash = document.getElementById('splash-screen');
     const typingEl = document.getElementById('splash-typing');
-    const missionText = "ഒരു ദൗത്യം, ഒരു ലക്ഷ്യം — നമ്മുടെ കുട്ടികൾക്കായി സുരക്ഷിതമായ വിദ്യാഭ്യാസം.";
+    const missionText = "Be Verified \u2014 All About Your Career & Direct Admissions.";
 
     if (splash) {
-        // Start 0.8s after load
+        // Start typing after splash entrance settles (0.7s)
         setTimeout(() => {
             if (typingEl) {
                 let i = 0;
                 typingEl.textContent = "";
-                const speed = 25; // Faster typing
+                const speed = 45; // Smooth, easily readable typing speed
                 const interval = setInterval(() => {
                     typingEl.textContent += missionText[i];
                     i++;
                     if (i === missionText.length) {
                         clearInterval(interval);
-                        // Exit Splash faster
+                        // Hold completed text comfortably for 1.5s so user can read everything
                         setTimeout(() => {
                             splash.classList.add('vanish');
-                            setTimeout(() => splash.remove(), 600);
-                        }, 600);
+                            setTimeout(() => splash.remove(), 800);
+                        }, 1500);
                     }
                 }, speed);
             }
-        }, 800);
+        }, 700);
     }
 });
 
 // INITIAL LOAD FOR ALL USERS (GUESTS & LOGGED IN)
 if (typeof loadColleges === "function") loadColleges();
+
+
