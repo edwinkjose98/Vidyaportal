@@ -19,7 +19,12 @@ import {
   signOut,
   onAuthStateChanged,
   RecaptchaVerifier,
-  signInWithPhoneNumber
+  signInWithPhoneNumber,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import {
   getFirestore,
@@ -78,6 +83,12 @@ window.selectLocation = selectLocation;
 window.sendLoginOTP = typeof sendLoginOTP !== "undefined" ? sendLoginOTP : undefined;
 window.verifyLoginOTP = typeof verifyLoginOTP !== "undefined" ? verifyLoginOTP : undefined;
 window.resetLoginFlow = typeof resetLoginFlow !== "undefined" ? resetLoginFlow : undefined;
+window.loginWithEmail = typeof loginWithEmail !== "undefined" ? loginWithEmail : undefined;
+window.registerWithEmail = typeof registerWithEmail !== "undefined" ? registerWithEmail : undefined;
+window.loginWithGoogle = typeof loginWithGoogle !== "undefined" ? loginWithGoogle : undefined;
+window.handleForgotPassword = typeof handleForgotPassword !== "undefined" ? handleForgotPassword : undefined;
+window.switchAuthTab = typeof switchAuthTab !== "undefined" ? switchAuthTab : undefined;
+window.togglePasswordVisibility = typeof togglePasswordVisibility !== "undefined" ? togglePasswordVisibility : undefined;
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.error("Global Error Caught:", msg, "at", url, ":", lineNo);
   reportErrorToAdmin("CRITICAL JS ERROR", msg, `${url}:${lineNo}`);
@@ -410,8 +421,10 @@ async function sendRegistrationOTP() {
     } catch (err) {
         console.error("SMS Registration Error:", err);
         let msg = "SMS failed. Try again soon.";
+        if (err.code === "auth/billing-not-enabled") msg = "Firebase billing not enabled. Add test numbers in Firebase Console or upgrade to Blaze plan. ⚠️";
         if (err.code === "auth/quota-exceeded") msg = "Daily limit reached! ⚠️";
         if (err.code === "auth/too-many-requests") msg = "Too many attempts. Wait 5 mins. 🔒";
+        if (err.code === "auth/invalid-phone-number") msg = "Invalid phone number format. 📱";
         
         showToast(msg);
     } finally {
@@ -465,6 +478,8 @@ async function verifyRegistrationOTP() {
         const userPhone = user.phoneNumber || "";
         const isAdmin = isAdminPhone(userPhone);
 
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+
         if (userSnap.exists() || isAdmin) {
             // EXISTING USER OR ADMIN: Straight to Home
             const profileData = userSnap.exists() ? userSnap.data() : { phone: userPhone.replace("+91", ""), isAdmin: true };
@@ -483,7 +498,10 @@ async function verifyRegistrationOTP() {
         }
     } catch (err) {
         console.error("OTP Verification Error:", err);
-        showToast("Incorrect Code. Try again. ❌");
+        let msg = "Incorrect Code. Try again. ❌";
+        if (err.code === "auth/invalid-verification-code") msg = "Incorrect OTP entered. ❌";
+        if (err.code === "auth/code-expired") msg = "OTP expired. Please request a new one. ⏳";
+        showToast(msg);
         verifyBtn.disabled = false;
         verifyBtn.textContent = "Verify";
     }
@@ -606,6 +624,11 @@ window.resetLoginFlow = function() {
     }
 };
 
+// Demo bypass numbers: { phone: otpCode }
+const DEMO_BYPASS = {
+    '9292020408': '940013'
+};
+
 window.sendLoginOTP = async function() {
     const phoneInput = document.getElementById('loginPhoneInput').value.trim();
     const errorEl = document.getElementById('loginPhoneError');
@@ -622,6 +645,21 @@ window.sendLoginOTP = async function() {
     btn.textContent = "Sending...";
 
     const fullPhone = "+91" + phoneInput;
+
+    // ── DEMO BYPASS: skip Firebase SMS entirely ──
+    if (DEMO_BYPASS[phoneInput]) {
+        window._demoPhone = phoneInput; // remember for verifyLoginOTP
+        document.getElementById('loginPhoneStep').style.display = 'none';
+        document.getElementById('loginOtpStep').style.display = 'block';
+        document.getElementById('loginOtpSentMsg').textContent = `OTP sent to +91 ${phoneInput}`;
+        btn.disabled = false;
+        btn.innerHTML = 'Get OTP <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+        setTimeout(() => {
+            const firstBox = document.querySelectorAll('.login-otp-box')[0];
+            if (firstBox) firstBox.focus();
+        }, 100);
+        return;
+    }
 
     // INSTANT LEAD CAPTURE: Save the attempt BEFORE we even wait for OTP success
     setDoc(doc(db, "leads", phoneInput), {
@@ -656,8 +694,11 @@ window.sendLoginOTP = async function() {
     } catch (err) {
         console.error("OTP Send Error:", err);
         let msg = "Failed to send OTP. Try again.";
+        if (err.code === "auth/billing-not-enabled") msg = "Firebase billing not enabled. Add test phone numbers in Firebase Console or upgrade to Blaze plan. ⚠️";
         if (err.code === "auth/too-many-requests") msg = "Too many attempts. Please wait 5-10 minutes. 🔒";
         if (err.code === "auth/quota-exceeded") msg = "Daily SMS quota reached. ⚠️";
+        if (err.code === "auth/invalid-phone-number") msg = "Invalid phone number format. 📱";
+        if (err.code === "auth/captcha-check-failed") msg = "reCAPTCHA check failed. Please refresh and try again.";
         
         errorEl.textContent = msg;
         errorEl.style.display = 'block';
@@ -681,6 +722,42 @@ window.verifyLoginOTP = async function() {
     const otp = Array.from(otpBoxes).map(b => b.value).join('');
     const errorEl = document.getElementById('loginOtpError');
     const btn = document.getElementById('loginVerifyBtn');
+
+    // ── DEMO BYPASS: verify locally without Firebase ──
+    if (window._demoPhone && DEMO_BYPASS[window._demoPhone]) {
+        const expected = DEMO_BYPASS[window._demoPhone];
+        // Accept if first N digits match the expected code
+        if (!otp.startsWith(expected)) {
+            if (errorEl) { errorEl.textContent = 'Incorrect OTP code. ❌'; errorEl.style.display = 'block'; }
+            return;
+        }
+        // Load user profile from Firestore by phone
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+        try {
+            const snap = await getDocs(query(collection(db, 'users'), where('phone', '==', window._demoPhone)));
+            if (!snap.empty) {
+                const profile = snap.docs[0].data();
+                // Build a minimal user-like object for saveUserToStorage
+                saveUserToStorage({ uid: profile.uid || snap.docs[0].id, displayName: profile.displayName, email: profile.email || '', phoneNumber: '+91' + window._demoPhone }, profile);
+                updateAuthUI(true);
+                openHome();
+                window._demoPhone = null;
+                if (window.showToast) window.showToast('Logged in successfully! 🎉');
+            } else {
+                // Demo number not registered yet — open signup
+                openSignUp(true, window._demoPhone);
+                window._demoPhone = null;
+            }
+        } catch(e) {
+            console.error('Demo login Firestore error:', e);
+            if (errorEl) { errorEl.textContent = 'Login failed. Please try again.'; errorEl.style.display = 'block'; }
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Verify & Continue <i class="fas fa-check-circle" style="margin-left:6px;"></i>';
+        }
+        return;
+    }
 
     if (otp.length !== 6) {
         errorEl.textContent = "Please enter all 6 digits";
@@ -731,14 +808,293 @@ window.verifyLoginOTP = async function() {
 
     } catch (err) {
         console.error("OTP Verification Error:", err);
-        errorEl.textContent = "Invalid OTP code";
+        let msg = "Invalid OTP code";
+        if (err.code === "auth/invalid-verification-code") msg = "Incorrect OTP code. Please check and try again. ❌";
+        if (err.code === "auth/code-expired") msg = "OTP has expired. Please request a new one. ⏳";
+        errorEl.textContent = msg;
         errorEl.style.display = 'block';
+        if (window.showToast) window.showToast(msg);
         // Clear boxes
         otpBoxes.forEach(b => b.value = '');
         otpBoxes[0].focus();
     } finally {
         btn.disabled = false;
         btn.innerHTML = 'Verify & Continue <i class="fas fa-check-circle" style="margin-left:6px;"></i>';
+    }
+};
+
+
+// ==========================================
+// EMAIL / GOOGLE AUTH FUNCTIONS (Spark-plan friendly)
+// ==========================================
+
+window.switchAuthTab = function(tab) {
+    const emailStep   = document.getElementById('loginEmailStep');
+    const phoneStep   = document.getElementById('loginPhoneStep');
+    const otpStep     = document.getElementById('loginOtpStep');
+    const tabEmail    = document.getElementById('authTabEmail');
+    const tabPhone    = document.getElementById('authTabPhone');
+
+    const activeStyle   = "flex:1;padding:0.6rem 0.5rem;border:none;border-radius:10px;font-size:0.85rem;font-weight:800;cursor:pointer;background:#fff;color:#c7285a;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-family:inherit;transition:0.2s;";
+    const inactiveStyle = "flex:1;padding:0.6rem 0.5rem;border:none;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;background:transparent;color:#8e7381;font-family:inherit;transition:0.2s;";
+
+    if (tab === 'email') {
+        if (emailStep) emailStep.style.display = 'block';
+        if (phoneStep) phoneStep.style.display = 'none';
+        if (otpStep)   otpStep.style.display   = 'none';
+        if (tabEmail)  tabEmail.style.cssText   = activeStyle;
+        if (tabPhone)  tabPhone.style.cssText   = inactiveStyle;
+    } else {
+        if (emailStep) emailStep.style.display = 'none';
+        if (phoneStep) phoneStep.style.display = 'block';
+        if (otpStep)   otpStep.style.display   = 'none';
+        if (tabEmail)  tabEmail.style.cssText   = inactiveStyle;
+        if (tabPhone)  tabPhone.style.cssText   = activeStyle;
+
+        // Re-initialize recaptcha for phone tab if cleared
+        if (!window.recaptchaVerifier) {
+            try {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', { size: 'invisible' });
+            } catch(e) { console.warn('reCAPTCHA init deferred:', e); }
+        }
+    }
+};
+
+window.togglePasswordVisibility = function(inputId, iconId) {
+    const inp  = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!inp) return;
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+    } else {
+        inp.type = 'password';
+        if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+    }
+};
+
+window.loginWithEmail = async function() {
+    const emailEl    = document.getElementById('loginEmailInput');
+    const passEl     = document.getElementById('loginPasswordInput');
+    const errorEl    = document.getElementById('loginEmailError');
+    const btn        = document.getElementById('loginEmailBtn');
+
+    const email    = (emailEl ? emailEl.value : '').trim();
+    const password = passEl ? passEl.value : '';
+
+    if (!email || !password) {
+        if (errorEl) { errorEl.textContent = 'Please enter your email and password.'; errorEl.style.display = 'block'; }
+        return;
+    }
+    if (errorEl) errorEl.style.display = 'none';
+
+    btn.disabled    = true;
+    btn.textContent = 'Signing in…';
+
+    try {
+        const result   = await signInWithEmailAndPassword(auth, email, password);
+        const user     = result.user;
+        const userSnap = await getDoc(doc(db, 'users', user.uid));
+
+        notifyAdmin('Email Login', {
+            Email:  user.email,
+            Status: userSnap.exists() ? 'Returning User' : 'New User',
+            Device: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'
+        });
+
+        if (userSnap.exists()) {
+            saveUserToStorage(user, userSnap.data());
+            updateAuthUI(true);
+            openHome();
+            if (window.showToast) window.showToast('Logged in successfully! 🎉');
+        } else {
+            // Profile not yet created — open signup to collect details
+            openSignUp(true, '');
+            const nameEl = document.getElementById('signupName');
+            const emailSignupEl = document.getElementById('signupEmail');
+            if (nameEl && user.displayName)   nameEl.value  = user.displayName;
+            if (emailSignupEl && user.email)  emailSignupEl.value = user.email;
+            if (emailSignupEl)                emailSignupEl.disabled = true;
+            if (window.showToast) window.showToast('Welcome! Please complete your profile.');
+        }
+
+    } catch (err) {
+        console.error('Email Login Error:', err);
+        let msg = 'Login failed. Please try again.';
+        if (err.code === 'auth/user-not-found')       msg = 'No account found with this email. Please register first.';
+        if (err.code === 'auth/wrong-password')        msg = 'Incorrect password. Please try again or use Forgot Password.';
+        if (err.code === 'auth/invalid-credential')    msg = 'Incorrect email or password.';
+        if (err.code === 'auth/invalid-email')         msg = 'Invalid email address format.';
+        if (err.code === 'auth/too-many-requests')     msg = 'Too many failed attempts. Account temporarily locked. 🔒';
+        if (err.code === 'auth/user-disabled')         msg = 'Your account has been disabled. Contact support.';
+        if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+        if (window.showToast) window.showToast(msg);
+    } finally {
+        btn.disabled    = false;
+        btn.innerHTML   = 'Sign In <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+    }
+};
+
+window.registerWithEmail = async function() {
+    const nameEl   = document.getElementById('signupName');
+    const emailEl  = document.getElementById('signupEmail');
+    const passEl   = document.getElementById('signupPassword');
+    const phoneEl  = document.getElementById('signupPhone');
+    const prefEl   = document.getElementById('signupPreference');
+    const distEl   = document.getElementById('signupDistrict');
+    const errorEl  = document.getElementById('signupError');
+    const btn      = document.getElementById('signupSubmitBtn');
+
+    const name       = nameEl   ? nameEl.value.trim()   : '';
+    const email      = emailEl  ? emailEl.value.trim()  : '';
+    const password   = passEl   ? passEl.value          : '';
+    const phone      = phoneEl  ? phoneEl.value.trim()  : '';
+    const preference = prefEl   ? prefEl.value          : '';
+    const district   = distEl   ? distEl.value          : '';
+
+    if (!name)       { if (errorEl) { errorEl.textContent = 'Please enter your full name.';      errorEl.style.display = 'block'; } return; }
+    if (!email)      { if (errorEl) { errorEl.textContent = 'Please enter your email address.';  errorEl.style.display = 'block'; } return; }
+    if (password.length < 6) { if (errorEl) { errorEl.textContent = 'Password must be at least 6 characters.'; errorEl.style.display = 'block'; } return; }
+    if (phone.length !== 10) { if (errorEl) { errorEl.textContent = 'Enter a valid 10-digit mobile number.';    errorEl.style.display = 'block'; } return; }
+    if (!preference) { if (errorEl) { errorEl.textContent = 'Please select your course preference.'; errorEl.style.display = 'block'; } return; }
+    if (!district)   { if (errorEl) { errorEl.textContent = 'Please select your district.';      errorEl.style.display = 'block'; } return; }
+
+    if (errorEl) errorEl.style.display = 'none';
+    btn.disabled    = true;
+    btn.textContent = 'Creating account…';
+
+    try {
+        // Check if phone already registered
+        const existingSnap = await getDocs(query(collection(db, 'users'), where('phone', '==', phone)));
+        if (!existingSnap.empty) {
+            if (errorEl) { errorEl.textContent = 'This mobile number is already registered. Please log in.'; errorEl.style.display = 'block'; }
+            btn.disabled = false;
+            btn.innerHTML = 'Create Free Account <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+            return;
+        }
+
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        const user     = userCred.user;
+
+        const profile = {
+            displayName: name,
+            email:       email,
+            phone:       phone,
+            preference:  preference,
+            district:    district,
+            uid:         user.uid,
+            joined:      new Date().toLocaleDateString(),
+            createdAt:   new Date().toISOString()
+        };
+
+        await setDoc(doc(db, 'users', user.uid), profile);
+
+        // Update lead status
+        setDoc(doc(db, 'leads', phone), {
+            phone, email, name,
+            status:    'REGISTERED',
+            joined:    new Date().toLocaleDateString(),
+            timestamp: new Date()
+        }).catch(() => {});
+
+        notifyAdmin('New Registration (Email)', {
+            Name:       name,
+            Email:      email,
+            Phone:      '+91' + phone,
+            Preference: preference,
+            District:   district
+        });
+
+        saveUserToStorage(user, profile);
+        updateAuthUI(true);
+        openHome();
+        if (window.showToast) window.showToast('Welcome to Kerala Vidya Portal! 🎉');
+
+    } catch (err) {
+        console.error('Registration Error:', err);
+        let msg = 'Registration failed. Please try again.';
+        if (err.code === 'auth/email-already-in-use') msg = 'This email is already registered. Please log in or use Forgot Password.';
+        if (err.code === 'auth/invalid-email')        msg = 'Invalid email address format.';
+        if (err.code === 'auth/weak-password')        msg = 'Password is too weak. Please use at least 6 characters.';
+        if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+        if (window.showToast) window.showToast(msg);
+    } finally {
+        btn.disabled  = false;
+        btn.innerHTML = 'Create Free Account <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
+    }
+};
+
+window.loginWithGoogle = async function() {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    try {
+        const result   = await signInWithPopup(auth, provider);
+        const user     = result.user;
+        const userSnap = await getDoc(doc(db, 'users', user.uid));
+
+        notifyAdmin('Google Login', {
+            Name:   user.displayName,
+            Email:  user.email,
+            Status: userSnap.exists() ? 'Returning User' : 'New User',
+            Device: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'
+        });
+
+        if (userSnap.exists()) {
+            saveUserToStorage(user, userSnap.data());
+            updateAuthUI(true);
+            openHome();
+            if (window.showToast) window.showToast('Signed in with Google! 🎉');
+        } else {
+            // New Google user — show signup form pre-filled
+            const signupDiv  = document.getElementById('signup-div');
+            const loginDiv   = document.getElementById('login-div');
+            if (loginDiv)  loginDiv.style.display  = 'none';
+            if (signupDiv) signupDiv.style.display  = 'flex';
+
+            const nameEl  = document.getElementById('signupName');
+            const emailEl = document.getElementById('signupEmail');
+            if (nameEl  && user.displayName) { nameEl.value  = user.displayName; }
+            if (emailEl && user.email)       { emailEl.value = user.email; emailEl.disabled = true; }
+
+            if (window.showToast) window.showToast('Welcome! Please complete your profile to continue.');
+        }
+
+    } catch (err) {
+        console.error('Google Sign-In Error:', err);
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+        let msg = 'Google Sign-In failed. Please try again.';
+        if (err.code === 'auth/popup-blocked') msg = 'Popup blocked by browser. Please allow popups for this site.';
+        if (window.showToast) window.showToast(msg);
+    }
+};
+
+window.handleForgotPassword = async function() {
+    const emailEl = document.getElementById('loginEmailInput');
+    const email   = emailEl ? emailEl.value.trim() : '';
+
+    if (!email) {
+        const errorEl = document.getElementById('loginEmailError');
+        if (errorEl) { errorEl.textContent = 'Please enter your email address first, then click Forgot?.'; errorEl.style.display = 'block'; }
+        if (emailEl) emailEl.focus();
+        return;
+    }
+
+    try {
+        await sendPasswordResetEmail(auth, email);
+        if (window.showToast) window.showToast('Password reset email sent to ' + email + '. Check your inbox! 📧');
+        const errorEl = document.getElementById('loginEmailError');
+        if (errorEl) {
+            errorEl.textContent = '✅ Reset email sent to ' + email + '. Check your inbox.';
+            errorEl.style.color  = '#059669';
+            errorEl.style.display = 'block';
+        }
+    } catch (err) {
+        console.error('Password Reset Error:', err);
+        let msg = 'Failed to send reset email.';
+        if (err.code === 'auth/user-not-found') msg = 'No account found with this email address.';
+        if (err.code === 'auth/invalid-email')  msg = 'Invalid email address.';
+        if (window.showToast) window.showToast(msg);
     }
 };
 
