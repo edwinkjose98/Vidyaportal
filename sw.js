@@ -1,11 +1,11 @@
-const CACHE_NAME = 'kvp-cache-v4-prod';
+const CACHE_NAME = 'uskool-cache-v1-prod';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './script.js',
   './manifest.json',
-  './kerala-logo.png',
+  './Uskool-logo.png',
   './logo.jpg',
   './workflow.png',
   './nursing_college_category_1774427669008.png',
