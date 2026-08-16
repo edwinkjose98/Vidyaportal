@@ -1,4 +1,4 @@
-window.showToast = function(msg) {
+﻿window.showToast = function(msg) {
     let t = document.getElementById("toast");
     if (!t) {
         t = document.createElement("div");
@@ -646,18 +646,31 @@ window.sendLoginOTP = async function() {
 
     const fullPhone = "+91" + phoneInput;
 
-    //  DEMO BYPASS: skip Firebase SMS entirely 
+    //  DEMO BYPASS: skip Firebase SMS & OTP entirely, auto login immediately
     if (DEMO_BYPASS[phoneInput]) {
-        window._demoPhone = phoneInput; // remember for verifyLoginOTP
-        document.getElementById('loginPhoneStep').style.display = 'none';
-        document.getElementById('loginOtpStep').style.display = 'block';
-        document.getElementById('loginOtpSentMsg').textContent = `OTP sent to +91 ${phoneInput}`;
+        btn.textContent = 'Logging in...';
+        const currentPhone = phoneInput;
+        const profile = {
+            uid: "demo_" + currentPhone,
+            displayName: "Edwin",
+            phone: currentPhone,
+            email: "edwinkjose98@gmail.com",
+            preference: "Nursing",
+            district: "Ernakulam"
+        };
+
+        saveUserToStorage({
+            uid: profile.uid,
+            displayName: profile.displayName,
+            email: profile.email,
+            phoneNumber: '+91' + currentPhone
+        }, profile);
+
+        updateAuthUI(true);
+        openHome();
+        if (window.showToast) window.showToast('Welcome Edwin! Logged in.');
         btn.disabled = false;
         btn.innerHTML = 'Get OTP <i class="fas fa-arrow-right" style="margin-left:6px;"></i>';
-        setTimeout(() => {
-            const firstBox = document.querySelectorAll('.login-otp-box')[0];
-            if (firstBox) firstBox.focus();
-        }, 100);
         return;
     }
 
@@ -1028,7 +1041,7 @@ window.registerWithEmail = async function() {
         saveUserToStorage(user, profile);
         updateAuthUI(true);
         openHome();
-        if (window.showToast) window.showToast('Welcome to BVerified! ');
+        if (window.showToast) window.showToast('Welcome to Uskool! ');
 
     } catch (err) {
         console.error('Registration Error:', err);
@@ -1999,7 +2012,7 @@ function openCollege(idx, specificList) {
              <div class="fee-val">${escapeHtml(totalFmt)}</div>
           </div>
           <div style="text-align:center;">
-             <div class="fee-label">ADMISSION FEE</div>
+             <div class="fee-label">ONE-TIME FEE</div>
              <div class="fee-val">${escapeHtml(admFeeRaw)}</div>
           </div>
       </div>
@@ -2380,7 +2393,7 @@ function generate2289Leads() {
         "Palakkad", "Pune", "Malappuram", "Kollam", "Mumbai", "Kasargod", "Vijayawada"
     ];
     const statuses = [
-        "VERIFIED ADMISSION", "LOAN APPROVED", "CONTACTED", "COUNSELING SCHEDULED", "OTP VERIFIED"
+        "VERIFIED ENROLMENT", "LOAN APPROVED", "CONTACTED", "COUNSELING SCHEDULED", "OTP VERIFIED"
     ];
     const statusWeights = [0.37, 0.27, 0.21, 0.09, 0.06];
 
@@ -2449,7 +2462,7 @@ async function loadAdminLeads() {
     if (!listBody) return;
 
     if (allAdminLeads.length === 0) {
-        listBody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:2rem; font-weight:600; color:#4B5563;'><i class='fa-solid fa-spinner fa-spin' style='margin-right:8px;'></i> Loading 2,289 Verified Admissions Leads...</td></tr>";
+        listBody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:2rem; font-weight:600; color:#4B5563;'><i class='fa-solid fa-spinner fa-spin' style='margin-right:8px;'></i> Loading 2,289 Verified Leads...</td></tr>";
 
         try {
             const cached = localStorage.getItem("bvf_admin_leads_cache");
@@ -2475,7 +2488,7 @@ window.loadAdminLeads = loadAdminLeads;
 
 function updateLeadMetrics() {
     const total = allAdminLeads.length;
-    const verified = allAdminLeads.filter(l => l.status === "VERIFIED ADMISSION").length;
+    const verified = allAdminLeads.filter(l => l.status === "VERIFIED ENROLMENT").length;
     const loans = allAdminLeads.filter(l => l.status === "LOAN APPROVED").length;
     const followup = allAdminLeads.filter(l => l.status === "CONTACTED" || l.status === "COUNSELING SCHEDULED" || l.status === "OTP VERIFIED").length;
 
@@ -2534,8 +2547,8 @@ function renderAdminLeadsPage(page) {
 
     const getStatusBadge = (st) => {
         switch (st) {
-            case "VERIFIED ADMISSION":
-                return `<span style="background:#DCFCE7; color:#166534; border:1px solid #BBF7D0; padding:4px 10px; border-radius:20px; font-size:0.72rem; font-weight:800; display:inline-flex; align-items:center; gap:4px;"><i class="fa-solid fa-circle-check" style="font-size:0.65rem;"></i> Verified Admission</span>`;
+            case "VERIFIED ENROLMENT":
+                return `<span style="background:#DCFCE7; color:#166534; border:1px solid #BBF7D0; padding:4px 10px; border-radius:20px; font-size:0.72rem; font-weight:800; display:inline-flex; align-items:center; gap:4px;"><i class="fa-solid fa-circle-check" style="font-size:0.65rem;"></i> Verified Enrolment</span>`;
             case "LOAN APPROVED":
                 return `<span style="background:#DBEAFE; color:#1E40AF; border:1px solid #BFDBFE; padding:4px 10px; border-radius:20px; font-size:0.72rem; font-weight:800; display:inline-flex; align-items:center; gap:4px;"><i class="fa-solid fa-file-invoice-dollar" style="font-size:0.65rem;"></i> 0% EMI Loan Approved</span>`;
             case "CONTACTED":
@@ -2559,7 +2572,7 @@ function renderAdminLeadsPage(page) {
                 <td style="padding:0.9rem; vertical-align:middle;">
                     <div style="font-weight:700; color:#374151; font-size:0.85rem;">${escapeHtml(d.phone)}</div>
                     <div style="display:flex; gap:6px; margin-top:3px;">
-                        <a href="https://wa.me/91${cleanPhone}?text=Hello%20${encodeURIComponent(d.name)},%20this%20is%20BVerified%20Admissions%20Team." target="_blank" style="background:#25D366; color:#fff; font-size:0.68rem; font-weight:750; padding:2px 7px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:3px;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                        <a href="https://wa.me/91${cleanPhone}?text=Hello%20${encodeURIComponent(d.name)},%20this%20is%20Uskool%20Career%20Team." target="_blank" style="background:#25D366; color:#fff; font-size:0.68rem; font-weight:750; padding:2px 7px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:3px;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
                         <a href="tel:+91${cleanPhone}" style="background:#3E8B1A; color:#fff; font-size:0.68rem; font-weight:750; padding:2px 7px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-phone"></i> Call</a>
                     </div>
                 </td>
@@ -2577,7 +2590,7 @@ function renderAdminLeadsPage(page) {
                     <div style="display:flex; gap:6px; align-items:center;">
                         <select onchange="updateLeadStatus('${escapeQuote(d.id)}', this.value)" style="font-size:0.75rem; padding:4px 6px; border:1px solid #E5E7EB; border-radius:6px; background:#fff; font-weight:600; cursor:pointer;">
                             <option value="">Update Status...</option>
-                            <option value="VERIFIED ADMISSION">Mark Verified Admission</option>
+                            <option value="VERIFIED ENROLMENT">Mark Verified Enrolment</option>
                             <option value="LOAN APPROVED">Mark Loan Approved</option>
                             <option value="CONTACTED">Mark Contacted</option>
                             <option value="COUNSELING SCHEDULED">Mark Counseling Scheduled</option>
@@ -2654,7 +2667,7 @@ function exportLeadsCSV() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `BVerified_Verified_Leads_2289_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `Uskool_Verified_Leads_2289_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -3513,7 +3526,7 @@ function renderCourses() {
              <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(totalFmt)}</div>
           </div>
           <div>
-             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">ADMISSION FEE</div>
+             <div style="font-size:0.6rem; font-weight:800; color:var(--gray); text-transform:uppercase; margin-bottom:2px;">ONE-TIME FEE</div>
              <div style="font-size:0.95rem; font-weight:800; color:var(--dark);">${escapeHtml(course.af || '0')}</div>
           </div>
       </div>
@@ -3555,7 +3568,7 @@ function openCourseDetail(idx) {
 
   const courseInfo = [
     { l: "TOTAL FEES", v: course.f || "On Request" },
-    { l: "ADMISSION FEE", v: course.af || "0" },
+    { l: "ONE-TIME FEE", v: course.af || "0" },
     { l: "Duration", v: cleanDur || "" },
     { l: "College", v: college.name || "" },
     { l: "Location", v: college.loc || "" },
@@ -3793,7 +3806,7 @@ window.addEventListener('load', () => {
     // 3. Splash Screen Logic
     const splash = document.getElementById('splash-screen');
     const typingEl = document.getElementById('splash-typing');
-    const missionText = "Be Verified \u2014 All About Your Career & Direct Admissions.";
+    const missionText = "Uskool to Career \u2014 Your One-Stop Career Platform.";
 
     if (splash) {
         // Start typing after splash entrance settles (0.7s)

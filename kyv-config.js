@@ -1,4 +1,4 @@
-/* BVerified - Config & Restoration */
+﻿/* Uskool - Config & Restoration */
 const STORAGE_KEY = "unicircle_user";
 const ADMIN_EMAILS = ["edwinkjose98@gmail.com"];
 

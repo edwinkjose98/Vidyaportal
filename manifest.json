@@ -1,24 +1,24 @@
-{
-  "name": "BVerified",
-  "short_name": "BVerified",
-  "description": "India's #1 Admission portal with job Guarantee",
+﻿{
+  "name": "Uskool",
+  "short_name": "Uskool",
+  "description": "Your One-Stop Career Platform — Verified Colleges, Zero-Cost EMI & Career Support",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F0F7E8",
   "theme_color": "#3E8B1A",
   "icons": [
     {
-      "src": "bverified-logo.png",
+      "src": "Uskool-logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "bverified-logo.png",
+      "src": "Uskool-logo.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "bverified-logo.png",
+      "src": "Uskool-logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
