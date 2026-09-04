@@ -1,20 +1,21 @@
 /* ==========================================================================
-   THE GOAT BROTHER • CR7 EDITION STYLING
-   Ultra-clean, modern, mobile-friendly Web App
+   THE COMIC GOAT BROTHER • CR7 SUPERHERO EDITION
+   Bold Comic Art, Ronaldo Body Integration, Pure SIUUU Experience
    ========================================================================== */
 
 :root {
-  --primary-red: #e4002b;
-  --primary-dark: #090c13;
-  --surface-card: #121824;
-  --surface-card-hover: #182030;
-  --gold: #ffd700;
-  --gold-glow: rgba(255, 215, 0, 0.45);
-  --red-glow: rgba(228, 0, 43, 0.5);
-  --text-main: #ffffff;
-  --text-muted: #94a3b8;
-  --font-family: 'Montserrat', sans-serif;
+  --comic-red: #e4002b;
+  --comic-red-glow: rgba(228, 0, 43, 0.6);
+  --comic-gold: #ffd700;
+  --comic-gold-glow: rgba(255, 215, 0, 0.5);
+  --comic-dark: #070a10;
+  --comic-surface: #0f1522;
+  --comic-panel-bg: #141c2c;
+  --comic-green: #00874d;
+  --comic-border-ink: #000000;
+  --font-impact: 'Bebas Neue', 'Impact', sans-serif;
   --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Montserrat', sans-serif;
 }
 
 * {
@@ -25,14 +26,39 @@
 }
 
 body {
-  background-color: var(--primary-dark);
-  color: var(--text-main);
-  font-family: var(--font-family);
+  background-color: var(--comic-dark);
+  color: #ffffff;
+  font-family: var(--font-body);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background-image: radial-gradient(circle at 50% 10%, #1c263c 0%, #090c13 80%);
+  background-image: 
+    radial-gradient(circle at 50% 15%, rgba(228, 0, 43, 0.22) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.12) 0%, transparent 50%),
+    linear-gradient(180deg, #0a0e17 0%, #05070a 100%);
   background-attachment: fixed;
+}
+
+/* Halftone Pattern Generator */
+.comic-halftone-overlay,
+.comic-panel-halftone {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.28) 1.5px, transparent 1.5px);
+  background-size: 6px 6px;
+  pointer-events: none;
+  opacity: 0.8;
+  mix-blend-mode: multiply;
+  z-index: 2;
+}
+
+/* Comic Mode Filter on Photos */
+body.comic-mode .comic-styled-img {
+  filter: contrast(145%) saturate(140%) brightness(105%);
+}
+
+body.comic-mode .brother-photo-frame {
+  box-shadow: 0 0 0 5px #000, 0 0 0 9px var(--comic-gold), 0 15px 40px rgba(0, 0, 0, 0.9);
 }
 
 /* Confetti Canvas */
@@ -43,118 +69,7 @@ body {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 9999;
-}
-
-/* ==========================================================================
-   TAP ANYWHERE SURPRISE OVERLAY
-   ========================================================================== */
-.tap-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100000;
-  background: radial-gradient(circle at center, #172138 0%, #080b12 85%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  cursor: pointer;
-}
-
-.tap-overlay.dismissed {
-  opacity: 0;
-  transform: scale(1.05);
-  pointer-events: none;
-}
-
-.tap-modal {
-  background: rgba(18, 24, 36, 0.95);
-  border: 2px solid var(--gold);
-  box-shadow: 0 0 50px var(--red-glow), 0 0 30px var(--gold-glow);
-  border-radius: 24px;
-  padding: 35px 25px;
-  text-align: center;
-  max-width: 440px;
-  width: 100%;
-}
-
-.cr7-circle {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, var(--primary-red), #850017);
-  border: 2px solid var(--gold);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 15px;
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: var(--gold);
-  box-shadow: 0 0 25px var(--red-glow);
-  animation: pulse 1.5s infinite alternate ease-in-out;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.1); box-shadow: 0 0 35px var(--red-glow); }
-}
-
-.tap-title {
-  font-family: var(--font-heading);
-  font-size: 1.7rem;
-  font-weight: 900;
-  margin-bottom: 6px;
-  letter-spacing: -0.5px;
-}
-
-.tap-subtitle {
-  color: var(--gold);
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-}
-
-.tap-preview-wrap {
-  width: 170px;
-  height: 220px;
-  margin: 0 auto 25px;
-  border-radius: 18px;
-  border: 3px solid var(--gold);
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px var(--gold-glow);
-}
-
-.tap-preview-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.tap-start-btn {
-  width: 100%;
-  background: linear-gradient(135deg, var(--primary-red) 0%, #b80020 100%);
-  border: 2px solid var(--gold);
-  color: #fff;
-  font-family: var(--font-heading);
-  font-size: 1.15rem;
-  font-weight: 900;
-  padding: 16px 20px;
-  border-radius: 999px;
-  cursor: pointer;
-  box-shadow: 0 0 25px var(--red-glow);
-  transition: transform 0.2s ease;
-}
-
-.tap-start-btn:hover {
-  transform: scale(1.03);
-}
-
-.tap-hint {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 14px;
+  z-index: 99999;
 }
 
 /* ==========================================================================
@@ -164,104 +79,158 @@ body {
   position: fixed;
   top: 30px;
   left: 50%;
-  transform: translateX(-50%) translateY(-100px);
+  transform: translateX(-50%) translateY(-120px) scale(0.8);
   z-index: 999999;
-  background: linear-gradient(135deg, var(--primary-red), #99001a);
-  border: 2px solid var(--gold);
+  background: linear-gradient(135deg, var(--comic-red), #90001a);
+  border: 3px solid #000;
   color: #fff;
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  font-weight: 900;
-  padding: 12px 30px;
+  padding: 12px 36px;
   border-radius: 999px;
-  box-shadow: 0 0 40px var(--red-glow), 0 0 25px var(--gold-glow);
+  box-shadow: 5px 5px 0 #000, 0 0 45px var(--comic-red-glow);
   opacity: 0;
   pointer-events: none;
   transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .siuu-banner.active {
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0) scale(1);
   opacity: 1;
 }
 
+.comic-burst-text {
+  font-family: var(--font-impact);
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 #000, 0 0 15px var(--comic-gold);
+}
+
 /* Screen Shake */
-@keyframes shakeEffect {
+@keyframes shakeScreen {
   0% { transform: translate(0, 0); }
-  20% { transform: translate(-6px, 5px); }
-  40% { transform: translate(6px, -5px); }
-  60% { transform: translate(-4px, 3px); }
-  80% { transform: translate(4px, -2px); }
+  20% { transform: translate(-8px, 6px); }
+  40% { transform: translate(8px, -6px); }
+  60% { transform: translate(-5px, 4px); }
+  80% { transform: translate(5px, -3px); }
   100% { transform: translate(0, 0); }
 }
 
 .screen-shake {
-  animation: shakeEffect 0.4s ease-in-out;
+  animation: shakeScreen 0.4s ease-in-out;
 }
 
 /* ==========================================================================
    MAIN APP CONTAINER
    ========================================================================== */
 .app-container {
-  max-width: 860px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px 16px 60px;
 }
 
-/* Header */
+/* Comic Header */
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(18, 24, 36, 0.85);
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: var(--comic-surface);
+  border: 3px solid #000;
   padding: 12px 20px;
-  border-radius: 18px;
-  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 #000, 0 0 20px rgba(0, 0, 0, 0.6);
   margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.header-badge {
-  background: var(--primary-red);
-  color: #fff;
-  font-weight: 900;
-  font-size: 0.9rem;
-  padding: 6px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--gold);
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.header-titles {
-  text-align: center;
+.header-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--comic-gold);
+  box-shadow: 2px 2px 0 #000;
+}
+
+.header-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .header-title {
-  font-family: var(--font-heading);
-  font-size: 1.15rem;
+  font-family: var(--font-impact);
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-goat {
+  background: var(--comic-gold);
+  color: #000;
+  font-size: 0.85rem;
+  padding: 2px 8px;
+  border-radius: 6px;
   font-weight: 900;
-  letter-spacing: 0.5px;
+  border: 1px solid #000;
 }
 
 .header-subtitle {
-  font-size: 0.65rem;
-  color: var(--gold);
+  font-size: 0.68rem;
+  color: var(--comic-gold);
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comic-toggle-btn {
+  background: #1e293b;
+  border: 2px solid var(--comic-gold);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 2px 2px 0 #000;
+  transition: transform 0.2s ease;
+}
+
+.comic-toggle-btn:hover {
+  transform: scale(1.05);
 }
 
 .btn-siuu-pill {
-  background: linear-gradient(135deg, var(--primary-red), #a1001a);
-  border: 1px solid var(--gold);
+  background: linear-gradient(135deg, var(--comic-red), #9e0019);
+  border: 2px solid #000;
   color: #fff;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 999px;
-  font-weight: 800;
-  font-size: 0.85rem;
+  font-family: var(--font-impact);
+  font-size: 1.2rem;
+  letter-spacing: 1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 0 15px var(--red-glow);
+  box-shadow: 3px 3px 0 #000, 0 0 15px var(--comic-red-glow);
   transition: transform 0.2s ease;
 }
 
@@ -270,292 +239,480 @@ body {
 }
 
 .count-badge {
-  background: var(--gold);
+  background: var(--comic-gold);
   color: #000;
+  font-family: var(--font-heading);
   font-size: 0.75rem;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 999px;
   font-weight: 900;
 }
 
 /* ==========================================================================
-   HERO CARD: FULL-SIZE BROTHER PHOTO & SIMPLE GOAT
+   HERO COMIC CARD: BROTHER + RONALDO SUPERHERO BODY
    ========================================================================== */
-.hero-card {
-  background: var(--surface-card);
-  border: 2px solid var(--gold);
+.hero-comic-card {
+  background: var(--comic-panel-bg);
+  border: 4px solid #000;
   border-radius: 28px;
   padding: 35px 25px;
   text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px var(--gold-glow);
-  margin-bottom: 40px;
+  box-shadow: 6px 6px 0 #000, 0 0 40px rgba(0, 0, 0, 0.9);
+  margin-bottom: 45px;
   position: relative;
+  overflow: hidden;
 }
 
-.goat-tag {
+.comic-panel-ribbon {
   display: inline-block;
-  background: rgba(255, 215, 0, 0.15);
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  font-weight: 900;
-  font-size: 0.85rem;
-  letter-spacing: 1.5px;
-  padding: 6px 18px;
-  border-radius: 999px;
+  background: var(--comic-red);
+  border: 2px solid #000;
+  color: var(--comic-gold);
+  font-family: var(--font-impact);
+  font-size: 1.15rem;
+  letter-spacing: 2px;
+  padding: 6px 22px;
+  border-radius: 8px;
+  transform: rotate(-1deg);
+  box-shadow: 3px 3px 0 #000;
   margin-bottom: 25px;
 }
 
-/* Hero Full-Size Photo */
-.hero-photo-wrapper {
-  max-width: 440px;
-  width: 100%;
-  margin: 0 auto 30px;
+/* Comic Hero Stage (Brother's Face + Ronaldo's Athletic Body) */
+.comic-hero-stage {
   position: relative;
-  border-radius: 22px;
+  max-width: 440px;
+  margin: 0 auto 30px;
+  background: radial-gradient(circle at 50% 40%, #1e2a42 0%, #0f1522 75%);
+  border: 3px solid var(--comic-gold);
+  border-radius: 24px;
+  padding: 25px 15px 15px;
+  box-shadow: 4px 4px 0 #000, 0 15px 40px rgba(0, 0, 0, 0.8);
   overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 30px var(--gold-glow);
-  border: 3px solid var(--gold);
-  cursor: pointer;
-  transition: transform 0.3s ease;
 }
 
-.hero-photo-wrapper:hover {
-  transform: scale(1.02);
-}
-
-.hero-full-photo {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
-
-.hero-overlay-tag {
+/* Comic Speed Lines */
+.comic-speed-lines {
   position: absolute;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid var(--gold);
-  color: #fff;
-  font-weight: 900;
-  font-size: 0.8rem;
+  inset: 0;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 215, 0, 0.05) 0deg 10deg,
+    transparent 10deg 20deg
+  );
+  pointer-events: none;
+  animation: spinSpeedLines 25s infinite linear;
+}
+
+@keyframes spinSpeedLines {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.comic-character-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+}
+
+/* Brother Photo Head / Portrait Frame */
+.brother-photo-frame {
+  position: relative;
+  width: 190px;
+  height: 220px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 4px solid var(--comic-gold);
+  box-shadow: 4px 4px 0 #000, 0 10px 30px rgba(0, 0, 0, 0.9);
+  z-index: 5;
+  margin-bottom: -35px; /* Overlaps seamlessly with Ronaldo body below! */
+  background: #000;
+}
+
+.comic-styled-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Ronaldo Muscular Athletic Body Layer */
+.ronaldo-body-graphic {
+  width: 320px;
+  height: 230px;
+  position: relative;
+  z-index: 4;
+}
+
+.cr7-body-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(4px 4px 0 #000);
+}
+
+/* Comic Speech Balloon */
+.comic-speech-balloon {
+  position: absolute;
+  top: 15px;
+  right: -10px;
+  background: #ffffff;
+  color: #000000;
+  border: 3px solid #000;
+  padding: 8px 16px;
+  border-radius: 18px;
+  font-family: var(--font-impact);
+  font-size: 1.4rem;
   letter-spacing: 1px;
-  padding: 6px 16px;
+  box-shadow: 3px 3px 0 #000;
+  transform: rotate(6deg);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s ease;
+}
+
+.comic-speech-balloon:hover {
+  transform: rotate(6deg) scale(1.1);
+  background: var(--comic-gold);
+}
+
+.comic-badge-bottom {
+  background: #000000;
+  border: 2px solid var(--comic-gold);
+  color: var(--comic-gold);
+  font-family: var(--font-impact);
+  font-size: 1.1rem;
+  letter-spacing: 1.5px;
+  padding: 6px 20px;
   border-radius: 999px;
-  white-space: nowrap;
-  backdrop-filter: blur(8px);
+  margin-top: 15px;
+  box-shadow: 2px 2px 0 #000;
 }
 
-.hero-name {
-  font-family: var(--font-heading);
-  font-size: 1.8rem;
-  font-weight: 900;
-  line-height: 1.3;
-  margin-bottom: 16px;
-  letter-spacing: -0.5px;
+.badge-star {
+  color: var(--comic-red);
 }
 
-.gold-gradient-text {
-  background: linear-gradient(135deg, #fff275 0%, #ffd700 50%, #cca000 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Hero Text & Button */
+.hero-comic-title {
+  font-family: var(--font-impact);
+  font-size: 2.8rem;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
 }
 
-.hero-bio {
-  color: var(--text-muted);
+.gold-comic-text {
+  color: var(--comic-gold);
+  text-shadow: 2px 2px 0 #000, 0 0 20px var(--comic-gold-glow);
+}
+
+.hero-comic-sub {
+  color: #94a3b8;
   font-size: 1.05rem;
   line-height: 1.6;
-  max-width: 580px;
-  margin: 0 auto 30px;
+  max-width: 600px;
+  margin: 0 auto 25px;
 }
 
-/* Big Mega SIUUU Button */
-.action-wrap {
-  display: flex;
-  justify-content: center;
-}
-
-.btn-mega-siuu {
-  background: linear-gradient(135deg, var(--primary-red) 0%, #a8001a 100%);
-  border: 2px solid var(--gold);
+.btn-mega-comic-siuu {
+  background: linear-gradient(135deg, var(--comic-red) 0%, #b8001e 100%);
+  border: 4px solid #000;
   color: #fff;
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 900;
-  padding: 18px 36px;
+  font-family: var(--font-impact);
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  padding: 16px 36px;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 0 35px var(--red-glow), 0 0 20px var(--gold-glow);
-  display: flex;
+  box-shadow: 5px 5px 0 #000, 0 0 35px var(--comic-red-glow);
+  display: inline-flex;
   align-items: center;
   gap: 12px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.btn-mega-siuu:hover {
+.btn-mega-comic-siuu:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 50px var(--red-glow), 0 0 30px var(--gold-glow);
+  box-shadow: 6px 6px 0 #000, 0 0 50px var(--comic-red-glow);
 }
 
-.btn-mega-siuu:active {
+.btn-mega-comic-siuu:active {
   transform: scale(0.97);
 }
 
 /* ==========================================================================
-   PHOTO GALLERY
+   COMIC PHOTO ALBUM
    ========================================================================== */
-.gallery-section {
+.comic-gallery-section {
   margin-bottom: 50px;
 }
 
-.section-heading {
+.comic-section-heading {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 35px;
 }
 
-.section-tag {
-  color: var(--gold);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
+.comic-tag-label {
+  display: inline-block;
+  background: rgba(255, 215, 0, 0.15);
+  border: 2px solid var(--comic-gold);
+  color: var(--comic-gold);
+  font-family: var(--font-impact);
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  padding: 4px 16px;
+  border-radius: 6px;
+  margin-bottom: 8px;
 }
 
-.section-title {
-  font-family: var(--font-heading);
-  font-size: 1.8rem;
-  font-weight: 900;
-  margin-top: 5px;
+.comic-section-title {
+  font-family: var(--font-impact);
+  font-size: 2.6rem;
+  letter-spacing: 1px;
 }
 
-.photos-grid {
+.comic-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 22px;
 }
 
-.photo-item {
-  background: var(--surface-card);
-  border: 1px solid rgba(255, 215, 0, 0.3);
+.comic-panel-card {
+  background: var(--comic-panel-bg);
+  border: 3px solid #000;
   border-radius: 20px;
   overflow: hidden;
+  box-shadow: 4px 4px 0 #000;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.photo-item:hover {
-  transform: translateY(-6px);
-  border-color: var(--gold);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 20px var(--gold-glow);
+.comic-panel-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--comic-gold);
+  box-shadow: 6px 6px 0 #000, 0 0 25px var(--comic-gold-glow);
 }
 
-.photo-img-box {
+.comic-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #090c14;
+  border-bottom: 2px solid #000;
+}
+
+.panel-num {
+  font-family: var(--font-impact);
+  font-size: 1rem;
+  color: var(--comic-gold);
+  letter-spacing: 1px;
+}
+
+.panel-badge-red,
+.panel-badge-gold,
+.panel-badge-green {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #000;
+}
+
+.panel-badge-red { background: var(--comic-red); color: #fff; }
+.panel-badge-gold { background: var(--comic-gold); color: #000; }
+.panel-badge-green { background: var(--comic-green); color: #fff; }
+
+.panel-img-box {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 290px;
   overflow: hidden;
 }
 
-.photo-img {
+.panel-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
 }
 
-.photo-item:hover .photo-img {
-  transform: scale(1.05);
+.comic-panel-card:hover .panel-img {
+  transform: scale(1.06);
 }
 
-.photo-badge {
+.comic-burst-tag {
   position: absolute;
+  background: var(--comic-gold);
+  color: #000;
+  font-family: var(--font-impact);
+  font-size: 1.2rem;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0 #000;
+  z-index: 5;
+}
+
+.burst-top-right {
   top: 10px;
   right: 10px;
-  background: rgba(0, 0, 0, 0.75);
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  font-size: 0.65rem;
-  font-weight: 900;
-  padding: 4px 10px;
-  border-radius: 999px;
-  backdrop-filter: blur(6px);
+  transform: rotate(8deg);
 }
 
-.photo-meta {
-  padding: 16px;
-  text-align: center;
+.burst-top-left {
+  top: 10px;
+  left: 10px;
+  transform: rotate(-8deg);
 }
 
-.photo-title {
-  font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 800;
+.panel-caption {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.panel-title {
+  font-family: var(--font-impact);
+  font-size: 1.4rem;
+  letter-spacing: 1px;
   margin-bottom: 6px;
 }
 
-.photo-desc {
-  color: var(--text-muted);
-  font-size: 0.8rem;
+.panel-text {
+  color: #94a3b8;
+  font-size: 0.85rem;
   line-height: 1.4;
+  margin-bottom: 14px;
+  flex-grow: 1;
+}
+
+.panel-siuu-btn {
+  width: 100%;
+  background: var(--comic-surface);
+  border: 2px solid var(--comic-gold);
+  color: #fff;
+  font-family: var(--font-impact);
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.comic-panel-card:hover .panel-siuu-btn {
+  background: var(--comic-red);
+  transform: translateY(-2px);
 }
 
 /* ==========================================================================
    FOOTER
    ========================================================================== */
-.app-footer {
+.comic-footer {
   text-align: center;
-  background: var(--surface-card);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: 20px;
-  padding: 30px 20px;
+  background: var(--comic-surface);
+  border: 3px solid #000;
+  border-radius: 24px;
+  padding: 35px 20px;
+  box-shadow: 4px 4px 0 #000;
 }
 
-.footer-trophy {
+.footer-badge-goat {
   font-size: 2.2rem;
   margin-bottom: 12px;
 }
 
-.footer-quote {
+.comic-quote {
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: #fff;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 600;
 }
 
-.footer-author {
-  color: var(--gold);
-  font-weight: 800;
-  font-size: 0.95rem;
-  margin-bottom: 20px;
+.comic-author {
+  color: var(--comic-gold);
+  font-family: var(--font-impact);
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
 }
 
-.footer-sub {
-  font-size: 0.85rem;
-  color: var(--text-muted);
+.footer-app-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.footer-sub strong {
-  color: #fff;
-  border-bottom: 1px solid var(--gold);
+.footer-icon-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--comic-gold);
+  box-shadow: 0 0 15px var(--comic-gold-glow);
+}
+
+.mini-app-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.footer-domain {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.footer-domain strong {
+  color: #ffffff;
+  border-bottom: 2px solid var(--comic-gold);
 }
 
 /* ==========================================================================
-   RESPONSIVE
+   RESPONSIVE MEDIA QUERIES
    ========================================================================== */
 @media (max-width: 768px) {
-  .photos-grid {
+  .comic-grid {
     grid-template-columns: 1fr;
     max-width: 380px;
     margin: 0 auto;
   }
 
-  .hero-name {
-    font-size: 1.4rem;
+  .hero-comic-title {
+    font-size: 2.2rem;
   }
 
-  .btn-mega-siuu {
-    font-size: 1.05rem;
-    padding: 16px 26px;
+  .comic-section-title {
+    font-size: 2rem;
+  }
+
+  .btn-mega-comic-siuu {
+    font-size: 1.4rem;
+    padding: 14px 24px;
+  }
+
+  .app-header {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .header-brand {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .header-actions {
+    justify-content: center;
+    width: 100%;
   }
 }

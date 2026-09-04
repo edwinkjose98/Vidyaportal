@@ -3,159 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>THE GOAT BROTHER 🐐 • CR7 SIUUUU!</title>
-  <meta name="description" content="Dedicated to the greatest brother and #1 Cristiano Ronaldo fan! SIUUUUU!">
+  <title>CR7 BROTHER • THE COMIC GOAT EDITION 🐐⚡</title>
+  <meta name="description" content="CR7 Legend • The Ultimate Brother Edition! 🐐⚡ SIUUUUU!">
   
   <!-- PWA & Mobile Web App Meta -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="GOAT Brother">
-  <meta name="theme-color" content="#d31835">
+  <meta name="apple-mobile-web-app-title" content="CR7 Brother">
+  <meta name="theme-color" content="#e4002b">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/jpeg" href="brother1.jpg">
-  <link rel="apple-touch-icon" href="brother1.jpg">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="icon" type="image/png" href="app-icon.png">
+  <link rel="apple-touch-icon" href="app-icon.png">
 
-  <!-- Social Share / Open Graph Preview (Shows brother's photo when link is shared) -->
-  <meta property="og:title" content="THE GOAT BROTHER 🐐 • CR7 SIUUUU!">
-  <meta property="og:description" content="Surprise for the #1 Cristiano Ronaldo fan!">
-  <meta property="og:image" content="brother1.jpg">
+  <!-- Social Media Previews -->
+  <meta property="og:title" content="THE COMIC GOAT BROTHER 🐐 • CR7 SIUUUU!">
+  <meta property="og:description" content="Dedicated to the greatest brother and #1 Cristiano Ronaldo fan!">
+  <meta property="og:image" content="app-icon.png">
   <meta property="og:url" content="https://uskool.online">
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Bebas Neue, Montserrat, Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="comic-mode">
 
-  <!-- Hidden Native Audio with EXACT Ronaldo SIUUU -->
+  <!-- Hidden Native Audio with EXACT Cristiano Ronaldo SIUUU -->
   <audio id="siuuAudio" src="siuuu.mp3" preload="auto"></audio>
 
   <!-- Canvas for celebration confetti -->
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- INSTANT TAP TO UNLEASH SIUUU OVERLAY (Bypasses browser autoplay restrictions) -->
-  <div id="tapOverlay" class="tap-overlay">
-    <div class="tap-modal">
-      <div class="cr7-circle">7</div>
-      <h1 class="tap-title">SURPRISE FOR MY BROTHER!</h1>
-      <p class="tap-subtitle">The #1 Cristiano Ronaldo Fan ⚽🇵🇹</p>
-      
-      <div class="tap-preview-wrap">
-        <img src="brother1.jpg" alt="Brother" class="tap-preview-img">
-      </div>
+  <!-- SVG Comic Filters for Ink Lines and Halftone Screen -->
+  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;" version="1.1">
+    <defs>
+      <filter id="comicFilter">
+        <feColorMatrix type="matrix" values="
+          1.3  0    0    0 -0.05
+          0    1.3  0    0 -0.05
+          0    0    1.3  0 -0.05
+          0    0    0    1  0"/>
+        <feComponentTransfer>
+          <feFuncR type="linear" slope="1.15"/>
+          <feFuncG type="linear" slope="1.15"/>
+          <feFuncB type="linear" slope="1.15"/>
+        </feComponentTransfer>
+      </filter>
+    </defs>
+  </svg>
 
-      <button id="openSiuuBtn" class="tap-start-btn">
-        <span>⚽ TAP FOR SIUUUUUU! 🔥</span>
-      </button>
-      <div class="tap-hint">Tap anywhere to blast the real Ronaldo SIUUU!</div>
-    </div>
+  <!-- FLOATING COMIC SIUUU NOTIFIER -->
+  <div id="siuuBanner" class="siuu-banner">
+    <div class="comic-burst-text">💥 SIUUUUUUUUUUUUUU! 🚀</div>
   </div>
-
-  <!-- FLOATING SIUUU NOTIFIER -->
-  <div id="siuuBanner" class="siuu-banner">SIUUUUUUUUUUUUUU! 🚀🔥</div>
 
   <!-- MAIN APP CONTAINER -->
   <div class="app-container">
 
-    <!-- TOP HEADER -->
+    <!-- TOP COMIC HEADER -->
     <header class="app-header">
-      <div class="header-badge">CR7 #7</div>
-      <div class="header-titles">
-        <h2 class="header-title">THE GOAT BROTHER <span class="goat-emoji">🐐</span></h2>
-        <span class="header-subtitle">CRISTIANO RONALDO ULTIMATE FAN</span>
+      <div class="header-brand">
+        <div class="header-icon-wrap">
+          <img src="icon.svg" alt="Icon" class="header-icon">
+        </div>
+        <div class="header-titles">
+          <h2 class="header-title">CR7 BROTHER <span class="badge-goat">GOAT</span></h2>
+          <span class="header-subtitle">PORTUGAL #7 LEGEND EDITION</span>
+        </div>
       </div>
-      <button id="headerSiuuBtn" class="btn-siuu-pill" title="Play Real Ronaldo SIUUU">
-        <span>🔥 SIUUU!</span>
-        <span id="siuuCountBadge" class="count-badge">0</span>
-      </button>
+
+      <div class="header-actions">
+        <!-- Toggle Comic Art Mode -->
+        <button id="comicToggleBtn" class="comic-toggle-btn" title="Toggle Comic Mode">
+          <span class="toggle-icon">🎨</span>
+          <span id="toggleText">COMIC: ON</span>
+        </button>
+
+        <!-- Instant SIUU Button with counter -->
+        <button id="headerSiuuBtn" class="btn-siuu-pill" title="Play Real Ronaldo SIUUU">
+          <span>🔥 SIUUU!</span>
+          <span id="siuuCountBadge" class="count-badge">0</span>
+        </button>
+      </div>
     </header>
 
-    <!-- MAIN HERO SECTION: FULL-SIZE BROTHER PHOTO & SIMPLE GOAT -->
-    <section class="hero-card">
-      <div class="goat-tag">👑 THE UNDISPUTED GOAT BROTHER 👑</div>
-      
-      <!-- FULL SIZE PHOTO -->
-      <div class="hero-photo-wrapper" id="heroPhotoBox">
-        <img src="brother1.jpg" alt="Brother in Portugal Ronaldo Jersey" class="hero-full-photo">
-        <div class="photo-glow-border"></div>
-        <div class="hero-overlay-tag">#1 CR7 SUPERFAN 🇵🇹</div>
+    <!-- HERO SECTION: BROTHER WITH RONALDO COMIC BODY -->
+    <section class="hero-comic-card">
+      <div class="comic-panel-ribbon">
+        <span>⚡ THE GREATEST BROTHER IN THE MULTIVERSE ⚡</span>
       </div>
 
-      <h1 class="hero-name">NUMBER 7 ON THE PITCH.<br><span class="gold-gradient-text">NUMBER 1 BROTHER IN THE WORLD!</span></h1>
-      
-      <p class="hero-bio">
-        Hardcore Cristiano Ronaldo fan, unbeatable energy, and the true champion of our family. Keep rocking that Portugal #7 jersey with pride! ⚽🐐
-      </p>
+      <!-- MAIN COMIC COMPOSITION: BROTHER'S PHOTO WITH RONALDO'S ICONIC BODY -->
+      <div class="comic-hero-stage" id="heroStage">
+        
+        <!-- Speed Lines & Energy Aura -->
+        <div class="comic-speed-lines"></div>
+        <div class="comic-energy-glow"></div>
+        
+        <!-- Comic Superhero Composition -->
+        <div class="comic-character-wrap">
+          
+          <!-- Brother's Original Photo with Comic Ink & Jersey Integration -->
+          <div class="brother-photo-frame">
+            <img src="brother1.jpg" alt="CR7 Brother" class="comic-styled-img" id="heroPhoto">
+            <div class="comic-halftone-overlay"></div>
+            <div class="comic-ink-border"></div>
+          </div>
 
-      <!-- BIG INSTANT SIUUU BUTTON -->
-      <div class="action-wrap">
-        <button id="mainSiuuBtn" class="btn-mega-siuu">
-          <span class="btn-emoji">⚽</span>
-          <span class="btn-text">BLAST RONALDO SIUUU!</span>
-          <span class="btn-emoji">🔥</span>
+          <!-- Cristiano Ronaldo Athletic Superhero Body Stance Layer -->
+          <div class="ronaldo-body-graphic">
+            <svg class="cr7-body-svg" viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="jerseyRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#b3001e"/>
+                  <stop offset="35%" stop-color="#e4002b"/>
+                  <stop offset="65%" stop-color="#ff1a43"/>
+                  <stop offset="100%" stop-color="#850017"/>
+                </linearGradient>
+                <linearGradient id="goldAcc" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fff5a5"/>
+                  <stop offset="50%" stop-color="#ffd700"/>
+                  <stop offset="100%" stop-color="#b8860b"/>
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+              </defs>
+
+              <!-- Muscular Torso (Portugal Kit with Green Trim & Gold #7) -->
+              <path d="M 60 40 L 110 0 L 250 0 L 300 40 L 270 240 L 90 240 Z" fill="url(#jerseyRed)" stroke="#090c13" stroke-width="8"/>
+              
+              <!-- Portugal Green Collar and Chest Stripes -->
+              <path d="M 120 0 L 180 35 L 240 0" fill="none" stroke="#00874d" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 90 240 L 180 200 L 270 240" fill="none" stroke="#00874d" stroke-width="8"/>
+
+              <!-- Bold Golden #7 on Chest -->
+              <text x="180" y="150" font-family="'Bebas Neue', 'Impact', sans-serif" font-size="120" font-weight="bold" fill="url(#goldAcc)" stroke="#090c13" stroke-width="6" text-anchor="middle" filter="url(#glow)">7</text>
+
+              <!-- Portugal Crest Shield -->
+              <path d="M 115 70 L 135 70 L 135 95 L 125 105 L 115 95 Z" fill="#00874d" stroke="url(#goldAcc)" stroke-width="3"/>
+              <path d="M 120 74 L 130 74 L 130 90 L 125 96 L 120 90 Z" fill="#e4002b"/>
+
+              <!-- Muscular Comic Arms Flexed Down (Iconic SIUU Stance) -->
+              <!-- Left Arm -->
+              <path d="M 60 40 L 15 130 L 35 240 L 65 235 L 45 140 L 85 90 Z" fill="#b3001e" stroke="#090c13" stroke-width="8"/>
+              <circle cx="45" cy="245" r="20" fill="#e0a87a" stroke="#090c13" stroke-width="6"/>
+              
+              <!-- Right Arm -->
+              <path d="M 300 40 L 345 130 L 325 240 L 295 235 L 315 140 L 275 90 Z" fill="#b3001e" stroke="#090c13" stroke-width="8"/>
+              <circle cx="315" cy="245" r="20" fill="#e0a87a" stroke="#090c13" stroke-width="6"/>
+
+              <!-- Gold Captain's Armband 'C' -->
+              <rect x="20" y="150" width="30" height="24" rx="4" fill="url(#goldAcc)" stroke="#090c13" stroke-width="4"/>
+              <text x="35" y="168" font-family="'Impact', sans-serif" font-size="20" font-weight="bold" fill="#090c13" text-anchor="middle">C</text>
+
+              <!-- Lightning Sparks Crackling -->
+              <path d="M 10 210 L 30 225 L 15 245 L 40 260" fill="none" stroke="#ffd700" stroke-width="4" filter="url(#glow)"/>
+              <path d="M 350 210 L 330 225 L 345 245 L 320 260" fill="none" stroke="#ffd700" stroke-width="4" filter="url(#glow)"/>
+            </svg>
+          </div>
+
+          <!-- Comic Speech Balloon -->
+          <div class="comic-speech-balloon" onclick="playExactRonaldoSiuuu()">
+            <div class="balloon-tail"></div>
+            <span>SIUUUUUU! 💥</span>
+          </div>
+
+          <!-- Comic Tag Badge -->
+          <div class="comic-badge-bottom">
+            <span class="badge-star">★</span> 99 OVR • GOAT BROTHER <span class="badge-star">★</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COMIC HERO HEADLINE -->
+      <div class="hero-text-content">
+        <h1 class="hero-comic-title">
+          THE ULTIMATE <span class="gold-comic-text">CR7 BROTHER!</span>
+        </h1>
+        <p class="hero-comic-sub">
+          Fueled by Cristiano Ronaldo's champion DNA, wearing the iconic Portugal #7, ready to score a hat-trick and conquer the world! ⚽🐐🇵🇹
+        </p>
+
+        <!-- BIG SIUUU ACTION BUTTON -->
+        <button id="mainSiuuBtn" class="btn-mega-comic-siuu">
+          <span class="btn-spark">⚡</span>
+          <span>UNLEASH RONALDO SIUUU!</span>
+          <span class="btn-spark">🔥</span>
         </button>
       </div>
     </section>
 
-    <!-- SIMPLE PHOTO GALLERY (ALL 3 BROTHER PHOTOS) -->
-    <section class="gallery-section">
-      <div class="section-heading">
-        <span class="section-tag">📸 BROTHER'S GALLERY</span>
-        <h2 class="section-title">THE CHAMPION'S ALBUM</h2>
+    <!-- SECTION 2: COMIC PHOTO ALBUM (ALL 3 BROTHER PHOTOS) -->
+    <section class="comic-gallery-section">
+      <div class="comic-section-heading">
+        <div class="comic-tag-label">📸 ISSUE #7 • ACTION PANELS</div>
+        <h2 class="comic-section-title">THE CHAMPION'S <span class="gold-comic-text">ORIGIN STORY</span></h2>
       </div>
 
-      <div class="photos-grid">
+      <div class="comic-grid">
         
-        <!-- Photo 1 -->
-        <div class="photo-item" onclick="playExactRonaldoSiuuu()">
-          <div class="photo-img-box">
-            <img src="brother1.jpg" alt="The Match Winner" class="photo-img">
-            <div class="photo-badge">MATCH WINNER #7</div>
+        <!-- Panel 1 -->
+        <div class="comic-panel-card" onclick="playExactRonaldoSiuuu()">
+          <div class="comic-panel-header">
+            <span class="panel-num">PANEL 01</span>
+            <span class="panel-badge-red">🇵🇹 MATCH WINNER #7</span>
           </div>
-          <div class="photo-meta">
-            <h3 class="photo-title">The Match Winner</h3>
-            <p class="photo-desc">Wearing the Portugal No. 7 jersey with pure Cristiano Ronaldo confidence!</p>
+          <div class="panel-img-box">
+            <img src="brother1.jpg" alt="Match Winner" class="panel-img comic-styled-img">
+            <div class="comic-panel-halftone"></div>
+            <div class="comic-burst-tag burst-top-right">💥 BAM!</div>
           </div>
-        </div>
-
-        <!-- Photo 2 -->
-        <div class="photo-item" onclick="playExactRonaldoSiuuu()">
-          <div class="photo-img-box">
-            <img src="brother2.jpg" alt="The Million Dollar Smile" class="photo-img">
-            <div class="photo-badge">GOAL CELEBRATION</div>
-          </div>
-          <div class="photo-meta">
-            <h3 class="photo-title">The Million Dollar Smile</h3>
-            <p class="photo-desc">The happiest smile after hitting the iconic SIUUU celebration!</p>
+          <div class="panel-caption">
+            <h3 class="panel-title">The Portugal Legend</h3>
+            <p class="panel-text">Ready in the #7 jersey. Unstoppable aura and true Cristiano Ronaldo confidence!</p>
+            <button class="panel-siuu-btn"><i class="fa-solid fa-bolt"></i> TAP FOR SIUUU!</button>
           </div>
         </div>
 
-        <!-- Photo 3 -->
-        <div class="photo-item" onclick="playExactRonaldoSiuuu()">
-          <div class="photo-img-box">
-            <img src="brother3.jpg" alt="The Next Generation GOAT" class="photo-img">
-            <div class="photo-badge">FUTURE BALLON D'OR</div>
+        <!-- Panel 2 -->
+        <div class="comic-panel-card" onclick="playExactRonaldoSiuuu()">
+          <div class="comic-panel-header">
+            <span class="panel-num">PANEL 02</span>
+            <span class="panel-badge-gold">⭐ $100M SMILE</span>
           </div>
-          <div class="photo-meta">
-            <h3 class="photo-title">The Next Gen Legend</h3>
-            <p class="photo-desc">Laser focus and unstoppable determination. Future champion!</p>
+          <div class="panel-img-box">
+            <img src="brother2.jpg" alt="Celebration Smile" class="panel-img comic-styled-img">
+            <div class="comic-panel-halftone"></div>
+            <div class="comic-burst-tag burst-top-left">😄 SIMM!</div>
+          </div>
+          <div class="panel-caption">
+            <h3 class="panel-title">The Hat-Trick Smile</h3>
+            <p class="panel-text">The victory grin right after hitting the iconic SIUUU celebration in front of 80,000 fans!</p>
+            <button class="panel-siuu-btn"><i class="fa-solid fa-bolt"></i> TAP FOR SIUUU!</button>
+          </div>
+        </div>
+
+        <!-- Panel 3 -->
+        <div class="comic-panel-card" onclick="playExactRonaldoSiuuu()">
+          <div class="comic-panel-header">
+            <span class="panel-num">PANEL 03</span>
+            <span class="panel-badge-green">👑 NEXT GEN GOAT</span>
+          </div>
+          <div class="panel-img-box">
+            <img src="brother3.jpg" alt="Next Gen Legend" class="panel-img comic-styled-img">
+            <div class="comic-panel-halftone"></div>
+            <div class="comic-burst-tag burst-top-right">⚡ POWER!</div>
+          </div>
+          <div class="panel-caption">
+            <h3 class="panel-title">Ballon d'Or Vision</h3>
+            <p class="panel-text">Laser-focused champion mindset. Destined to be the greatest brother of all time!</p>
+            <button class="panel-siuu-btn"><i class="fa-solid fa-bolt"></i> TAP FOR SIUUU!</button>
           </div>
         </div>
 
       </div>
     </section>
 
-    <!-- SIMPLE GOAT TRIBUTE FOOTER -->
-    <footer class="app-footer">
-      <div class="footer-trophy">🏆 🐐 ⚽</div>
-      <h3 class="footer-quote">"Your love makes me strong, your hate makes me unstoppable."</h3>
-      <p class="footer-author">— Cristiano Ronaldo</p>
+    <!-- SECTION 3: SIMPLE GOAT TRIBUTE FOOTER -->
+    <footer class="comic-footer">
+      <div class="footer-badge-goat">
+        <span>🏆 🐐 ⚽</span>
+      </div>
+      <blockquote class="comic-quote">
+        "Your love makes me strong, your hate makes me unstoppable."
+      </blockquote>
+      <div class="comic-author">— Cristiano Ronaldo</div>
       
-      <div class="footer-sub">
-        Dedicated to my brother • Live on <strong>uskool.online</strong> • SIUUUUU!
+      <div class="footer-app-meta">
+        <div class="footer-icon-preview">
+          <img src="icon.svg" alt="App Icon" class="mini-app-icon">
+        </div>
+        <p class="footer-domain">
+          Official Web App Live on: <strong>uskool.online</strong><br>
+          Dedicated to the Greatest Brother • SIUUUUU!
+        </p>
       </div>
     </footer>
 

@@ -1,6 +1,6 @@
 /**
- * THE GOAT BROTHER • CR7 EDITION
- * Fast, pure Ronaldo SIUUU sound playback & simple celebration engine.
+ * THE COMIC GOAT BROTHER • CR7 SUPERHERO EDITION
+ * Pure Cristiano Ronaldo SIUUU sound engine, comic toggle & visual FX.
  */
 
 const audioEl = document.getElementById('siuuAudio');
@@ -8,32 +8,32 @@ const tapOverlay = document.getElementById('tapOverlay');
 const openSiuuBtn = document.getElementById('openSiuuBtn');
 const mainSiuuBtn = document.getElementById('mainSiuuBtn');
 const headerSiuuBtn = document.getElementById('headerSiuuBtn');
-const heroPhotoBox = document.getElementById('heroPhotoBox');
+const heroStage = document.getElementById('heroStage');
 const siuuCountBadge = document.getElementById('siuuCountBadge');
 const siuuBanner = document.getElementById('siuuBanner');
+const comicToggleBtn = document.getElementById('comicToggleBtn');
+const toggleText = document.getElementById('toggleText');
 
 let siuuCount = 0;
 let hasStarted = false;
+let isComicMode = true;
 
 /**
- * Plays the pure, exact Cristiano Ronaldo SIUUUU sound!
- * No other background music, no other sounds.
+ * Plays the pure, authentic Cristiano Ronaldo SIUUUU shout!
+ * No background music, no other sounds.
  */
 function playExactRonaldoSiuuu() {
-  if (!audioEl) return;
-
-  try {
-    // Reset to start for instant rapid-fire SIUUU
-    audioEl.currentTime = 0;
-    audioEl.volume = 1.0;
-    const playPromise = audioEl.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.log('Audio playback prevented:', err);
-      });
+  if (audioEl) {
+    try {
+      audioEl.currentTime = 0;
+      audioEl.volume = 1.0;
+      const p = audioEl.play();
+      if (p !== undefined) {
+        p.catch((err) => console.log('Audio autoplay policy:', err));
+      }
+    } catch (e) {
+      console.error('Audio playback error:', e);
     }
-  } catch (e) {
-    console.error('Audio error:', e);
   }
 
   // Increment counter
@@ -42,14 +42,65 @@ function playExactRonaldoSiuuu() {
     siuuCountBadge.textContent = siuuCount;
   }
 
-  // Visual celebrations
+  // Celebratory FX
   launchConfetti();
   triggerScreenShake();
   showSiuuBanner();
+  spawnComicBurst();
 }
 
 /**
- * Confetti Canvas Animation
+ * Comic Mode Toggle (Toggles comic filters vs original photos)
+ */
+if (comicToggleBtn) {
+  comicToggleBtn.addEventListener('click', () => {
+    isComicMode = !isComicMode;
+    if (isComicMode) {
+      document.body.classList.add('comic-mode');
+      if (toggleText) toggleText.textContent = 'COMIC: ON';
+    } else {
+      document.body.classList.remove('comic-mode');
+      if (toggleText) toggleText.textContent = 'COMIC: OFF';
+    }
+    playExactRonaldoSiuuu();
+  });
+}
+
+/**
+ * Spawns floating comic action bursts on screen (BAM!, SIUUU!, GOAL!)
+ */
+const comicWords = ['💥 SIUUUU!', '⚡ CR7!', '⚽ GOLAZO!', '🐐 GOAT!', '🔥 BOOM!'];
+function spawnComicBurst() {
+  const burst = document.createElement('div');
+  burst.textContent = comicWords[Math.floor(Math.random() * comicWords.length)];
+  burst.style.position = 'fixed';
+  burst.style.left = `${Math.random() * (window.innerWidth - 160) + 40}px`;
+  burst.style.top = `${Math.random() * (window.innerHeight - 200) + 80}px`;
+  burst.style.fontFamily = "'Bebas Neue', 'Impact', sans-serif";
+  burst.style.fontSize = `${Math.random() * 1.5 + 2.2}rem`;
+  burst.style.color = '#ffd700';
+  burst.style.textShadow = '3px 3px 0 #000, 0 0 20px rgba(228, 0, 43, 0.9)';
+  burst.style.pointerEvents = 'none';
+  burst.style.zIndex = '99999';
+  burst.style.transform = `rotate(${(Math.random() - 0.5) * 30}deg) scale(0.5)`;
+  burst.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+  document.body.appendChild(burst);
+
+  requestAnimationFrame(() => {
+    burst.style.transform = `rotate(${(Math.random() - 0.5) * 30}deg) scale(1.3) translateY(-40px)`;
+    burst.style.opacity = '1';
+  });
+
+  setTimeout(() => {
+    burst.style.opacity = '0';
+    burst.style.transform += ' translateY(-70px) scale(0.8)';
+    setTimeout(() => burst.remove(), 400);
+  }, 900);
+}
+
+/**
+ * Confetti Canvas System
  */
 const canvas = document.getElementById('confettiCanvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
@@ -75,7 +126,7 @@ class ConfettiPiece {
     this.gravity = 0.35;
     this.rotation = Math.random() * 360;
     this.rotSpeed = (Math.random() - 0.5) * 14;
-    const colors = ['#ffd700', '#e4002b', '#ffffff', '#ff4757', '#00ff88'];
+    const colors = ['#ffd700', '#e4002b', '#ffffff', '#ff1a43', '#00874d'];
     this.color = colors[Math.floor(Math.random() * colors.length)];
     this.opacity = 1;
     this.decay = Math.random() * 0.018 + 0.012;
@@ -102,7 +153,7 @@ class ConfettiPiece {
 
 function launchConfetti() {
   if (!canvas) return;
-  for (let i = 0; i < 65; i++) {
+  for (let i = 0; i < 70; i++) {
     confettiParticles.push(new ConfettiPiece());
   }
 }
@@ -139,29 +190,8 @@ function showSiuuBanner() {
 }
 
 /**
- * Unlock and start surprise
+ * Play on direct interaction or auto-trigger
  */
-function startSurprise() {
-  if (tapOverlay) {
-    tapOverlay.classList.add('dismissed');
-  }
-  playExactRonaldoSiuuu();
-  hasStarted = true;
-}
-
-if (tapOverlay) {
-  tapOverlay.addEventListener('click', () => {
-    startSurprise();
-  });
-}
-
-if (openSiuuBtn) {
-  openSiuuBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    startSurprise();
-  });
-}
-
 if (mainSiuuBtn) {
   mainSiuuBtn.addEventListener('click', () => {
     playExactRonaldoSiuuu();
@@ -174,8 +204,8 @@ if (headerSiuuBtn) {
   });
 }
 
-if (heroPhotoBox) {
-  heroPhotoBox.addEventListener('click', () => {
+if (heroStage) {
+  heroStage.addEventListener('click', () => {
     playExactRonaldoSiuuu();
   });
 }
@@ -184,27 +214,34 @@ if (heroPhotoBox) {
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     e.preventDefault();
-    if (!hasStarted) {
-      startSurprise();
-    } else {
-      playExactRonaldoSiuuu();
-    }
+    playExactRonaldoSiuuu();
   }
 });
 
-// Try autoplay on load (if browser allows it, dismiss overlay immediately)
+// Automatic play on load or on very first touch/click anywhere
+function triggerFirstPlay() {
+  if (!hasStarted) {
+    hasStarted = true;
+    playExactRonaldoSiuuu();
+  }
+  window.removeEventListener('pointerdown', triggerFirstPlay);
+  window.removeEventListener('touchstart', triggerFirstPlay);
+  window.removeEventListener('click', triggerFirstPlay);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   if (audioEl) {
     audioEl.play().then(() => {
-      // Browser allowed autoplay!
-      if (tapOverlay) tapOverlay.classList.add('dismissed');
       hasStarted = true;
       siuuCount = 1;
       if (siuuCountBadge) siuuCountBadge.textContent = '1';
       launchConfetti();
       showSiuuBanner();
     }).catch(() => {
-      // Browser requires user interaction, tap overlay is ready and waiting for 1 tap!
+      // Browser autoplay policy requires user gesture: play on very first touch/click anywhere!
+      window.addEventListener('pointerdown', triggerFirstPlay, { once: true });
+      window.addEventListener('touchstart', triggerFirstPlay, { once: true });
+      window.addEventListener('click', triggerFirstPlay, { once: true });
     });
   }
 });

@@ -8,7 +8,9 @@ const ASSETS = [
   './brother1.jpg',
   './brother2.jpg',
   './brother3.jpg',
-  './siuuu.mp3'
+  './siuuu.mp3',
+  './icon.svg',
+  './app-icon.png'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,16 +1,23 @@
 {
-  "name": "CR7 Legend • The Ultimate Brother Edition",
+  "name": "CR7 Legend • The Ultimate Brother",
   "short_name": "CR7 Brother",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#07090e",
+  "background_color": "#090c13",
   "theme_color": "#e4002b",
-  "description": "Special Cristiano Ronaldo Surprise Website for the Greatest Brother! SIUUUUU!",
+  "description": "Special Cristiano Ronaldo Comic Surprise Web App for the Greatest Brother! SIUUUUU!",
   "icons": [
     {
-      "src": "brother1.jpg",
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "app-icon.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
