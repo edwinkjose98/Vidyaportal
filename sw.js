@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cr7-brother-v3';
+const CACHE_NAME = 'cr7-brother-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,8 @@ const ASSETS = [
   './brother3.jpg',
   './siuuu.mp3',
   './icon.svg',
+  './icon-192.svg',
+  './icon-512.svg',
   './app-icon.png'
 ];
 
