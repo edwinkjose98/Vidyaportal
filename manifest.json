@@ -1,28 +1,16 @@
-﻿{
-  "name": "Uskool",
-  "short_name": "Uskool",
-  "description": "Your One-Stop Career Platform — Verified Colleges, Zero-Cost EMI & Career Support",
+{
+  "name": "CR7 Legend • The Ultimate Brother Edition",
+  "short_name": "CR7 Brother",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F0F7E8",
-  "theme_color": "#3E8B1A",
+  "background_color": "#07090e",
+  "theme_color": "#e4002b",
+  "description": "Special Cristiano Ronaldo Surprise Website for the Greatest Brother! SIUUUUU!",
   "icons": [
     {
-      "src": "Uskool-logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "Uskool-logo.png",
+      "src": "brother1.jpg",
       "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "Uskool-logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/jpeg"
     }
   ]
 }
-
