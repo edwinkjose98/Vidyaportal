@@ -1,25 +1,24 @@
-const CACHE_NAME = 'cr7-brother-v4';
+const CACHE_NAME = 'uskool-cache-v1-prod';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './script.js',
   './manifest.json',
-  './brother1.jpg',
-  './brother2.jpg',
-  './brother3.jpg',
-  './siuuu.mp3',
-  './icon.svg',
-  './icon-192.svg',
-  './icon-512.svg',
-  './app-icon.png'
+  './Uskool-logo.png',
+  './logo.jpg',
+  './workflow.png',
+  './nursing_college_category_1774427669008.png',
+  './management_college_category_1774427684353.png',
+  './engineering_college_category_1774427701464.png',
+  './paramedical_college_category_1774427719498.png',
+  './diploma_college_category.png'
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS).catch((e) => console.log('Cache add error:', e));
+      return cache.addAll(ASSETS);
     })
   );
 });
@@ -30,7 +29,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
-    }).then(() => self.clients.claim())
+    })
   );
 });
 
